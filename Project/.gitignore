@@ -1,0 +1,6 @@
+
+_build/
+.vs/
+_intermediate/
+OverlordEngine/_build
+*.bak
