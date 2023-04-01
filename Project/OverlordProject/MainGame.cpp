@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "MainGame.h"
 
+// Scenes
+#include "Scenes/WorldScene.h"
+
 //Game is preparing
 void MainGame::OnGamePreparing(GameContext& gameContext)
 {
@@ -13,7 +16,7 @@ void MainGame::OnGamePreparing(GameContext& gameContext)
 
 void MainGame::Initialize()
 {
-	//SceneManager::Get()->AddGameScene(new WorldScene());
+	SceneManager::Get()->AddGameScene(new WorldScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND /*hWnd*/, UINT message, WPARAM wParam, LPARAM lParam)
