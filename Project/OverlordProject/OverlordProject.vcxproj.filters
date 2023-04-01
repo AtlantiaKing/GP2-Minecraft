@@ -9,6 +9,10 @@
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Scenes\WorldScene.cpp" />
+    <ClCompile Include="Components\WorldComponent.cpp" />
+    <ClCompile Include="Misc\World\WorldGenerator.cpp" />
+    <ClCompile Include="Misc\World\WorldRenderer.cpp" />
+    <ClCompile Include="Utils\Perlin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -18,5 +22,10 @@
     <ClInclude Include="Prefabs\TorusPrefab.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Scenes\WorldScene.h" />
+    <ClInclude Include="Components\WorldComponent.h" />
+    <ClInclude Include="Misc\World\WorldGenerator.h" />
+    <ClInclude Include="Misc\World\WorldRenderer.h" />
+    <ClInclude Include="Utils\Perlin.h" />
+    <ClInclude Include="Misc\World\WorldData.h" />
   </ItemGroup>
 </Project>

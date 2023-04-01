@@ -114,6 +114,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Scenes\WorldScene.cpp" />
+    <ClCompile Include="Components\WorldComponent.cpp" />
+    <ClCompile Include="Misc\World\WorldRenderer.cpp" />
+    <ClCompile Include="Misc\World\WorldGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OverlordEngine\OverlordEngine.vcxproj">
@@ -121,6 +124,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Misc\World\WorldData.h" />
     <ClInclude Include="Utils\Perlin.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
@@ -129,6 +133,9 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Scenes\WorldScene.h" />
+    <ClInclude Include="Components\WorldComponent.h" />
+    <ClInclude Include="Misc\World\WorldRenderer.h" />
+    <ClInclude Include="Misc\World\WorldGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
