@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Utils\Perlin.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
@@ -120,6 +121,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Utils\Perlin.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
     <ClInclude Include="Prefabs\TorusPrefab.h" />
