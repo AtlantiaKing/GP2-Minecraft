@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "WorldRenderer.h"
 
-void WorldRenderer::SetBuffer(const std::vector<VertexPosNormCol>& vertices, const SceneContext& sceneContext)
+void WorldRenderer::SetBuffer(const std::vector<VertexPosNormTex>& vertices, const SceneContext& sceneContext)
 {
 	if (vertices.size() == 0) return;
 
@@ -14,7 +14,7 @@ void WorldRenderer::SetBuffer(const std::vector<VertexPosNormCol>& vertices, con
 	//VERTEX BUFFER
 	D3D11_BUFFER_DESC vertexBuffDesc{};
 	vertexBuffDesc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
-	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormCol) * vertices.size());
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTex) * vertices.size());
 	vertexBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
@@ -23,14 +23,14 @@ void WorldRenderer::SetBuffer(const std::vector<VertexPosNormCol>& vertices, con
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	d3d11.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
-	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormCol) * size);
+	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormTex) * size);
 	d3d11.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 }
 
 void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 {
-	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects\\PosNormCol3D.fx");
-	m_pTechnique = m_pEffect->GetTechniqueByIndex(true);
+	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects\\World.fx");
+	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 	EffectHelper::BuildInputLayout(sceneContext.d3dContext.pDevice, m_pTechnique, &m_pInputLayout);
 
 	if (!m_pWorldVar)
@@ -38,6 +38,11 @@ void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 
 	if (!m_pWvpVar)
 		m_pWvpVar = m_pEffect->GetVariableBySemantic("WorldViewProjection")->AsMatrix();
+
+	if(!m_pDiffuseMapVariable)
+		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+
+	m_pDiffuseMapVariable->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.png")->GetShaderResourceView());
 }
 
 void WorldRenderer::Draw(const SceneContext& sceneContext)
@@ -56,7 +61,7 @@ void WorldRenderer::Draw(const SceneContext& sceneContext)
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	constexpr UINT offset = 0;
-	constexpr UINT stride = sizeof(VertexPosNormCol);
+	constexpr UINT stride = sizeof(VertexPosNormTex);
 	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
 	D3DX11_TECHNIQUE_DESC techDesc{};

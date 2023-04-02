@@ -4,11 +4,12 @@ class WorldRenderer final
 {
 public:
 	void LoadEffect(const SceneContext& sceneContext);
-	void SetBuffer(const std::vector<VertexPosNormCol>& vertices, const SceneContext& sceneContext);
+	void SetBuffer(const std::vector<VertexPosNormTex>& vertices, const SceneContext& sceneContext);
 	void Draw(const SceneContext& sceneContext);
 private:
 	ID3DX11EffectMatrixVariable* m_pWorldVar{};
 	ID3DX11EffectMatrixVariable* m_pWvpVar{};
+	ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable{};
 
 	ID3D11Buffer* m_pVertexBuffer{};
 	int m_NrVertices{};

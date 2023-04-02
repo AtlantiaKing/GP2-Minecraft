@@ -4,37 +4,40 @@
 
 WorldGenerator::WorldGenerator()
 {
+	constexpr float tileEpsilon{ 0.0001f };
+	constexpr float tileStart{ tileEpsilon };
+	constexpr float tileEnd{ 1.0f / 256.0f * 16.0f - tileEpsilon };
 	m_CubeVertices =
 	{
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f} },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
+			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileEnd, tileStart } },
+			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileEnd, tileEnd } },
+			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileStart, tileStart } },
+			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileStart, tileEnd } },
 
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
+			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileEnd, tileStart } },
+			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileEnd, tileEnd } },
+			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileStart, tileStart } },
+			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileStart, tileEnd } },
 
-			{ { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f , 1.0f} },
-			{ { 0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
+			{ { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { tileEnd, tileStart } },
+			{ { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { tileEnd, tileEnd } },
+			{ { 0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { tileStart, tileStart } },
+			{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { tileStart, tileEnd } },
 
-			{ { -0.5f, 0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, 0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
+			{ { -0.5f, 0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { tileEnd, tileStart } },
+			{ { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { tileEnd, tileEnd } },
+			{ { -0.5f, 0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { tileStart, tileStart } },
+			{ { -0.5f, -0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { tileStart, tileEnd } },
 
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f , 1.0f} },
+			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { tileEnd, tileStart } },
+			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { tileEnd, tileEnd } },
+			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { tileStart, tileStart } },
+			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { tileStart, tileEnd } },
 
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f} },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } }
+			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { tileEnd, tileStart } },
+			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { tileEnd, tileEnd } },
+			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { tileStart, tileStart } },
+			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { tileStart, tileEnd } }
 	};
 
 	m_IsBlockPredicate = [&](const XMINT3& position) -> bool
@@ -94,7 +97,7 @@ WorldGenerator::WorldGenerator()
 	}
 }
 
-const std::vector<VertexPosNormCol>& WorldGenerator::LoadWorld()
+const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 {
 	const int renderRadius{ m_RenderDistance - 1 };
 
@@ -138,7 +141,7 @@ const std::vector<VertexPosNormCol>& WorldGenerator::LoadWorld()
 						const std::vector<int> faceIndices{ 0,1,2,3,2,1 };
 						for (int vIdx : faceIndices)
 						{
-							VertexPosNormCol v{ m_CubeVertices[i * 4 + vIdx] };
+							VertexPosNormTex v{ m_CubeVertices[i * 4 + vIdx] };
 							XMVECTOR pos{ XMLoadFloat3(&v.Position) };
 							pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) } 
 									+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };

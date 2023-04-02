@@ -16,7 +16,7 @@ public:
 	WorldGenerator& operator=(const WorldGenerator& other) = delete;
 	WorldGenerator& operator=(WorldGenerator&& other) noexcept = delete;
 
-	const std::vector<VertexPosNormCol>& LoadWorld();
+	const std::vector<VertexPosNormTex>& LoadWorld();
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 
@@ -24,7 +24,7 @@ public:
 private:
 	std::function<bool(const XMINT3& position)> m_IsBlockPredicate{};
 	XMINT3 m_NeighbouringBlocks[6]{};
-	std::vector<VertexPosNormCol> m_CubeVertices{};
+	std::vector<VertexPosNormTex> m_CubeVertices{};
 
 	struct Chunk
 	{
@@ -39,7 +39,7 @@ private:
 	int m_SeaLevel{ 30 };
 	const int m_ChunkSize{ 16 };
 
-	std::vector<VertexPosNormCol> m_Vertices{};
+	std::vector<VertexPosNormTex> m_Vertices{};
 	std::vector<Chunk> m_Chunks{};
 };
 
