@@ -41,9 +41,16 @@ RasterizerState NoCulling
 	CullMode = BACK;
 };
 
-BlendState NoBlending
+BlendState Blending
 {
 	BlendEnable[0] = TRUE;
+	SrcBlend = src_alpha;
+	DestBlend = inv_src_alpha;
+	BlendOp = add;
+	SrcBlendAlpha = zero;
+	DestBlendAlpha = zero;
+	BlendOpAlpha = add;
+	RenderTargetWriteMask[0] = 0x0F;
 };
 
 //--------------------------------------------------------------------------------------
@@ -89,7 +96,7 @@ technique11 Default
     {
 		SetRasterizerState(NoCulling);
 		SetDepthStencilState(EnableDepth, 0);
-		SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+		SetBlendState(Blending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 
 		SetVertexShader( CompileShader( vs_4_0, VS() ) );
 		SetGeometryShader( NULL );
