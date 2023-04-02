@@ -55,6 +55,33 @@ WorldGenerator::WorldGenerator()
 
 		return it->pBlocks[lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize];
 	};
+	m_CanRenderPredicate = [&](Block* pBlock, const XMINT3& neighbourPos) -> bool
+	{
+		const XMINT2 chunkPos{ neighbourPos.x / m_ChunkSize, neighbourPos.z / m_ChunkSize };
+
+		auto it{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+			}) };
+		if (it == m_Chunks.end()) return false;
+
+		const XMINT3 lookUpPos{ neighbourPos.x - chunkPos.x * m_ChunkSize, neighbourPos.y, neighbourPos.z - chunkPos.y * m_ChunkSize };
+
+		if (lookUpPos.x < 0 || lookUpPos.x >= m_ChunkSize
+			|| lookUpPos.z < 0 || lookUpPos.z >= m_ChunkSize
+			|| lookUpPos.y < 0 || lookUpPos.y >= m_WorldHeight) return false;
+
+		Block* pNeighbour{ it->pBlocks[lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize] };
+
+		if (!pNeighbour) return true;
+
+		if (pBlock->type != BlockType::WATER && pNeighbour->type == BlockType::WATER)
+		{
+			if (!m_IsBlockPredicate(XMINT3{ neighbourPos.x, neighbourPos.y + 1, neighbourPos.z })) return true;
+		}
+
+		return false;
+	};
 
 	for (int i{}; i <= static_cast<int>(FaceDirection::BOTTOM); ++i)
 	{
@@ -134,12 +161,18 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 						const XMVECTOR neighbourPosVector = XMVectorAdd(positionVector, neighbourDirection);
 						XMStoreSInt3(&neighbourPosition, neighbourPosVector);
 
-						if (m_IsBlockPredicate(neighbourPosition)) continue;
+						if (!m_CanRenderPredicate(pBlock, neighbourPosition)) continue;
 
 						constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
 						for (int vIdx : faceIndices)
 						{
 							VertexPosNormTex v{ m_CubeVertices[i * 4 + vIdx] };
+
+							if (pBlock->type == BlockType::WATER)
+							{
+								const float waterDisplacement{ 0.125f };
+								v.Position.y = v.Position.y - waterDisplacement;
+							}
 
 							XMVECTOR pos{ XMLoadFloat3(&v.Position) };
 							pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) } 
@@ -159,7 +192,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 	return m_Vertices;
 }
 
-void WorldGenerator::LoadChunk(int chunkX, int chunkY/*, ID3D11Device* pDevice*/)
+void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 {
 	const int m_ChunkSizeSqr{ m_ChunkSize * m_ChunkSize };
 
@@ -184,6 +217,11 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY/*, ID3D11Device* pDevice*/
 			{
 				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, chunk) } };
 				
+				if (pBlock->type == BlockType::WATER && y == worldY - 1)
+				{
+					chunk.pBlocks[x + z * m_ChunkSize + (y + 1) * m_ChunkSizeSqr] = pBlock;
+				}
+
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
 		}
@@ -218,6 +256,7 @@ FaceType WorldGenerator::GetFaceType(BlockType blockType, FaceDirection faceDire
 		default:
 			return FaceType::GRASS_SIDE;
 		}
+	}
 	}
 
 	return static_cast<FaceType>(blockType);

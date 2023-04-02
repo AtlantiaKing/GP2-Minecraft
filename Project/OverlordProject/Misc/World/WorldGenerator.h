@@ -21,7 +21,7 @@ public:
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 
-	void LoadChunk(int x, int y/*, ID3D11Device* pDevice*/);
+	void LoadChunk(int x, int y);
 private:
 	struct Chunk
 	{
@@ -29,9 +29,11 @@ private:
 		Block** pBlocks{};
 	};
 
-	BlockType GetBlockType(FaceDirection faceDirection, const XMINT3& position, const Chunk& chunk) const;
+	BlockType GetBlockType(const XMINT3& position, const Chunk& chunk) const;
+	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
 
 	std::function<bool(const XMINT3& position)> m_IsBlockPredicate{};
+	std::function<bool(Block* pBlock, const XMINT3& position)> m_CanRenderPredicate{};
 	XMINT3 m_NeighbouringBlocks[6]{};
 	std::vector<VertexPosNormTex> m_CubeVertices{};
 
