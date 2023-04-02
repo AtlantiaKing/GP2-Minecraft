@@ -146,7 +146,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 									+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
 							XMStoreFloat3(&v.Position, pos);
 
-							v.TexCoord = m_TileMap.GetUV(GetBlockType(static_cast<FaceDirection>(i), XMINT3{x,y,z}, chunk), v.TexCoord);
+							v.TexCoord = m_TileMap.GetUV(GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
 
 							m_Vertices.push_back(v);
 						}
@@ -182,7 +182,9 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY/*, ID3D11Device* pDevice*/
 
 			for (int y{ worldY - 1 }; y >= 0; --y)
 			{
-				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = new Block{};
+				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, chunk) } };
+				
+				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
 		}
 	}
@@ -190,24 +192,33 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY/*, ID3D11Device* pDevice*/
 	m_Chunks.push_back(chunk);
 }
 
-BlockType WorldGenerator::GetBlockType(FaceDirection faceDirection, const XMINT3& position, const Chunk& chunk) const
+BlockType WorldGenerator::GetBlockType(const XMINT3& position, const Chunk& chunk) const
 {
 	if (position.y <= m_SeaLevel) return BlockType::WATER;
 
 	if (position.y <= m_SeaLevel + m_BeachSize) return BlockType::SAND;
 
-	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize])
+	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize]) return BlockType::GRASS;
+
+	return BlockType::DIRT;
+}
+
+FaceType WorldGenerator::GetFaceType(BlockType blockType, FaceDirection faceDirection) const
+{
+	switch (blockType)
+	{
+	case BlockType::GRASS:
 	{
 		switch (faceDirection)
 		{
 		case FaceDirection::UP:
-			return BlockType::GRASS;
+			return FaceType::GRASS;
 		case FaceDirection::BOTTOM:
-			return BlockType::DIRT;
+			return FaceType::DIRT;
 		default:
-			return BlockType::GRASS_SIDE;
+			return FaceType::GRASS_SIDE;
 		}
 	}
 
-	return BlockType::DIRT;
+	return static_cast<FaceType>(blockType);
 }

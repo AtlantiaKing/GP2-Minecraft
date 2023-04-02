@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TileAtlas.h"
 
-XMFLOAT2 TileAtlas::GetUV(BlockType blockType, const XMFLOAT2& originalUV) const
+XMFLOAT2 TileAtlas::GetUV(FaceType blockType, const XMFLOAT2& originalUV) const
 {
 	// There are 16x16 tiles in the tile atlas
 	constexpr int nrBlocksPerRow{ 16 };

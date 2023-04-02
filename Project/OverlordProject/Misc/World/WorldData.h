@@ -10,7 +10,7 @@ enum class FaceDirection : BYTE
 	BOTTOM
 };
 
-enum class BlockType : BYTE
+enum class FaceType : BYTE
 {
 	DIRT,
 	GRASS,
@@ -19,7 +19,16 @@ enum class BlockType : BYTE
 	WATER
 };
 
+enum class BlockType : BYTE
+{
+	DIRT,
+	GRASS,
+	GRASS_SIDE, // NOT USED, JUST PADDING
+	SAND,
+	WATER
+};
+
 struct Block
 {
-
+	BlockType type{};
 };
