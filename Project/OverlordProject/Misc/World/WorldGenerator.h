@@ -20,6 +20,7 @@ public:
 	const std::vector<VertexPosNormTex>& LoadWorld();
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
+	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
 	void LoadChunk(int x, int y);
 private:
@@ -41,7 +42,8 @@ private:
 	TileAtlas m_TileMap{};
 
 	int m_RenderDistance{ 5 };
-	int m_WorldHeight{ 64 };
+	int m_WorldHeight{ 128 };
+	int m_TerrainHeight{ 64 };
 	int m_SeaLevel{ 30 };
 	int m_BeachSize{ 2 };
 	const int m_ChunkSize{ 16 };

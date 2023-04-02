@@ -239,7 +239,7 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 			const int worldPosZ{ chunkY * m_ChunkSize + z };
 
 			float worldHeight{ m_Perlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			worldHeight *= m_WorldHeight;
+			worldHeight *= m_TerrainHeight;
 
 			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
 
