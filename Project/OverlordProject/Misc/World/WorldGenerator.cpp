@@ -136,7 +136,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 
 						if (m_IsBlockPredicate(neighbourPosition)) continue;
 
-						const std::vector<int> faceIndices{ 0,1,2,3,2,1 };
+						constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
 						for (int vIdx : faceIndices)
 						{
 							VertexPosNormTex v{ m_CubeVertices[i * 4 + vIdx] };
