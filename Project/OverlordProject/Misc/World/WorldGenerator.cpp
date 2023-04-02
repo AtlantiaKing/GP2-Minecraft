@@ -39,7 +39,11 @@ WorldGenerator::WorldGenerator()
 
 	m_IsBlockPredicate = [&](const XMINT3& position) -> bool
 	{
-		const XMINT2 chunkPos{ position.x / m_ChunkSize, position.z / m_ChunkSize };
+		const XMINT2 chunkPos
+		{
+			position.x < 0 ? (position.x + 1) / m_ChunkSize - 1 : position.x / m_ChunkSize,
+			position.z < 0 ? (position.z + 1) / m_ChunkSize - 1 : position.z / m_ChunkSize
+		};
 
 		auto it{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
 			{
@@ -57,7 +61,11 @@ WorldGenerator::WorldGenerator()
 	};
 	m_CanRenderPredicate = [&](Block* pBlock, const XMINT3& neighbourPos) -> bool
 	{
-		const XMINT2 chunkPos{ neighbourPos.x / m_ChunkSize, neighbourPos.z / m_ChunkSize };
+		const XMINT2 chunkPos
+		{ 
+			neighbourPos.x < 0 ? (neighbourPos.x + 1) / m_ChunkSize - 1 : neighbourPos.x / m_ChunkSize, 
+			neighbourPos.z < 0 ? (neighbourPos.z + 1) / m_ChunkSize - 1 : neighbourPos.z / m_ChunkSize
+		};
 
 		auto it{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
 			{
@@ -133,9 +141,9 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 {
 	const int renderRadius{ m_RenderDistance - 1 };
 
-	for (int x{ 0 }; x <= renderRadius * 2; ++x)
+	for (int x{ -renderRadius }; x <= renderRadius; ++x)
 	{
-		for (int y{ 0 }; y <= renderRadius * 2; ++y)
+		for (int y{ -renderRadius }; y <= renderRadius; ++y)
 		{
 			LoadChunk(x, y);
 		}
@@ -233,7 +241,7 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 			float worldHeight{ m_Perlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 			worldHeight *= m_WorldHeight;
 
-			const int worldY = std::max(static_cast<int>(worldHeight), m_SeaLevel + 1);
+			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
 
 			for (int y{ worldY - 1 }; y >= 0; --y)
 			{
