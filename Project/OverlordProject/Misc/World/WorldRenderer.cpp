@@ -27,6 +27,12 @@ void WorldRenderer::SetBuffer(const std::vector<VertexPosNormTex>& vertices, con
 	d3d11.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 }
 
+WorldRenderer::~WorldRenderer()
+{
+	SafeRelease(m_pInputLayout);
+	SafeRelease(m_pVertexBuffer);
+}
+
 void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 {
 	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects\\World.fx");

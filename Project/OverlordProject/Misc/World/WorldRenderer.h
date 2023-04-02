@@ -3,6 +3,8 @@
 class WorldRenderer final
 {
 public:
+	~WorldRenderer();
+
 	void LoadEffect(const SceneContext& sceneContext);
 	void SetBuffer(const std::vector<VertexPosNormTex>& vertices, const SceneContext& sceneContext);
 	void Draw(const SceneContext& sceneContext);

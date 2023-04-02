@@ -118,6 +118,17 @@ WorldGenerator::WorldGenerator()
 	}
 }
 
+WorldGenerator::~WorldGenerator()
+{
+	for (const Chunk& chunk : m_Chunks)
+	{
+		for (Block* pBlock : chunk.pBlocks)
+		{
+			delete pBlock;
+		}
+	}
+}
+
 const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 {
 	const int renderRadius{ m_RenderDistance - 1 };
@@ -208,7 +219,7 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 	const int m_ChunkSizeSqr{ m_ChunkSize * m_ChunkSize };
 
 	Chunk chunk{};
-	chunk.pBlocks = new Block* [m_WorldHeight * m_ChunkSize * m_ChunkSize] {};
+	chunk.pBlocks.resize(m_WorldHeight * m_ChunkSize * m_ChunkSize);
 	chunk.position.x = chunkX;
 	chunk.position.y = chunkY;
 

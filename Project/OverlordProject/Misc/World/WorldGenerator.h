@@ -10,7 +10,7 @@ class WorldGenerator final
 {
 public:
 	WorldGenerator();
-	~WorldGenerator() = default;
+	~WorldGenerator();
 
 	WorldGenerator(const WorldGenerator& other) = delete;
 	WorldGenerator(WorldGenerator&& other) noexcept = delete;
@@ -26,7 +26,7 @@ private:
 	struct Chunk
 	{
 		XMINT2 position;
-		Block** pBlocks{};
+		std::vector<Block*> pBlocks{};
 	};
 
 	BlockType GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const;
