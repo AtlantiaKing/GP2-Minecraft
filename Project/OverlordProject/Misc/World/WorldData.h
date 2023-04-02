@@ -16,7 +16,8 @@ enum class FaceType : BYTE
 	GRASS,
 	GRASS_SIDE,
 	SAND,
-	WATER
+	WATER,
+	BEDROCK
 };
 
 enum class BlockType : BYTE
@@ -25,7 +26,8 @@ enum class BlockType : BYTE
 	GRASS,
 	GRASS_SIDE, // NOT USED, JUST PADDING
 	SAND,
-	WATER
+	WATER,
+	BEDROCK
 };
 
 struct Block

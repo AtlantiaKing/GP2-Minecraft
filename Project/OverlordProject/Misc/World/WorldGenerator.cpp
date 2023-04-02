@@ -257,6 +257,8 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 
 BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const
 {
+	if (position.y == 0) return BlockType::BEDROCK;
+
 	if (position.y <= m_SeaLevel && position.y > worldHeight) return BlockType::WATER;
 
 	if (position.y <= m_SeaLevel + m_BeachSize) return BlockType::SAND;
