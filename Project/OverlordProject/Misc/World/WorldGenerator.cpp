@@ -4,40 +4,37 @@
 
 WorldGenerator::WorldGenerator()
 {
-	constexpr float tileEpsilon{ 0.0001f };
-	constexpr float tileStart{ tileEpsilon };
-	constexpr float tileEnd{ 1.0f / 256.0f * 16.0f - tileEpsilon };
 	m_CubeVertices =
 	{
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileEnd, tileStart } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileEnd, tileEnd } },
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileStart, tileStart } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { tileStart, tileEnd } },
+			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0, 0.0f } },
+			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0, 1.0 } },
+			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
+			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0 } },
 
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileEnd, tileStart } },
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileEnd, tileEnd } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileStart, tileStart } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { tileStart, tileEnd } },
+			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0, 0.0f } },
+			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0, 1.0 } },
+			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } },
+			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0 } },
 
-			{ { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { tileEnd, tileStart } },
-			{ { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { tileEnd, tileEnd } },
-			{ { 0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { tileStart, tileStart } },
-			{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { tileStart, tileEnd } },
+			{ { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0, 0.0f } },
+			{ { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0, 1.0 } },
+			{ { 0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+			{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0 } },
 
-			{ { -0.5f, 0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { tileEnd, tileStart } },
-			{ { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { tileEnd, tileEnd } },
-			{ { -0.5f, 0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { tileStart, tileStart } },
-			{ { -0.5f, -0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { tileStart, tileEnd } },
+			{ { -0.5f, 0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0, 0.0f } },
+			{ { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0, 1.0 } },
+			{ { -0.5f, 0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
+			{ { -0.5f, -0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 1.0 } },
 
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { tileEnd, tileStart } },
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { tileEnd, tileEnd } },
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { tileStart, tileStart } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { tileStart, tileEnd } },
+			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0, 0.0f } },
+			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0, 1.0 } },
+			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0 } },
 
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { tileEnd, tileStart } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { tileEnd, tileEnd } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { tileStart, tileStart } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { tileStart, tileEnd } }
+			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0, 0.0f } },
+			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0, 1.0 } },
+			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } },
+			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 1.0 } }
 	};
 
 	m_IsBlockPredicate = [&](const XMINT3& position) -> bool
@@ -142,10 +139,14 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 						for (int vIdx : faceIndices)
 						{
 							VertexPosNormTex v{ m_CubeVertices[i * 4 + vIdx] };
+
 							XMVECTOR pos{ XMLoadFloat3(&v.Position) };
 							pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) } 
 									+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
 							XMStoreFloat3(&v.Position, pos);
+
+							v.TexCoord = m_TileMap.GetUV(GetBlockType(static_cast<FaceDirection>(i), XMINT3{x,y,z}, chunk), v.TexCoord);
+
 							m_Vertices.push_back(v);
 						}
 					}
@@ -186,4 +187,26 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY/*, ID3D11Device* pDevice*/
 	}
 
 	m_Chunks.push_back(chunk);
+}
+
+BlockType WorldGenerator::GetBlockType(FaceDirection faceDirection, const XMINT3& position, const Chunk& chunk) const
+{
+	if (position.y <= m_SeaLevel) return BlockType::WATER;
+
+	if (position.y <= m_SeaLevel + m_BeachSize) return BlockType::SAND;
+
+	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize])
+	{
+		switch (faceDirection)
+		{
+		case FaceDirection::UP:
+			return BlockType::GRASS;
+		case FaceDirection::BOTTOM:
+			return BlockType::DIRT;
+		default:
+			return BlockType::GRASS_SIDE;
+		}
+	}
+
+	return BlockType::DIRT;
 }

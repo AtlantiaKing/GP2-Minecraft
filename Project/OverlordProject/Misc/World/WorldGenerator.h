@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils/Perlin.h"
+#include "TileAtlas.h"
 #include <vector>
 
 struct Block;
@@ -22,21 +23,25 @@ public:
 
 	void LoadChunk(int x, int y/*, ID3D11Device* pDevice*/);
 private:
-	std::function<bool(const XMINT3& position)> m_IsBlockPredicate{};
-	XMINT3 m_NeighbouringBlocks[6]{};
-	std::vector<VertexPosNormTex> m_CubeVertices{};
-
 	struct Chunk
 	{
 		XMINT2 position;
 		Block** pBlocks{};
 	};
 
+	BlockType GetBlockType(FaceDirection faceDirection, const XMINT3& position, const Chunk& chunk) const;
+
+	std::function<bool(const XMINT3& position)> m_IsBlockPredicate{};
+	XMINT3 m_NeighbouringBlocks[6]{};
+	std::vector<VertexPosNormTex> m_CubeVertices{};
+
 	Perlin m_Perlin{};
+	TileAtlas m_TileMap{};
 
 	int m_RenderDistance{ 5 };
 	int m_WorldHeight{ 64 };
 	int m_SeaLevel{ 30 };
+	int m_BeachSize{ 2 };
 	const int m_ChunkSize{ 16 };
 
 	std::vector<VertexPosNormTex> m_Vertices{};

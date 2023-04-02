@@ -13,6 +13,7 @@
     <ClCompile Include="Misc\World\WorldGenerator.cpp" />
     <ClCompile Include="Misc\World\WorldRenderer.cpp" />
     <ClCompile Include="Utils\Perlin.cpp" />
+    <ClCompile Include="Misc\World\TileAtlas.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -27,5 +28,6 @@
     <ClInclude Include="Misc\World\WorldRenderer.h" />
     <ClInclude Include="Utils\Perlin.h" />
     <ClInclude Include="Misc\World\WorldData.h" />
+    <ClInclude Include="Misc\World\TileAtlas.h" />
   </ItemGroup>
 </Project>
