@@ -122,18 +122,19 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 
 					if (!pBlock) continue;
 
+					const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
+
 					for (unsigned int i{}; i <= static_cast<unsigned int>(FaceDirection::BOTTOM); ++i)
 					{
-						const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
 						const XMINT3 neightbourDirection{ m_NeighbouringBlocks[i] };
 						
-						const XMVECTOR v1 = XMLoadSInt3(&position);
-						const XMVECTOR v2 = XMLoadSInt3(&neightbourDirection);
-						XMINT3 result{};
-						const XMVECTOR vResult = XMVectorAdd(v1, v2);
-						XMStoreSInt3(&result, vResult);
+						const XMVECTOR positionVector = XMLoadSInt3(&position);
+						const XMVECTOR neighbourDirection = XMLoadSInt3(&neightbourDirection);
+						XMINT3 neighbourPosition{};
+						const XMVECTOR neighbourPosVector = XMVectorAdd(positionVector, neighbourDirection);
+						XMStoreSInt3(&neighbourPosition, neighbourPosVector);
 
-						if (m_IsBlockPredicate(result)) continue;
+						if (m_IsBlockPredicate(neighbourPosition)) continue;
 
 						const std::vector<int> faceIndices{ 0,1,2,3,2,1 };
 						for (int vIdx : faceIndices)
