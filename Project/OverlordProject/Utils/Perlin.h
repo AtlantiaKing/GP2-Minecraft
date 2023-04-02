@@ -20,7 +20,8 @@ private:
 	XMVECTOR GetRandomGradient(int ix, int iy) const;
 	float Lerp(float a, float b, float t) const;
 
-	float m_MaxValue{};
+	float m_MaxNoiseValue{};
+	float m_MiddleOfNoise{ 500'000 };
 	XMFLOAT2 m_Offset{};
 	int m_NrOctaves{};
 	float m_Zoom{};

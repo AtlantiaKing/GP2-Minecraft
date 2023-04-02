@@ -11,10 +11,10 @@ Perlin::Perlin(int nrOctaves, float zoom, const XMFLOAT2& offset)
 void Perlin::SetOctaves(int nrOctaves)
 {
 	m_NrOctaves = nrOctaves;
-	m_MaxValue = 0.0f;
+	m_MaxNoiseValue = 0.0f;
 	for (int i{ 1 }; i <= nrOctaves; ++i)
 	{
-		m_MaxValue += 1.0f / i;
+		m_MaxNoiseValue += 1.0f / i;
 	}
 }
 
@@ -25,7 +25,7 @@ float Perlin::GetNoise(float x, float y) const
 	{
 		noise += GetOctaveNoise(x, y, i) / i;
 	}
-	noise /= (m_MaxValue / 2.0f);
+	noise /= (m_MaxNoiseValue / 2.0f);
 	noise /= 2.0f;
 	noise += 0.5f;
 
@@ -34,6 +34,9 @@ float Perlin::GetNoise(float x, float y) const
 
 float Perlin::GetOctaveNoise(float x, float y, int octave) const
 {
+	x += m_MiddleOfNoise;
+	y += m_MiddleOfNoise;
+
 	x += m_Offset.x;
 	y += m_Offset.y;
 
