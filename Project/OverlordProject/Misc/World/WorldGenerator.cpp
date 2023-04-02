@@ -75,10 +75,7 @@ WorldGenerator::WorldGenerator()
 
 		if (!pNeighbour) return true;
 
-		if (pBlock->type != BlockType::WATER && pNeighbour->type == BlockType::WATER)
-		{
-			if (!m_IsBlockPredicate(XMINT3{ neighbourPos.x, neighbourPos.y + 1, neighbourPos.z })) return true;
-		}
+		if (pBlock->type != BlockType::WATER && pNeighbour->type == BlockType::WATER) return true;
 
 		return false;
 	};
@@ -134,6 +131,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 	}
 
 	m_Vertices.clear();
+	std::vector<VertexPosNormTex> waterVertices{};
 
 	const int m_ChunkSizeSqr{ m_ChunkSize * m_ChunkSize };
 
@@ -143,7 +141,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 		{
 			for (int z{}; z < m_ChunkSize; ++z)
 			{
-				for (int y{ m_WorldHeight - 1 }; y >= m_SeaLevel; --y)
+				for (int y{ m_WorldHeight - 1 }; y >= 0; --y)
 				{
 					Block* pBlock{ chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] };
 
@@ -181,12 +179,25 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 
 							v.TexCoord = m_TileMap.GetUV(GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
 
-							m_Vertices.push_back(v);
+							if (pBlock->type == BlockType::WATER)
+							{
+								waterVertices.push_back(v);
+							}
+							else
+							{
+								m_Vertices.push_back(v);
+							}
 						}
 					}
 				}
 			}
 		}
+	}
+
+	m_Vertices.reserve(m_Vertices.size() + waterVertices.size());
+	for (const VertexPosNormTex& v : waterVertices)
+	{
+		m_Vertices.emplace_back(v);
 	}
 
 	return m_Vertices;
@@ -215,12 +226,7 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 
 			for (int y{ worldY - 1 }; y >= 0; --y)
 			{
-				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, chunk) } };
-				
-				if (pBlock->type == BlockType::WATER && y == worldY - 1)
-				{
-					chunk.pBlocks[x + z * m_ChunkSize + (y + 1) * m_ChunkSizeSqr] = pBlock;
-				}
+				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, worldHeight, chunk) } };
 
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
@@ -230,9 +236,9 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 	m_Chunks.push_back(chunk);
 }
 
-BlockType WorldGenerator::GetBlockType(const XMINT3& position, const Chunk& chunk) const
+BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const
 {
-	if (position.y <= m_SeaLevel) return BlockType::WATER;
+	if (position.y <= m_SeaLevel && position.y > worldHeight) return BlockType::WATER;
 
 	if (position.y <= m_SeaLevel + m_BeachSize) return BlockType::SAND;
 

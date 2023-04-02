@@ -29,7 +29,7 @@ private:
 		Block** pBlocks{};
 	};
 
-	BlockType GetBlockType(const XMINT3& position, const Chunk& chunk) const;
+	BlockType GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const;
 	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
 
 	std::function<bool(const XMINT3& position)> m_IsBlockPredicate{};
