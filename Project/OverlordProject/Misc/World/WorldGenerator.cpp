@@ -3,6 +3,7 @@
 #include "Misc/World/WorldData.h"
 
 WorldGenerator::WorldGenerator()
+	: m_HeightPerlin{ 2,5 }
 {
 	m_CubeVertices =
 	{
@@ -238,8 +239,26 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 			const int worldPosX{ chunkX * m_ChunkSize + x };
 			const int worldPosZ{ chunkY * m_ChunkSize + z };
 
-			float worldHeight{ m_Perlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			worldHeight *= m_TerrainHeight;
+			float UnderseaNoise{ m_UnderSeaPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			float heightNoise{ m_HeightPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			
+			float worldHeight{};
+
+			if (UnderseaNoise < static_cast<float>(m_SeaLevel) / m_TerrainHeight)
+			{
+				worldHeight = UnderseaNoise * m_TerrainHeight;
+			}
+			else
+			{
+				const float inversedSeaLevel{ UnderseaNoise * m_TerrainHeight - m_SeaLevel };
+				const bool canAddHeightMap{ UnderseaNoise * m_TerrainHeight - m_SeaLevel > m_BeachSize + 1 };
+				const float landBase{ canAddHeightMap ? m_BeachSize : inversedSeaLevel };
+				worldHeight = m_SeaLevel + landBase;
+				if (canAddHeightMap)
+				{
+					worldHeight += heightNoise * (m_TerrainHeight - m_SeaLevel) * inversedSeaLevel / (m_TerrainHeight - m_SeaLevel);
+				}
+			}
 
 			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
 

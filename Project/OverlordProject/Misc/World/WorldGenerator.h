@@ -38,13 +38,15 @@ private:
 	XMINT3 m_NeighbouringBlocks[6]{};
 	std::vector<VertexPosNormTex> m_CubeVertices{};
 
-	Perlin m_Perlin{};
+	Perlin m_UnderSeaPerlin{};
+	Perlin m_HeightPerlin{};
+	Perlin m_UnderSeaInversedPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 5 };
-	int m_WorldHeight{ 128 };
-	int m_TerrainHeight{ 64 };
-	int m_SeaLevel{ 30 };
+	int m_RenderDistance{ 16 };
+	int m_WorldHeight{ 256 };
+	int m_TerrainHeight{ 128 };
+	int m_SeaLevel{ 64 };
 	int m_BeachSize{ 2 };
 	const int m_ChunkSize{ 16 };
 
