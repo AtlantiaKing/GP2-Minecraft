@@ -16,6 +16,8 @@ void MainGame::OnGamePreparing(GameContext& gameContext)
 
 void MainGame::Initialize()
 {
+	srand(static_cast<unsigned int>(time(nullptr)));
+
 	SceneManager::Get()->AddGameScene(new WorldScene());
 }
 

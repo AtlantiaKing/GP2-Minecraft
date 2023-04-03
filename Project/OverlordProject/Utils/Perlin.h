@@ -16,6 +16,8 @@ public:
 	*/
 	float GetNoise(float x, float y) const;
 private:
+	std::vector<XMFLOAT2> m_OctaveSeeds{};
+
 	float GetOctaveNoise(float x, float y, int octave) const;
 	XMVECTOR GetRandomGradient(int ix, int iy) const;
 	float Lerp(float a, float b, float t) const;

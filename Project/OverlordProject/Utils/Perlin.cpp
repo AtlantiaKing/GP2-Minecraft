@@ -10,11 +10,14 @@ Perlin::Perlin(int nrOctaves, float zoom, const XMFLOAT2& offset)
 
 void Perlin::SetOctaves(int nrOctaves)
 {
+	m_OctaveSeeds.clear();
+
 	m_NrOctaves = nrOctaves;
 	m_MaxNoiseValue = 0.0f;
 	for (int i{ 1 }; i <= nrOctaves; ++i)
 	{
 		m_MaxNoiseValue += 1.0f / i;
+		m_OctaveSeeds.push_back(XMFLOAT2{ (rand() % 1001 / 1000.0f) * 10000, (rand() % 1001 / 1000.0f) * 10000 });
 	}
 }
 
@@ -34,17 +37,11 @@ float Perlin::GetNoise(float x, float y) const
 
 float Perlin::GetOctaveNoise(float x, float y, int octave) const
 {
-	x += m_MiddleOfNoise;
-	y += m_MiddleOfNoise;
+	x += m_MiddleOfNoise + m_OctaveSeeds[octave-1].x + m_Offset.x;
+	y += m_MiddleOfNoise + m_OctaveSeeds[octave-1].y + m_Offset.y;
 
-	x += m_Offset.x;
-	y += m_Offset.y;
-
-	x *= powf(2.0f, static_cast<float>(octave - 1));
-	y *= powf(2.0f, static_cast<float>(octave - 1));
-
-	x /= m_Zoom;
-	y /= m_Zoom;
+	x *= powf(2.0f, static_cast<float>(octave - 1)) / m_Zoom;
+	y *= powf(2.0f, static_cast<float>(octave - 1)) / m_Zoom;
 
 	const int gridX0{ static_cast<int>(x) };
 	const int gridX1{ gridX0 + 1 };
