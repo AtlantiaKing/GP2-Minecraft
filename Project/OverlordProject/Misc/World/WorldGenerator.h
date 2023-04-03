@@ -18,11 +18,13 @@ public:
 	WorldGenerator& operator=(WorldGenerator&& other) noexcept = delete;
 
 	const std::vector<VertexPosNormTex>& LoadWorld();
+	std::vector<XMFLOAT3> GetVertices();
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
 	void LoadChunk(int x, int y);
+	int GetNrWaterVertices() { return m_NrWaterVertices; }
 private:
 	struct Chunk
 	{
@@ -49,6 +51,8 @@ private:
 	int m_SeaLevel{ 64 };
 	int m_BeachSize{ 2 };
 	const int m_ChunkSize{ 16 };
+
+	int m_NrWaterVertices{};
 
 	std::vector<VertexPosNormTex> m_Vertices{};
 	std::vector<Chunk> m_Chunks{};

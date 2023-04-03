@@ -3,6 +3,8 @@
 #include <Misc/World/WorldGenerator.h>
 #include <Misc/World/WorldRenderer.h>
 
+class RigidBodyComponent;
+
 class WorldComponent final : public BaseComponent
 {
 public:
@@ -21,5 +23,7 @@ protected:
 private:
 	WorldGenerator m_Generator{};
 	WorldRenderer m_Renderer{};
+
+	RigidBodyComponent* m_pRb{};
 };
 

@@ -214,6 +214,8 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 		}
 	}
 
+	m_NrWaterVertices = static_cast<int>(waterVertices.size());
+
 	m_Vertices.reserve(m_Vertices.size() + waterVertices.size());
 	for (const VertexPosNormTex& v : waterVertices)
 	{
@@ -221,6 +223,22 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 	}
 
 	return m_Vertices;
+}
+
+std::vector<XMFLOAT3> WorldGenerator::GetVertices()
+{
+	std::vector<XMFLOAT3> vertices{};
+	vertices.reserve(m_Vertices.size());
+
+	int i{};
+	for (const VertexPosNormTex& v : m_Vertices)
+	{
+		vertices.emplace_back(v.Position);
+		++i;
+		if (i >= m_Vertices.size() - m_NrWaterVertices) break;
+	}
+
+	return vertices;
 }
 
 void WorldGenerator::LoadChunk(int chunkX, int chunkY)
