@@ -19,7 +19,8 @@ private:
 	RigidBodyComponent* m_pPlayer{};
 
 	float m_RotateSpeed{ 0.005f };
-	float m_MoveSpeed{ 4.0f };
+	float m_MoveSpeed{ 4.317f };
+	float m_SprintSpeed{ 5.612f };
 	float m_JumpForce{ 7.0f };
 };
 

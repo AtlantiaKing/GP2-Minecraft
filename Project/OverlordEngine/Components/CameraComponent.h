@@ -27,6 +27,7 @@ public:
 	const XMFLOAT4X4& GetViewProjection() const {return m_ViewProjection;}
 	const XMFLOAT4X4& GetViewInverse() const {return m_ViewInverse;}
 	const XMFLOAT4X4& GetViewProjectionInverse() const {return m_ViewProjectionInverse;}
+	float GetFieldOfView() const { return m_FOV; }
 
 	GameObject* Pick(CollisionGroup ignoreGroups = CollisionGroup::None) const;
 

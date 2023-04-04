@@ -81,9 +81,25 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 		}
 	}
 
+	bool isSprinting{ (verticalInput > 0.0f) && sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) };
+
+	// TODO: Remove hardcoded FOV numbers
+	const float gotoFOV{ isSprinting ? 90.2f : 90.0f };
+	const float curFOV{ sceneContext.pCamera->GetFieldOfView() };
+	constexpr float fovChangeSpeed{ 10.0f };
+	if (abs(curFOV - gotoFOV) > 0.01f)
+	{
+		sceneContext.pCamera->SetFieldOfView(curFOV + (gotoFOV - curFOV) * sceneContext.pGameTime->GetElapsed() * fovChangeSpeed);
+	}
+	else
+	{
+		sceneContext.pCamera->SetFieldOfView(gotoFOV);
+	}
+
 	XMVECTOR velocityVec{ XMLoadFloat3(&velocity) };
+	const float verticalSpeed{ (verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed };
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetRight()) * horizontalInput * m_MoveSpeed;
-	velocityVec += XMLoadFloat3(&pPlayerTransform->GetForward()) * verticalInput * m_MoveSpeed;
+	velocityVec += XMLoadFloat3(&pPlayerTransform->GetForward()) * verticalInput * verticalSpeed;
 
 	XMStoreFloat3(&velocity, velocityVec);
 
