@@ -10,6 +10,7 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
     // Add a rigidbody component to the world gameobject
     m_pRb = GetGameObject()->AddComponent(new RigidBodyComponent{true});
+    m_pRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::World);
 
     // Load the world and set up the vertex buffer
 	m_Renderer.SetBuffer(m_Generator.LoadWorld(), sceneContext);

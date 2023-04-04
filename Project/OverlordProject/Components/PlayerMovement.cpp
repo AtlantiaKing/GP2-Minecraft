@@ -53,6 +53,8 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 
 void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 {
+	PxScene* physScene{ m_pPlayer->GetPxRigidActor()->getScene() };
+
 	const bool hasForwardInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'Z') || sceneContext.pInput->IsKeyboardKey(InputState::down, 'W') };
 	const bool hasBackInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'S') };
 	const bool hasRightInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'D') };
@@ -63,9 +65,21 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 
 	TransformComponent* pPlayerTransform{ m_pPlayer->GetTransform() };
 
-	XMFLOAT3 velocity{};
+	XMFLOAT3 velocity{ 0.0f, m_pPlayer->GetVelocity().y, 0.0f };
 
-	velocity.y = sceneContext.pInput->IsKeyboardKey(InputState::pressed, ' ') ? m_JumpForce : velocity.y = m_pPlayer->GetVelocity().y;
+	const XMFLOAT3 position{ pPlayerTransform->GetWorldPosition() };
+	const PxVec3 raycastOrigin{ position.x, position.y - pPlayerTransform->GetWorldScale().y, position.z};
+
+	PxRaycastBuffer hit;
+	if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' '))
+	{
+		PxQueryFilterData filter{};
+		filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+		if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.05f, hit, PxHitFlag::eDEFAULT, filter))
+		{
+			velocity.y = m_JumpForce;
+		}
+	}
 
 	XMVECTOR velocityVec{ XMLoadFloat3(&velocity) };
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetRight()) * horizontalInput * m_MoveSpeed;

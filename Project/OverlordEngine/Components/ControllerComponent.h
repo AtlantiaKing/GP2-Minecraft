@@ -35,7 +35,7 @@ private:
 
 	PxController* m_pController{};
 	PxControllerCollisionFlags m_CollisionFlag{};
-	PxFilterData m_CollisionGroups{ static_cast<UINT32>(CollisionGroup::Group0), 0, 0, 0 };
+	PxFilterData m_CollisionGroups{ static_cast<UINT32>(CollisionGroup::DefaultCollision), 0, 0, 0 };
 
 	void ApplyFilterData() const;
 };
