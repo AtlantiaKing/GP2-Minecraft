@@ -66,6 +66,9 @@ public:
 	void ClearForce(PxForceMode::Enum mode = PxForceMode::eFORCE) const;
 	void ClearTorque(PxForceMode::Enum mode = PxForceMode::eFORCE) const;
 
+	void SetVelocity(const XMFLOAT3& velocity) const;
+	XMFLOAT3 GetVelocity() const;
+
 	void SetConstraint(RigidBodyConstraint flag, bool enable);
 	void SetCollisionGroup(CollisionGroup group);
 	void SetCollisionIgnoreGroups(CollisionGroup ignoreGroups);

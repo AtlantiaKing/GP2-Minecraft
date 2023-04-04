@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
+    <ClCompile Include="Components\PlayerMovement.cpp" />
     <ClCompile Include="Utils\Perlin.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
@@ -127,6 +128,7 @@
   <ItemGroup>
     <ClInclude Include="Misc\World\WorldData.h" />
     <ClInclude Include="Misc\World\TileAtlas.h" />
+    <ClInclude Include="Components\PlayerMovement.h" />
     <ClInclude Include="Utils\Perlin.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
