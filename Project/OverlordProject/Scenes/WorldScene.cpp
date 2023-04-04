@@ -12,6 +12,10 @@ void WorldScene::Initialize()
 	CreateWorld();
 
 	CreatePlayer(pPhysMat);
+
+	GameObject* pCursor{ AddChild(new GameObject{}) };
+	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
+	pCursor->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight / 2.0f, 0.0f);
 }
 
 void WorldScene::CreateWorld()
