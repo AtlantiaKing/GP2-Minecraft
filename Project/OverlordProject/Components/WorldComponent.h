@@ -21,6 +21,8 @@ protected:
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
+	void LoadCollider() const;
+
 	WorldGenerator m_Generator{};
 	WorldRenderer m_Renderer{};
 

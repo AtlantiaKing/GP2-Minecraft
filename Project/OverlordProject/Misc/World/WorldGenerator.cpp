@@ -225,7 +225,7 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 	return m_Vertices;
 }
 
-std::vector<XMFLOAT3> WorldGenerator::GetVertices()
+std::vector<XMFLOAT3> WorldGenerator::GetVertices() const
 {
 	std::vector<XMFLOAT3> vertices{};
 	vertices.reserve(m_Vertices.size());

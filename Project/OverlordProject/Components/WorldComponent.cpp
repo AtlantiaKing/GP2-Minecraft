@@ -8,21 +8,31 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 
 void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
+    // Add a rigidbody component to the world gameobject
     m_pRb = GetGameObject()->AddComponent(new RigidBodyComponent{true});
 
+    // Load the world and set up the vertex buffer
 	m_Renderer.SetBuffer(m_Generator.LoadWorld(), sceneContext);
 
-	std::vector<XMFLOAT3> vertices{ m_Generator.GetVertices() };
+    // Create a collider for the world
+    LoadCollider();
+}
 
-	std::vector<PxU32> indices{};
-	indices.reserve(vertices.size());
-	for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
-	{
-		indices.emplace_back(i);
-	}
+void WorldComponent::LoadCollider() const
+{
+    // Get all the vertices of the world (these do not include water)
+    std::vector<XMFLOAT3> vertices{ m_Generator.GetVertices() };
 
-	auto& physX{ PxGetPhysics() };
-    auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 1.0f) };
+    // Create a list of indices (starts at 0 and ends at nrVertices)
+    std::vector<PxU32> indices{};
+    indices.reserve(vertices.size());
+    for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
+    {
+        indices.emplace_back(i);
+    }
+
+    auto& physX{ PxGetPhysics() };
+    auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
     // Create the cooking interface
     PxCooking* cooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
@@ -44,14 +54,14 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
     PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
     PxTriangleMesh* triangleMesh = physX.createTriangleMesh(readBuffer);
 
-    std::cout << triangleMesh << "\n";
-
+    // Create the geometry
     PxTriangleMeshGeometry geometry{ triangleMesh };
+
+    // Add the collider
+    m_pRb->AddCollider(geometry, *pPhysMat);
 
     // Cleanup
     cooking->release();
-
-    m_pRb->AddCollider(geometry, *pPhysMat);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)
