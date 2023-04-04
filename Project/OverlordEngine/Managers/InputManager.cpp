@@ -80,6 +80,8 @@ void InputManager::ForceMouseToCenter(bool force)
 {
 	m_ForceToCenter = force;
 
+	ShowCursor(!force);
+
 	if (force)
 	{
 		POINT mouseCenter{};
@@ -239,17 +241,27 @@ void InputManager::UpdateInputStates(bool overrideEnable)
 
 	//TODO: Refactor Mouse Updates
 	//Update Mouse Position
-	m_OldMousePosition = m_CurrMousePosition;
+	//m_OldMousePosition = m_CurrMousePosition;
+
+	RECT window;
+	GetWindowRect(m_GameContext.windowHandle, &window);
+
+	m_OldMousePosition = m_ForceToCenter ? POINT{ GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2 } : m_CurrMousePosition;
 	if (GetCursorPos(&m_CurrMousePosition))
 	{
-		if (m_EnableChanged || !ScreenToClient(m_GameContext.windowHandle, &m_CurrMousePosition))
+		if (m_EnableChanged)
 		{
+			// Convert client coordinates to screen coordinates
+			ClientToScreen(m_GameContext.windowHandle, &m_CurrMousePosition);
+
 			m_CurrMousePosition = m_OldMousePosition;
 		}
 	}
 	
 	m_MouseMovement.x = m_CurrMousePosition.x - m_OldMousePosition.x;
 	m_MouseMovement.y = m_CurrMousePosition.y - m_OldMousePosition.y;
+
+	if(m_ForceToCenter) SetCursorPos(m_OldMousePosition.x, m_OldMousePosition.y);
 
 	//Normalized
 	m_MouseMovementNormalized.x = m_MouseMovement.x > 0 ? 1.f : (m_MouseMovement.x < 0 ? -1.f : 0.f);

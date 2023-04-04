@@ -6,6 +6,9 @@
 
 void WorldScene::Initialize()
 {
+	m_SceneContext.pInput->ForceMouseToCenter(true);
+	m_SceneContext.settings.drawPhysXDebug = false;
+
 	auto& physX{ PxGetPhysics() };
 	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
