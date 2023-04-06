@@ -3,6 +3,7 @@
 
 #include "Components/WorldComponent.h"
 #include "Components/PlayerMovement.h"
+#include "Components/WireframeRenderer.h"
 
 void WorldScene::Initialize()
 {
@@ -19,6 +20,10 @@ void WorldScene::Initialize()
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
 	pCursor->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight / 2.0f, 0.0f);
+
+	GameObject* pSelection{ AddChild(new GameObject{}) };
+	pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
+	pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 }
 
 void WorldScene::CreateWorld()

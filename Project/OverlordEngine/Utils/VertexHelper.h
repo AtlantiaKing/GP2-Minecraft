@@ -1,6 +1,16 @@
 #pragma once
 //Resharper Disable All
 
+struct VertexPos
+{
+public:
+	VertexPos() = default;
+	VertexPos(XMFLOAT3 pos) :
+		Position(pos) {}
+
+	XMFLOAT3 Position = {};
+};
+
 struct VertexPosCol
 {
 public:

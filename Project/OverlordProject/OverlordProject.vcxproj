@@ -119,6 +119,7 @@
     <ClCompile Include="Components\WorldComponent.cpp" />
     <ClCompile Include="Misc\World\WorldRenderer.cpp" />
     <ClCompile Include="Misc\World\WorldGenerator.cpp" />
+    <ClCompile Include="Components\WireframeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OverlordEngine\OverlordEngine.vcxproj">
@@ -140,6 +141,7 @@
     <ClInclude Include="Components\WorldComponent.h" />
     <ClInclude Include="Misc\World\WorldRenderer.h" />
     <ClInclude Include="Misc\World\WorldGenerator.h" />
+    <ClInclude Include="Components\WireframeRenderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
