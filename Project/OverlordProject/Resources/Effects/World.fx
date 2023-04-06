@@ -11,12 +11,6 @@ SamplerState samLinear
     AddressV = Wrap;// or Mirror or Clamp or Border
 };
 
-RasterizerState Solid
-{
-	FillMode = SOLID;
-	CullMode = FRONT;
-};
-
 struct VS_INPUT
 {
 	float3 pos : POSITION;
