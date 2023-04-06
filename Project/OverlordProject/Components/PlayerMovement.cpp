@@ -21,28 +21,33 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 {
 	// Get mouse input
 	const auto& mouseInput{ sceneContext.pInput->GetMouseMovement() };
+	const auto& joyStickInput{ sceneContext.pInput->GetThumbstickPosition(false) };
+
+	constexpr float joystickMultiplier{ 20.0f };
+	const float horizontalInput{ mouseInput.x + joyStickInput.x * joystickMultiplier };
+	const float verticalInput{ mouseInput.y - joyStickInput.y * joystickMultiplier };
 
 	// Rotate the camera around the local X axis
 	TransformComponent* pCameraTransform{ sceneContext.pCamera->GetTransform() };
-	if (abs(mouseInput.y))
+	if (abs(verticalInput))
 	{
 		const XMFLOAT4 cameraRotationQuat{ pCameraTransform->GetRotation() };
 		XMVECTOR cameraRotation{ XMLoadFloat4(&cameraRotationQuat) };
 		
 		constexpr XMVECTOR rotationAxis{ 1.0f,0.0f,0.0f };
-		cameraRotation = XMQuaternionMultiply(cameraRotation, XMQuaternionRotationAxis(rotationAxis, m_RotateSpeed * mouseInput.y));
+		cameraRotation = XMQuaternionMultiply(cameraRotation, XMQuaternionRotationAxis(rotationAxis, m_RotateSpeed * verticalInput));
 
 		pCameraTransform->Rotate(cameraRotation);
 	}
 
 	// Rotate the player around the global Y axis
-	if (abs(mouseInput.x))
+	if (abs(horizontalInput))
 	{
 		const XMFLOAT4 playerRotationQuat{ m_pPlayer->GetRotation() };
 		PxQuat playerQuaternion{ playerRotationQuat.x, playerRotationQuat.y, playerRotationQuat.z, playerRotationQuat.w };
 		
 		const PxVec3 rotationAxis{ 0.0f,1.0f,0.0f }; // Save as member variable?
-		const PxQuat mouseRotation{ m_RotateSpeed * mouseInput.x, rotationAxis };
+		const PxQuat mouseRotation{ m_RotateSpeed * horizontalInput, rotationAxis };
 
 		playerQuaternion = playerQuaternion * mouseRotation;
 		const XMFLOAT4 newRotation{ playerQuaternion.x, playerQuaternion.y, playerQuaternion.z, playerQuaternion.w };
@@ -60,8 +65,10 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 	const bool hasRightInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'D') };
 	const bool hasLeftInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'Q') || sceneContext.pInput->IsKeyboardKey(InputState::down, 'A') };
 
-	const float verticalInput{ static_cast<float>(hasForwardInput - hasBackInput) };
-	const float horizontalInput{ static_cast<float>(hasRightInput - hasLeftInput) };
+	const auto& joyStickInput{ sceneContext.pInput->GetThumbstickPosition(true) };
+
+	const float verticalInput{ static_cast<float>(hasForwardInput - hasBackInput) + joyStickInput.y };
+	const float horizontalInput{ static_cast<float>(hasRightInput - hasLeftInput) + joyStickInput.x };
 
 	TransformComponent* pPlayerTransform{ m_pPlayer->GetTransform() };
 
@@ -71,7 +78,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 	const PxVec3 raycastOrigin{ position.x, position.y - pPlayerTransform->GetWorldScale().y, position.z};
 
 	PxRaycastBuffer hit;
-	if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' '))
+	if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
 	{
 		PxQueryFilterData filter{};
 		filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
@@ -81,7 +88,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 		}
 	}
 
-	bool isSprinting{ (verticalInput > 0.0f) && sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) };
+	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
 
 	// TODO: Remove hardcoded FOV numbers
 	const float gotoFOV{ isSprinting ? 90.2f : 90.0f };
