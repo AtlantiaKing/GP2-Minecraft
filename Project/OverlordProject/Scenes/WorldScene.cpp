@@ -52,8 +52,17 @@ void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
 	m_pPlayer->AddComponent(new PlayerMovement{ pPlayerRb });
 
 	// POSITION
-	m_pPlayer->GetTransform()->Translate(0.0f, 100.0f, 0.0f);
-
+	PxQueryFilterData filter{};
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+	PxRaycastBuffer hit;
+	if (m_PxScene->raycast(PxVec3{ 0.0f,256.0f,0.0f }, PxVec3{ 0.0f,-1.0f,0.0f }, 1000.0f, hit, PxHitFlag::eDEFAULT, filter))
+	{
+		if (hit.hasBlock)
+		{
+			const XMFLOAT3 spawnPosition{ hit.block.position.x, hit.block.position.y + playerGeometry.halfExtents.y, hit.block.position.z };
+			m_pPlayer->GetTransform()->Translate(spawnPosition);
+		}
+	}
 
 
 	// Create camera
