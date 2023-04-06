@@ -11,11 +11,15 @@ public:
 	WireframeRenderer& operator=(const WireframeRenderer& other) = delete;
 	WireframeRenderer& operator=(WireframeRenderer&& other) noexcept = delete;
 
+	void SetVisibility(bool visible) { m_CanRender = visible; }
+
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
+	bool m_CanRender{};
+
 	ID3DX11EffectMatrixVariable* m_pWvpVar{};
 
 	ID3D11Buffer* m_pVertexBuffer{};

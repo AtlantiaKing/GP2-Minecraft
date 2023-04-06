@@ -20,6 +20,10 @@ protected:
 	void OnGUI() override;
 
 private:
+	GameObject* m_pPlayer{};
+	GameObject* m_pSelection{};
+
+	PxScene* m_PxScene{};
 };
 
 

@@ -5,34 +5,34 @@ WireframeRenderer::WireframeRenderer(const SceneContext& sceneContext)
 {
 	std::vector<VertexPos> vertices =
 	{
-			{ { 0.5f, -0.5f, 0.5f } },
-			{ { 0.5f, 0.5f, 0.5f } },
-			{ { 0.5f, -0.5f, 0.5f } },
-			{ { -0.5f, -0.5f, 0.5f } },
+		{ { 0.501f, -0.501f, 0.501f } },
+		{ { 0.501f, 0.501f, 0.501f } },
+		{ { 0.501f, -0.501f, 0.501f } },
+		{ { -0.501f, -0.501f, 0.501f } },
 
-			{ { -0.5f, -0.5f, -0.5f } },
-			{ { 0.5f, -0.5f, -0.5f } },
-			{ { -0.5f, -0.5f, -0.5f } },
-			{ { -0.5f, 0.5f, -0.5f } },
+		{ { -0.501f, -0.501f, -0.501f } },
+		{ { 0.501f, -0.501f, -0.501f } },
+		{ { -0.501f, -0.501f, -0.501f } },
+		{ { -0.501f, 0.501f, -0.501f } },
 
-			{ { 0.5f, -0.5f, -0.5f } },
-			{ { 0.5f, -0.5f, 0.5f } },
-			{ { 0.5f, -0.5f, -0.5f } },
-			{ { 0.5f, 0.5f, -0.5f } },
+		{ { 0.501f, -0.501f, -0.501f } },
+		{ { 0.501f, -0.501f, 0.501f } },
+		{ { 0.501f, -0.501f, -0.501f } },
+		{ { 0.501f, 0.501f, -0.501f } },
 
-			{ { -0.5f, -0.5f, 0.5f } },
-			{ { -0.5f, -0.5f, -0.5f } },
-			{ { -0.5f, -0.5f, 0.5f } },
-			{ { -0.5f, 0.5f, 0.5f } },
+		{ { -0.501f, -0.501f, 0.501f } },
+		{ { -0.501f, -0.501f, -0.501f } },
+		{ { -0.501f, -0.501f, 0.501f } },
+		{ { -0.501f, 0.501f, 0.501f } },
 
-			{ { -0.5f, 0.5f, -0.5f } },
-			{ { 0.5f, 0.5f, -0.5f } },
-			{ { -0.5f, 0.5f, -0.5f } },
-			{ { -0.5f, 0.5f, 0.5f } },
-			{ { 0.5f, 0.5f, 0.5f } },
-			{ { 0.5f, 0.5f, -0.5f } },
-			{ { 0.5f, 0.5f, 0.5f } },
-			{ { -0.5f, 0.5f, 0.5f } },
+		{ { -0.501f, 0.501f, -0.501f } },
+		{ { 0.501f, 0.501f, -0.501f } },
+		{ { -0.501f, 0.501f, -0.501f } },
+		{ { -0.501f, 0.501f, 0.501f } },
+		{ { 0.501f, 0.501f, 0.501f } },
+		{ { 0.501f, 0.501f, -0.501f } },
+		{ { 0.501f, 0.501f, 0.501f } },
+		{ { -0.501f, 0.501f, 0.501f } }
 	};
 
 	if (vertices.size() == 0) return;
@@ -72,6 +72,8 @@ void WireframeRenderer::Initialize(const SceneContext& /*sceneContext*/)
 
 void WireframeRenderer::Draw(const SceneContext& sceneContext)
 {
+	if (!m_CanRender) return;
+
 	const D3D11Context& deviceContext{ sceneContext.d3dContext };
 
 	const XMVECTOR worldMatrix{ XMLoadFloat3(&GetTransform()->GetWorldPosition()) };

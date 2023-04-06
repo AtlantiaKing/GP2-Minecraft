@@ -13,6 +13,10 @@ void WorldScene::Initialize()
 	auto& physX{ PxGetPhysics() };
 	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
+	m_pSelection = AddChild(new GameObject{});
+	m_pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
+	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
+
 	CreateWorld();
 
 	CreatePlayer(pPhysMat);
@@ -20,10 +24,6 @@ void WorldScene::Initialize()
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
 	pCursor->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight / 2.0f, 0.0f);
-
-	GameObject* pSelection{ AddChild(new GameObject{}) };
-	pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
-	pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 }
 
 void WorldScene::CreateWorld()
@@ -35,29 +35,29 @@ void WorldScene::CreateWorld()
 void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
 {
 	// Create player
-	GameObject* pPlayer{ AddChild(new GameObject{}) };
+	m_pPlayer = AddChild(new GameObject{});
 
 	// RIGIDBODY
-	RigidBodyComponent* pPlayerRb{ pPlayer->AddComponent(new RigidBodyComponent{}) };
+	RigidBodyComponent* pPlayerRb{ m_pPlayer->AddComponent(new RigidBodyComponent{}) };
 	// Add collider
 	const PxBoxGeometry playerGeometry{ 0.3f, 1.0f, 0.25f };
 	pPlayerRb->AddCollider(playerGeometry, *pPhysMat);
 	// Lock all rotations
 	pPlayerRb->SetConstraint(RigidBodyConstraint::RotX | RigidBodyConstraint::RotY | RigidBodyConstraint::RotZ, false);
 	// Double gravity
-	PxScene* physScene{ pPlayerRb->GetPxRigidActor()->getScene() };
-	physScene->setGravity(physScene->getGravity() * 2);
+	m_PxScene = pPlayerRb->GetPxRigidActor()->getScene();
+	m_PxScene->setGravity(m_PxScene->getGravity() * 2);
 
 	// MOVEMENT
-	pPlayer->AddComponent(new PlayerMovement{ pPlayerRb });
+	m_pPlayer->AddComponent(new PlayerMovement{ pPlayerRb });
 
 	// POSITION
-	pPlayer->GetTransform()->Translate(0.0f, 100.0f, 0.0f);
+	m_pPlayer->GetTransform()->Translate(0.0f, 100.0f, 0.0f);
 
 
 
 	// Create camera
-	GameObject* pCameraGO{ pPlayer->AddChild(new GameObject{}) };
+	GameObject* pCameraGO{ m_pPlayer->AddChild(new GameObject{}) };
 
 	// CAMERA
 	CameraComponent* pCamera{ pCameraGO->AddComponent(new CameraComponent{}) };
@@ -70,6 +70,41 @@ void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
 
 void WorldScene::Update()
 {
+	TransformComponent* pCamera{ m_SceneContext.pCamera->GetTransform() };
+	constexpr float playerBlockRadius{ 5.0f };
+
+	const XMFLOAT3 cameraPosition{ pCamera->GetWorldPosition() };
+	const PxVec3 raycastOrigin{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
+	const XMFLOAT3 cameraForward{ pCamera->GetForward() };
+	const PxVec3 raycastDirection{ cameraForward.x, cameraForward.y, cameraForward.z };
+
+	PxQueryFilterData filter{};
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+
+	PxRaycastBuffer hit;
+	if (m_PxScene->raycast(raycastOrigin, raycastDirection, playerBlockRadius, hit, PxHitFlag::eDEFAULT, filter))
+	{
+		if (!hit.hasBlock)
+		{
+			m_pSelection->GetComponent<WireframeRenderer>()->SetVisibility(false);
+			return;
+		}
+
+		m_pSelection->GetComponent<WireframeRenderer>()->SetVisibility(true);
+
+		const PxVec3 hitPos{ hit.block.position + raycastDirection * 0.01f };
+		const XMFLOAT3 blockPos
+		{
+			(hitPos.x + 0.5f) > 0.0f ? floor(hitPos.x + 0.5f) : -(floor(abs(hitPos.x + 0.5f)) + 1),
+			(hitPos.y + 0.5f) > 0.0f ? floor(hitPos.y + 0.5f) : -(floor(abs(hitPos.y + 0.5f)) + 1),
+			(hitPos.z + 0.5f) > 0.0f ? floor(hitPos.z + 0.5f) : -(floor(abs(hitPos.z + 0.5f)) + 1)
+		};
+		m_pSelection->GetTransform()->Translate(blockPos);
+	}
+	else
+	{
+		m_pSelection->GetComponent<WireframeRenderer>()->SetVisibility(false);
+	}
 }
 
 void WorldScene::Draw()
