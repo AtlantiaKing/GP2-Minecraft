@@ -4,7 +4,7 @@ class WireframeRenderer final : public BaseComponent
 {
 public:
 	WireframeRenderer(const SceneContext& sceneContext);
-	virtual ~WireframeRenderer() = default;
+	virtual ~WireframeRenderer();
 
 	WireframeRenderer(const WireframeRenderer& other) = delete;
 	WireframeRenderer(WireframeRenderer&& other) noexcept = delete;

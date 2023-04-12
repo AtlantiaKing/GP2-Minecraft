@@ -19,6 +19,8 @@ void WorldRenderer::SetBuffer(const std::vector<VertexPosNormTex>& vertices, con
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
 
+	if (m_pVertexBuffer) SafeRelease(m_pVertexBuffer);
+
 	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, nullptr, &m_pVertexBuffer);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;

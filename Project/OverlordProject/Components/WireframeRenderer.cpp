@@ -66,6 +66,12 @@ WireframeRenderer::WireframeRenderer(const SceneContext& sceneContext)
 		m_pWvpVar = m_pEffect->GetVariableBySemantic("WorldViewProjection")->AsMatrix();
 }
 
+WireframeRenderer::~WireframeRenderer()
+{
+	SafeRelease(m_pInputLayout);
+	SafeRelease(m_pVertexBuffer);
+}
+
 void WireframeRenderer::Initialize(const SceneContext& /*sceneContext*/)
 {
 }
