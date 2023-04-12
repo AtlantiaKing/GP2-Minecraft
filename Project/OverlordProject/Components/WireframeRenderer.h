@@ -12,6 +12,7 @@ public:
 	WireframeRenderer& operator=(WireframeRenderer&& other) noexcept = delete;
 
 	void SetVisibility(bool visible) { m_CanRender = visible; }
+	bool IsVisible() const { return m_CanRender; }
 
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;

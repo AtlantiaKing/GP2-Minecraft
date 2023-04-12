@@ -18,11 +18,14 @@ public:
 	WorldGenerator& operator=(WorldGenerator&& other) noexcept = delete;
 
 	const std::vector<VertexPosNormTex>& LoadWorld();
+	const std::vector<VertexPosNormTex>& RemoveBlock(const XMFLOAT3& position);
+	void CreateVertices();
+
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
-	std::vector<XMFLOAT3> GetVertices() const;
+	std::vector<XMFLOAT3> GetPositions() const;
 	int GetNrWaterVertices() const { return m_NrWaterVertices; }
 private:
 	struct Chunk
@@ -46,7 +49,7 @@ private:
 	Perlin m_UnderSeaInversedPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 10 };
+	int m_RenderDistance{ 1 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };

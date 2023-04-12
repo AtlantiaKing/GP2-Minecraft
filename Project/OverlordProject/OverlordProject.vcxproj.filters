@@ -16,6 +16,7 @@
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
     <ClCompile Include="Components\WireframeRenderer.cpp" />
+    <ClCompile Include="Components\BlockInteractionComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -33,5 +34,6 @@
     <ClInclude Include="Misc\World\TileAtlas.h" />
     <ClInclude Include="Components\PlayerMovement.h" />
     <ClInclude Include="Components\WireframeRenderer.h" />
+    <ClInclude Include="Components\BlockInteractionComponent.h" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 #pragma once
 
+class WorldComponent;
+
 class WorldScene final : public GameScene
 {
 public:
@@ -22,6 +24,7 @@ protected:
 private:
 	GameObject* m_pPlayer{};
 	GameObject* m_pSelection{};
+	WorldComponent* m_pWorld{};
 
 	PxScene* m_PxScene{};
 };

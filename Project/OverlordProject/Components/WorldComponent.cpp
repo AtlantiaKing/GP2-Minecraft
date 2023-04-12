@@ -6,6 +6,15 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 	m_Renderer.LoadEffect(sceneContext);
 }
 
+void WorldComponent::DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext)
+{
+    // Load the world and set up the vertex buffer
+    m_Renderer.SetBuffer(m_Generator.RemoveBlock(position), sceneContext);
+
+    // Create a collider for the world
+    LoadCollider();
+}
+
 void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
     // Add a rigidbody component to the world gameobject
@@ -22,7 +31,7 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
 void WorldComponent::LoadCollider() const
 {
     // Get all the vertices of the world (these do not include water)
-    std::vector<XMFLOAT3> vertices{ m_Generator.GetVertices() };
+    std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions() };
 
     // Create a list of indices (starts at 0 and ends at nrVertices)
     std::vector<PxU32> indices{};
@@ -57,6 +66,9 @@ void WorldComponent::LoadCollider() const
 
     // Create the geometry
     PxTriangleMeshGeometry geometry{ triangleMesh };
+
+    // Remove any previous colliders
+    m_pRb->RemoveColliders();
 
     // Add the collider
     m_pRb->AddCollider(geometry, *pPhysMat);

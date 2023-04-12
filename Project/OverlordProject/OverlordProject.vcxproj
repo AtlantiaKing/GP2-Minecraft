@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Components\BlockInteractionComponent.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
     <ClCompile Include="Utils\Perlin.cpp" />
@@ -127,6 +128,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\WorldData.h" />
     <ClInclude Include="Misc\World\TileAtlas.h" />
     <ClInclude Include="Components\PlayerMovement.h" />

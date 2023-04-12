@@ -16,6 +16,7 @@ public:
 	WorldComponent& operator=(const WorldComponent& other) = delete;
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
+	void DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext);
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Draw(const SceneContext& sceneContext) override;

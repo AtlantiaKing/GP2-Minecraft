@@ -150,6 +150,43 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 		}
 	}
 
+	CreateVertices();
+
+	return m_Vertices;
+}
+
+const std::vector<VertexPosNormTex>& WorldGenerator::RemoveBlock(const XMFLOAT3& position)
+{
+	std::cout << "Block removed at (" << position.x << ", " << position.y << ", " << position.z << ")\n";
+
+	const XMINT2 chunkPos
+	{
+		position.x < 0 ? (static_cast<int>(position.x) + 1) / m_ChunkSize - 1 : static_cast<int>(position.x) / m_ChunkSize,
+		position.z < 0 ? (static_cast<int>(position.z) + 1) / m_ChunkSize - 1 : static_cast<int>(position.z) / m_ChunkSize
+	};
+
+	auto it{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
+		{
+			return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+		}) };
+	if (it == m_Chunks.end()) return m_Vertices;
+
+	const XMINT3 lookUpPos{ static_cast<int>(position.x) - chunkPos.x * m_ChunkSize, static_cast<int>(position.y), static_cast<int>(position.z) - chunkPos.y * m_ChunkSize };
+
+	if (lookUpPos.x < 0 || lookUpPos.x >= m_ChunkSize
+		|| lookUpPos.z < 0 || lookUpPos.z >= m_ChunkSize
+		|| lookUpPos.y < 0 || lookUpPos.y >= m_WorldHeight) return m_Vertices;
+
+	const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
+	if (it->pBlocks[blockIdx]) it->pBlocks[blockIdx] = nullptr;
+
+	CreateVertices();
+
+	return m_Vertices;
+}
+
+void WorldGenerator::CreateVertices()
+{
 	m_Vertices.clear();
 	std::vector<VertexPosNormTex> waterVertices{};
 
@@ -221,11 +258,9 @@ const std::vector<VertexPosNormTex>& WorldGenerator::LoadWorld()
 	{
 		m_Vertices.emplace_back(v);
 	}
-
-	return m_Vertices;
 }
 
-std::vector<XMFLOAT3> WorldGenerator::GetVertices() const
+std::vector<XMFLOAT3> WorldGenerator::GetPositions() const
 {
 	std::vector<XMFLOAT3> vertices{};
 	vertices.reserve(m_Vertices.size());

@@ -4,6 +4,7 @@
 #include "Components/WorldComponent.h"
 #include "Components/PlayerMovement.h"
 #include "Components/WireframeRenderer.h"
+#include "Components/BlockInteractionComponent.h"
 
 void WorldScene::Initialize()
 {
@@ -29,7 +30,7 @@ void WorldScene::Initialize()
 void WorldScene::CreateWorld()
 {
 	GameObject* pWorld{ AddChild(new GameObject{}) };
-	pWorld->AddComponent(new WorldComponent{ m_SceneContext });
+	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
 }
 
 void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
@@ -63,6 +64,9 @@ void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
 			m_pPlayer->GetTransform()->Translate(spawnPosition);
 		}
 	}
+
+	// INTERACTION
+	m_pPlayer->AddComponent(new BlockInteractionComponent{ m_pWorld, m_pSelection->GetComponent<WireframeRenderer>() });
 
 
 	// Create camera
