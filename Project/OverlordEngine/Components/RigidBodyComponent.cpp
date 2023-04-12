@@ -103,7 +103,7 @@ void RigidBodyComponent::RemoveCollider(const ColliderInfo& colliderInfo)
 
 	PxShape* pShape = colliderInfo.GetShape();
 	m_pActor->detachShape(*pShape);
-	pShape->release();
+	//pShape->release();
 	m_Colliders.erase(it);
 }
 

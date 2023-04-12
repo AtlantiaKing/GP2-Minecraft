@@ -3,13 +3,15 @@
 #include <Misc/World/WorldGenerator.h>
 #include <Misc/World/WorldRenderer.h>
 
+#include "Misc/World/Chunk.h"
+
 class RigidBodyComponent;
 
 class WorldComponent final : public BaseComponent
 {
 public:
 	WorldComponent(const SceneContext& sceneContext);
-	virtual ~WorldComponent() = default;
+	virtual ~WorldComponent();
 
 	WorldComponent(const WorldComponent& other) = delete;
 	WorldComponent(WorldComponent&& other) noexcept = delete;
@@ -22,7 +24,10 @@ protected:
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
-	void LoadCollider() const;
+	void LoadColliders();
+	void ReloadWorld(const SceneContext& sceneContext);
+
+	std::vector<Chunk> m_Chunks{};
 
 	WorldGenerator m_Generator{};
 	WorldRenderer m_Renderer{};

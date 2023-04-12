@@ -1,11 +1,19 @@
 #include "stdafx.h"
 #include "WorldRenderer.h"
 
-void WorldRenderer::SetBuffer(const std::vector<VertexPosNormTex>& vertices, const SceneContext& sceneContext)
+void WorldRenderer::SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext)
 {
-	if (vertices.size() == 0) return;
+	for (Chunk& chunk : chunks)
+	{
+		if(chunk.verticesChanged) SetBuffer(chunk, sceneContext);
+	}
+}
 
-	m_NrVertices = static_cast<int>(vertices.size());
+void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
+{
+	const auto& vertices{ chunk.vertices };
+
+	if (vertices.size() == 0) return;
 
 	auto& d3d11 = sceneContext.d3dContext;
 	auto size = vertices.size();
@@ -19,20 +27,19 @@ void WorldRenderer::SetBuffer(const std::vector<VertexPosNormTex>& vertices, con
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
 
-	if (m_pVertexBuffer) SafeRelease(m_pVertexBuffer);
+	if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
 
-	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, nullptr, &m_pVertexBuffer);
+	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, nullptr, &chunk.pVertexBuffer);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	d3d11.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+	d3d11.pDeviceContext->Map(chunk.pVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
 	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormTex) * size);
-	d3d11.pDeviceContext->Unmap(m_pVertexBuffer, 0);
+	d3d11.pDeviceContext->Unmap(chunk.pVertexBuffer, 0);
 }
 
 WorldRenderer::~WorldRenderer()
 {
 	SafeRelease(m_pInputLayout);
-	SafeRelease(m_pVertexBuffer);
 }
 
 void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
@@ -53,7 +60,7 @@ void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 	m_pDiffuseMapVariable->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.png")->GetShaderResourceView());
 }
 
-void WorldRenderer::Draw(const SceneContext& sceneContext)
+void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneContext)
 {
 	const D3D11Context& deviceContext{ sceneContext.d3dContext };
 
@@ -62,21 +69,52 @@ void WorldRenderer::Draw(const SceneContext& sceneContext)
 	const auto viewProjection = XMLoadFloat4x4(&sceneContext.pCamera->GetViewProjection());
 
 	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
-	auto wvp = world * viewProjection;
-	m_pWvpVar->SetMatrix(reinterpret_cast<float*>(&wvp));
+	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
 
 	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	constexpr UINT offset = 0;
 	constexpr UINT stride = sizeof(VertexPosNormTex);
-	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+
+	for (const Chunk& chunk : chunks)
+	{
+		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
+
+		D3DX11_TECHNIQUE_DESC techDesc{};
+		m_pTechnique->GetDesc(&techDesc);
+		for (UINT p = 0; p < techDesc.Passes; ++p)
+		{
+			m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertices.size()), 0);
+		}
+	}
+}
+
+void WorldRenderer::Draw(Chunk& chunk, const SceneContext& sceneContext)
+{
+	const D3D11Context& deviceContext{ sceneContext.d3dContext };
+
+	constexpr XMFLOAT4X4 worldMatrix{ 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+	XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
+	const auto viewProjection = XMLoadFloat4x4(&sceneContext.pCamera->GetViewProjection());
+
+	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
+	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
+
+	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
+
+	constexpr UINT offset = 0;
+	constexpr UINT stride = sizeof(VertexPosNormTex);
+
+	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
 
 	D3DX11_TECHNIQUE_DESC techDesc{};
 	m_pTechnique->GetDesc(&techDesc);
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
-		deviceContext.pDeviceContext->Draw(static_cast<UINT>(m_NrVertices), 0);
+		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertices.size()), 0);
 	}
 }

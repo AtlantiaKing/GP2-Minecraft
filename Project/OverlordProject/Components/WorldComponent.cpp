@@ -6,13 +6,24 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 	m_Renderer.LoadEffect(sceneContext);
 }
 
+WorldComponent::~WorldComponent()
+{
+    for (const Chunk& chunk : m_Chunks)
+    {
+        for (Block* pBlock : chunk.pBlocks)
+        {
+            delete pBlock;
+        }
+    }
+}
+
 void WorldComponent::DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext)
 {
-    // Load the world and set up the vertex buffer
-    m_Renderer.SetBuffer(m_Generator.RemoveBlock(position), sceneContext);
+    // Remove the block from the right chunk
+    m_Generator.RemoveBlock(m_Chunks, position);
 
-    // Create a collider for the world
-    LoadCollider();
+    // Reload buffers and colliders
+    ReloadWorld(sceneContext);
 }
 
 void WorldComponent::Initialize(const SceneContext& sceneContext)
@@ -21,63 +32,96 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
     m_pRb = GetGameObject()->AddComponent(new RigidBodyComponent{true});
     m_pRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::World);
 
-    // Load the world and set up the vertex buffer
-	m_Renderer.SetBuffer(m_Generator.LoadWorld(), sceneContext);
+    // Load the chunks
+    m_Generator.LoadWorld(m_Chunks);
 
-    // Create a collider for the world
-    LoadCollider();
+    // Reload buffers and colliders
+    ReloadWorld(sceneContext);
+
+    m_Renderer.SetBuffer(m_Generator.GetWater(), sceneContext);
 }
 
-void WorldComponent::LoadCollider() const
+void WorldComponent::LoadColliders()
 {
-    // Get all the vertices of the world (these do not include water)
-    std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions() };
-
-    // Create a list of indices (starts at 0 and ends at nrVertices)
-    std::vector<PxU32> indices{};
-    indices.reserve(vertices.size());
-    for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
-    {
-        indices.emplace_back(i);
-    }
-
     auto& physX{ PxGetPhysics() };
     auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
     // Create the cooking interface
     PxCooking* cooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
 
-    // Create the triangle mesh desc
-    PxTriangleMeshDesc meshDesc;
-    meshDesc.points.count = static_cast<PxU32>(vertices.size());
-    meshDesc.points.stride = sizeof(PxVec3);
-    meshDesc.points.data = vertices.data();
-    meshDesc.triangles.count = static_cast<PxU32>(vertices.size()) / 3;
-    meshDesc.triangles.stride = 3 * sizeof(PxU32);
-    meshDesc.triangles.data = indices.data();
+    for (Chunk& chunk : m_Chunks)
+    {
+        if (!chunk.verticesChanged) continue;
 
-    // Cook the mesh
-    PxDefaultMemoryOutputStream writeBuffer;
-    cooking->cookTriangleMesh(meshDesc, writeBuffer);
+        // Get all the vertices of the world (these do not include water)
+        std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions(chunk) };
 
-    // Create the triangle mesh
-    PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-    PxTriangleMesh* triangleMesh = physX.createTriangleMesh(readBuffer);
+        // Create a list of indices (starts at 0 and ends at nrVertices)
+        std::vector<PxU32> indices{};
+        indices.reserve(vertices.size());
+        for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
+        {
+            indices.emplace_back(i);
+        }
 
-    // Create the geometry
-    PxTriangleMeshGeometry geometry{ triangleMesh };
+        // Create the triangle mesh desc
+        PxTriangleMeshDesc meshDesc;
+        meshDesc.points.count = static_cast<PxU32>(vertices.size());
+        meshDesc.points.stride = sizeof(PxVec3);
+        meshDesc.points.data = vertices.data();
+        meshDesc.triangles.count = static_cast<PxU32>(vertices.size()) / 3;
+        meshDesc.triangles.stride = 3 * sizeof(PxU32);
+        meshDesc.triangles.data = indices.data();
 
-    // Remove any previous colliders
-    m_pRb->RemoveColliders();
+        // Cook the mesh
+        PxDefaultMemoryOutputStream writeBuffer;
+        cooking->cookTriangleMesh(meshDesc, writeBuffer);
 
-    // Add the collider
-    m_pRb->AddCollider(geometry, *pPhysMat);
+        // Create the triangle mesh
+        PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+        PxTriangleMesh* triangleMesh = physX.createTriangleMesh(readBuffer);
+
+        // Create the geometry
+        PxTriangleMeshGeometry geometry{ triangleMesh };
+
+        // Remove the previous collider if it exists
+        if (chunk.colliderIdx >= 0)
+        {
+            // Remove the collider
+            m_pRb->RemoveCollider(m_pRb->GetCollider(chunk.colliderIdx));
+
+            // Decrement the colliderIdx of every chunk if its higher then the current colliderIdx
+            for (Chunk& otherChunk : m_Chunks)
+            {
+                if (otherChunk.colliderIdx > chunk.colliderIdx) --otherChunk.colliderIdx;
+            }
+        }
+
+        // Add the collider
+        chunk.colliderIdx = m_pRb->AddCollider(geometry, *pPhysMat);
+    }
 
     // Cleanup
     cooking->release();
 }
 
+void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
+{
+    // Set up the vertex buffers
+    m_Renderer.SetBuffers(m_Chunks, sceneContext);
+
+    // Create a collider for the world
+    LoadColliders();
+
+    // Reset the vertices changed flags
+    for (Chunk& chunk : m_Chunks)
+    {
+        chunk.verticesChanged = false;
+    }
+}
+
 void WorldComponent::Draw(const SceneContext& sceneContext)
 {
-	m_Renderer.Draw(sceneContext);
+    m_Renderer.Draw(m_Chunks, sceneContext);
+    m_Renderer.Draw(m_Generator.GetWater(), sceneContext);
 }

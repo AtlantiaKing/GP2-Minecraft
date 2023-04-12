@@ -35,5 +35,6 @@
     <ClInclude Include="Components\PlayerMovement.h" />
     <ClInclude Include="Components\WireframeRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
+    <ClInclude Include="Misc\World\Chunk.h" />
   </ItemGroup>
 </Project>
