@@ -51,6 +51,9 @@ void WorldComponent::LoadColliders()
 
     for (Chunk& chunk : m_Chunks)
     {
+        // TODO: Replace with 3x3 chunks around the player
+        if (chunk.position.x < -1 || chunk.position.x > 1 || chunk.position.y < -1 || chunk.position.y > 1) continue;
+
         if (!chunk.verticesChanged) continue;
 
         // Get all the vertices of the world (these do not include water)
