@@ -18,6 +18,6 @@ struct Chunk
 	ID3D11Buffer* pVertexBuffer{};
 	XMINT2 position;
 	int colliderIdx{ -1 };
-	bool verticesChanged{};
+	bool verticesChanged{ true };
 	bool loadedWater{};
 };

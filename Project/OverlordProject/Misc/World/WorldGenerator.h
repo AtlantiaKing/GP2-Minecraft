@@ -29,6 +29,7 @@ public:
 
 	std::vector<XMFLOAT3> GetPositions(const Chunk& chunk) const;
 	Chunk& GetWater() { return m_Water; }
+	int GetChunkSize() const { return m_ChunkSize; }
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 

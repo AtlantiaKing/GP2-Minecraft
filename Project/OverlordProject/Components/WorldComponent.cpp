@@ -26,6 +26,24 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position, const SceneContext& 
     ReloadWorld(sceneContext);
 }
 
+void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
+{
+    const int chunkSize{ m_Generator.GetChunkSize() };
+
+    const XMINT2 chunkPos
+    {
+        playerPosition.x < 0 ? static_cast<int>(playerPosition.x + 1) / chunkSize - 1 : static_cast<int>(playerPosition.x) / chunkSize,
+        playerPosition.z < 0 ? static_cast<int>(playerPosition.z + 1) / chunkSize - 1 : static_cast<int>(playerPosition.z) / chunkSize
+    };
+
+    if (chunkPos.x != m_ChunkCenter.x || chunkPos.y != m_ChunkCenter.y)
+    {
+        m_ChunkCenter = chunkPos;
+
+        LoadColliders();
+    }
+}
+
 void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
     // Add a rigidbody component to the world gameobject
@@ -51,61 +69,88 @@ void WorldComponent::LoadColliders()
 
     for (Chunk& chunk : m_Chunks)
     {
-        // TODO: Replace with 3x3 chunks around the player
-        if (chunk.position.x < -1 || chunk.position.x > 1 || chunk.position.y < -1 || chunk.position.y > 1) continue;
+        // Remove any chunks that are outside the range
+        if (chunk.position.x < (m_ChunkCenter.x - 1) || chunk.position.x > (m_ChunkCenter.x + 1) || chunk.position.y < (m_ChunkCenter.y - 1) || chunk.position.y > (m_ChunkCenter.y + 1))
+        {
+            // Remove the previous collider if it exists
+            if (chunk.colliderIdx >= 0)
+            {
+                // Remove the collider
+                m_pRb->RemoveCollider(m_pRb->GetCollider(chunk.colliderIdx));
+
+                // Decrement the colliderIdx of every chunk if its higher then the current colliderIdx
+                for (Chunk& otherChunk : m_Chunks)
+                {
+                    if (otherChunk.colliderIdx > chunk.colliderIdx) --otherChunk.colliderIdx;
+                }
+
+                // Reset the chunk collider data
+                chunk.colliderIdx = -1;
+                chunk.verticesChanged = true;
+            }
+
+            continue;
+        }
 
         if (!chunk.verticesChanged) continue;
 
-        // Get all the vertices of the world (these do not include water)
-        std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions(chunk) };
-
-        // Create a list of indices (starts at 0 and ends at nrVertices)
-        std::vector<PxU32> indices{};
-        indices.reserve(vertices.size());
-        for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
-        {
-            indices.emplace_back(i);
-        }
-
-        // Create the triangle mesh desc
-        PxTriangleMeshDesc meshDesc;
-        meshDesc.points.count = static_cast<PxU32>(vertices.size());
-        meshDesc.points.stride = sizeof(PxVec3);
-        meshDesc.points.data = vertices.data();
-        meshDesc.triangles.count = static_cast<PxU32>(vertices.size()) / 3;
-        meshDesc.triangles.stride = 3 * sizeof(PxU32);
-        meshDesc.triangles.data = indices.data();
-
-        // Cook the mesh
-        PxDefaultMemoryOutputStream writeBuffer;
-        cooking->cookTriangleMesh(meshDesc, writeBuffer);
-
-        // Create the triangle mesh
-        PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-        PxTriangleMesh* triangleMesh = physX.createTriangleMesh(readBuffer);
-
-        // Create the geometry
-        PxTriangleMeshGeometry geometry{ triangleMesh };
-
-        // Remove the previous collider if it exists
-        if (chunk.colliderIdx >= 0)
-        {
-            // Remove the collider
-            m_pRb->RemoveCollider(m_pRb->GetCollider(chunk.colliderIdx));
-
-            // Decrement the colliderIdx of every chunk if its higher then the current colliderIdx
-            for (Chunk& otherChunk : m_Chunks)
-            {
-                if (otherChunk.colliderIdx > chunk.colliderIdx) --otherChunk.colliderIdx;
-            }
-        }
-
-        // Add the collider
-        chunk.colliderIdx = m_pRb->AddCollider(geometry, *pPhysMat);
+        LoadChunkCollider(chunk, cooking, physX, pPhysMat);
     }
 
     // Cleanup
     cooking->release();
+}
+
+void WorldComponent::LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat)
+{
+    // Get all the vertices of the world (these do not include water)
+    std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions(chunk) };
+
+    // Create a list of indices (starts at 0 and ends at nrVertices)
+    std::vector<PxU32> indices{};
+    indices.reserve(vertices.size());
+    for (PxU32 i{}; i < static_cast<PxU32>(vertices.size()); ++i)
+    {
+        indices.emplace_back(i);
+    }
+
+    // Create the triangle mesh desc
+    PxTriangleMeshDesc meshDesc;
+    meshDesc.points.count = static_cast<PxU32>(vertices.size());
+    meshDesc.points.stride = sizeof(PxVec3);
+    meshDesc.points.data = vertices.data();
+    meshDesc.triangles.count = static_cast<PxU32>(vertices.size()) / 3;
+    meshDesc.triangles.stride = 3 * sizeof(PxU32);
+    meshDesc.triangles.data = indices.data();
+
+    // Cook the mesh
+    PxDefaultMemoryOutputStream writeBuffer;
+    cooking->cookTriangleMesh(meshDesc, writeBuffer);
+
+    // Create the triangle mesh
+    PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+    PxTriangleMesh* triangleMesh = physX.createTriangleMesh(readBuffer);
+
+    // Create the geometry
+    PxTriangleMeshGeometry geometry{ triangleMesh };
+
+    // Remove the previous collider if it exists
+    if (chunk.colliderIdx >= 0)
+    {
+        // Remove the collider
+        m_pRb->RemoveCollider(m_pRb->GetCollider(chunk.colliderIdx));
+
+        // Decrement the colliderIdx of every chunk if its higher then the current colliderIdx
+        for (Chunk& otherChunk : m_Chunks)
+        {
+            if (otherChunk.colliderIdx > chunk.colliderIdx) --otherChunk.colliderIdx;
+        }
+    }
+
+    // Add the collider
+    chunk.colliderIdx = m_pRb->AddCollider(geometry, *pPhysMat);
+
+    chunk.verticesChanged = false;
 }
 
 void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
@@ -115,12 +160,6 @@ void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
 
     // Create a collider for the world
     LoadColliders();
-
-    // Reset the vertices changed flags
-    for (Chunk& chunk : m_Chunks)
-    {
-        chunk.verticesChanged = false;
-    }
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)

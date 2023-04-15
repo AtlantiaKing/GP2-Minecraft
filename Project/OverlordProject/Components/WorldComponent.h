@@ -19,12 +19,14 @@ public:
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
 	void DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext);
+	void UpdateColliders(const XMFLOAT3& playerPosition);
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
 	void LoadColliders();
+	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 	void ReloadWorld(const SceneContext& sceneContext);
 
 	std::vector<Chunk> m_Chunks{};
@@ -33,5 +35,7 @@ private:
 	WorldRenderer m_Renderer{};
 
 	RigidBodyComponent* m_pRb{};
+
+	XMINT2 m_ChunkCenter{};
 };
 

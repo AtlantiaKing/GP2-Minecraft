@@ -118,6 +118,9 @@ void WorldScene::Update()
 	{
 		m_pSelection->GetComponent<WireframeRenderer>()->SetVisibility(false);
 	}
+
+
+	m_pWorld->UpdateColliders(m_pPlayer->GetTransform()->GetWorldPosition());
 }
 
 void WorldScene::Draw()
