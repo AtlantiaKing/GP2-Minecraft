@@ -68,7 +68,7 @@ WorldComponent::~WorldComponent()
 
 void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
 {
-    XMFLOAT3 localHitPos{ hitPos.x - hitBlockPosition.x, hitPos.y - hitBlockPosition.y, hitPos.z - hitBlockPosition.z };
+    const XMFLOAT3 localHitPos{ hitPos.x - hitBlockPosition.x, hitPos.y - hitBlockPosition.y, hitPos.z - hitBlockPosition.z };
 
     constexpr float blockFaceDistance{ 0.49f };
     if (localHitPos.x >= blockFaceDistance) hitBlockPosition.x += 1.0f;
