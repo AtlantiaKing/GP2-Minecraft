@@ -147,8 +147,6 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 
 void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position)
 {
-	std::cout << "Block removed at (" << position.x << ", " << position.y << ", " << position.z << ")\n";
-
 	const XMINT2 chunkPos
 	{
 		position.x < 0 ? (static_cast<int>(position.x) + 1) / m_ChunkSize - 1 : static_cast<int>(position.x) / m_ChunkSize,

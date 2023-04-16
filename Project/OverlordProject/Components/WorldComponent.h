@@ -18,16 +18,21 @@ public:
 	WorldComponent& operator=(const WorldComponent& other) = delete;
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
-	void DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext);
+	void DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
+	virtual void Update(const SceneContext& sceneContext) override;
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
+	void RemoveBlockThread();
 	void LoadColliders();
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 	void ReloadWorld(const SceneContext& sceneContext);
+
+	std::thread m_WorldThread{};
+	bool m_IsMultithreaded{ true };
 
 	std::vector<Chunk> m_Chunks{};
 
@@ -35,7 +40,11 @@ private:
 	WorldRenderer m_Renderer{};
 
 	RigidBodyComponent* m_pRb{};
+	PxCooking* m_pColliderCooking{};
 
 	XMINT2 m_ChunkCenter{};
+	bool m_ShouldRemoveBlock{};
+	XMFLOAT3 m_EditBlockPosition{};
+	bool m_ShouldReload{};
 };
 

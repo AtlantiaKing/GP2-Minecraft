@@ -12,12 +12,12 @@ BlockInteractionComponent::BlockInteractionComponent(WorldComponent* pWorld, Wir
 {
 }
 
-void BlockInteractionComponent::Update(const SceneContext& sceneContext)
+void BlockInteractionComponent::Update(const SceneContext& /*sceneContext*/)
 {
 	if (InputManager::IsMouseButton(InputState::pressed, 1))
 	{
 		if (!m_pSelection->IsVisible()) return;
 
-		m_pWorld->DestroyBlock(m_pSelection->GetTransform()->GetWorldPosition(), sceneContext);
+		m_pWorld->DestroyBlock(m_pSelection->GetTransform()->GetWorldPosition());
 	}
 }

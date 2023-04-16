@@ -1,13 +1,43 @@
 #include "stdafx.h"
 #include "WorldComponent.h"
+#include <chrono>
 
 WorldComponent::WorldComponent(const SceneContext& sceneContext)
 {
 	m_Renderer.LoadEffect(sceneContext);
+
+    // Create the cooking interface
+    auto& physX{ PxGetPhysics() };
+    m_pColliderCooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
+
+    // Start a new thread that removes blocks
+    m_WorldThread = std::thread{ [this]() { RemoveBlockThread(); } };
+}
+
+void WorldComponent::RemoveBlockThread()
+{
+    // While the thread is alive
+    while (m_IsMultithreaded)
+    {
+        if (m_ShouldRemoveBlock)
+        {
+            m_ShouldRemoveBlock = false;
+
+            // Remove the block from the right chunk
+            m_Generator.RemoveBlock(m_Chunks, m_EditBlockPosition);
+
+            // Let the main thread know that it should reload vertex buffers and colliders
+            m_ShouldReload = true;
+        }
+        
+        // Don't overdo the CPU with this infinite while loop by sleeping the thread
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+    }
 }
 
 WorldComponent::~WorldComponent()
 {
+    // Release all blocks
     for (const Chunk& chunk : m_Chunks)
     {
         for (Block* pBlock : chunk.pBlocks)
@@ -15,15 +45,21 @@ WorldComponent::~WorldComponent()
             delete pBlock;
         }
     }
+
+    // Release the collider cooking
+    m_pColliderCooking->release();
+
+    // Stop the other threads
+    m_IsMultithreaded = false;
+
+    // Wait for the other thread to finish
+    m_WorldThread.join();
 }
 
-void WorldComponent::DestroyBlock(const XMFLOAT3& position, const SceneContext& sceneContext)
+void WorldComponent::DestroyBlock(const XMFLOAT3& position)
 {
-    // Remove the block from the right chunk
-    m_Generator.RemoveBlock(m_Chunks, position);
-
-    // Reload buffers and colliders
-    ReloadWorld(sceneContext);
+    m_EditBlockPosition = position;
+    m_ShouldRemoveBlock = true;
 }
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
@@ -56,16 +92,23 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
     // Reload buffers and colliders
     ReloadWorld(sceneContext);
 
+    // Set water mesh buffer
     m_Renderer.SetBuffer(m_Generator.GetWater(), sceneContext);
+}
+
+void WorldComponent::Update(const SceneContext& sceneContext)
+{
+    if (m_ShouldReload)
+    {
+        ReloadWorld(sceneContext);
+        m_ShouldReload = false;
+    }
 }
 
 void WorldComponent::LoadColliders()
 {
     auto& physX{ PxGetPhysics() };
     auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
-
-    // Create the cooking interface
-    PxCooking* cooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
 
     for (Chunk& chunk : m_Chunks)
     {
@@ -94,11 +137,8 @@ void WorldComponent::LoadColliders()
 
         if (!chunk.verticesChanged) continue;
 
-        LoadChunkCollider(chunk, cooking, physX, pPhysMat);
+        LoadChunkCollider(chunk, m_pColliderCooking, physX, pPhysMat);
     }
-
-    // Cleanup
-    cooking->release();
 }
 
 void WorldComponent::LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat)

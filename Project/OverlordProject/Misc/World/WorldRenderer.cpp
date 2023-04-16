@@ -15,9 +15,6 @@ void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
 
 	if (vertices.size() == 0) return;
 
-	auto& d3d11 = sceneContext.d3dContext;
-	auto size = vertices.size();
-
 	//*************
 	//VERTEX BUFFER
 	D3D11_BUFFER_DESC vertexBuffDesc{};
@@ -29,12 +26,11 @@ void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
 
 	if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
 
-	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, nullptr, &chunk.pVertexBuffer);
+	D3D11_SUBRESOURCE_DATA initData{};
+	initData.pSysMem = vertices.data();
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	d3d11.pDeviceContext->Map(chunk.pVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
-	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormTex) * size);
-	d3d11.pDeviceContext->Unmap(chunk.pVertexBuffer, 0);
+	chunk.vertexBufferSize = static_cast<int>(chunk.vertices.size());
+	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexBuffer);
 }
 
 WorldRenderer::~WorldRenderer()
@@ -86,7 +82,7 @@ void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneCo
 		for (UINT p = 0; p < techDesc.Passes; ++p)
 		{
 			m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
-			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertices.size()), 0);
+			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
 		}
 	}
 }

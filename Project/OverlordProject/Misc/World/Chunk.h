@@ -16,6 +16,7 @@ struct Chunk
 	std::vector<VertexPosNormTex> vertices{};
 	std::vector<Block*> pBlocks{};
 	ID3D11Buffer* pVertexBuffer{};
+	int vertexBufferSize{};
 	XMINT2 position;
 	int colliderIdx{ -1 };
 	bool verticesChanged{ true };
