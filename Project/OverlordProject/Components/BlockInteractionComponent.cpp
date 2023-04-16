@@ -49,7 +49,11 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 
 		if (InputManager::IsMouseButton(InputState::pressed, 1))
 		{
-			m_pWorld->DestroyBlock(m_pSelection->GetTransform()->GetWorldPosition());
+			m_pWorld->DestroyBlock(blockPos);
+		}
+		else if (InputManager::IsMouseButton(InputState::pressed, 2))
+		{
+			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, BlockType::DIRT);
 		}
 	}
 	else

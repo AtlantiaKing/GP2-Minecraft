@@ -200,6 +200,60 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 	}
 }
 
+void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block)
+{
+	const XMINT2 chunkPos
+	{
+		position.x < 0 ? (static_cast<int>(position.x) + 1) / m_ChunkSize - 1 : static_cast<int>(position.x) / m_ChunkSize,
+		position.z < 0 ? (static_cast<int>(position.z) + 1) / m_ChunkSize - 1 : static_cast<int>(position.z) / m_ChunkSize
+	};
+
+	auto it{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+		{
+			return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+		}) };
+	if (it == chunks.end()) return;
+
+	const XMINT3 lookUpPos{ static_cast<int>(position.x) - chunkPos.x * m_ChunkSize, static_cast<int>(position.y), static_cast<int>(position.z) - chunkPos.y * m_ChunkSize };
+
+	if (lookUpPos.x < 0 || lookUpPos.x >= m_ChunkSize
+		|| lookUpPos.z < 0 || lookUpPos.z >= m_ChunkSize
+		|| lookUpPos.y < 0 || lookUpPos.y >= m_WorldHeight) return;
+
+	const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
+	if (it->pBlocks[blockIdx]) return;
+
+	it->pBlocks[blockIdx] = new Block{ block };
+
+	CreateVertices(chunks, *it);
+
+	if (lookUpPos.x == 0 || lookUpPos.x == m_ChunkSize - 1)
+	{
+		const int otherChunkX{ lookUpPos.x == 0 ? chunkPos.x - 1 : chunkPos.x + 1 };
+
+		auto neighbourIt{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == otherChunkX && chunk.position.y == chunkPos.y;
+			}) };
+
+		if (neighbourIt != chunks.end())
+			CreateVertices(chunks, *neighbourIt);
+	}
+
+	if (lookUpPos.z == 0 || lookUpPos.z == m_ChunkSize - 1)
+	{
+		const int otherChunkY{ lookUpPos.z == 0 ? chunkPos.y - 1 : chunkPos.y + 1 };
+
+		auto neighbourIt{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == chunkPos.x && chunk.position.y == otherChunkY;
+			}) };
+
+		if (neighbourIt != chunks.end())
+			CreateVertices(chunks, *neighbourIt);
+	}
+}
+
 void WorldGenerator::CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk)
 {
 	chunk.verticesChanged = true;

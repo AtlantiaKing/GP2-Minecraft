@@ -21,6 +21,7 @@ public:
 
 	void LoadWorld(std::vector<Chunk>& chunks);
 	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
+	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
@@ -46,7 +47,7 @@ private:
 	Perlin m_UnderSeaInversedPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 10 };
+	int m_RenderDistance{ 3 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };

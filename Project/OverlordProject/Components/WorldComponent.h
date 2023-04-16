@@ -18,6 +18,7 @@ public:
 	WorldComponent& operator=(const WorldComponent& other) = delete;
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
+	void PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
 	void DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 protected:
@@ -26,7 +27,7 @@ protected:
 	virtual void Draw(const SceneContext& sceneContext) override;
 
 private:
-	void RemoveBlockThread();
+	void StartWorldThread();
 	void LoadColliders();
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 	void ReloadWorld(const SceneContext& sceneContext);
@@ -44,7 +45,9 @@ private:
 
 	XMINT2 m_ChunkCenter{};
 	bool m_ShouldRemoveBlock{};
+	bool m_ShouldPlaceBlock{};
 	XMFLOAT3 m_EditBlockPosition{};
+	BlockType m_EditBlockType{};
 	bool m_ShouldReload{};
 };
 

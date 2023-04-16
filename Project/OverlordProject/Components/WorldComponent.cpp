@@ -11,10 +11,10 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
     m_pColliderCooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
 
     // Start a new thread that removes blocks
-    m_WorldThread = std::thread{ [this]() { RemoveBlockThread(); } };
+    m_WorldThread = std::thread{ [this]() { StartWorldThread(); } };
 }
 
-void WorldComponent::RemoveBlockThread()
+void WorldComponent::StartWorldThread()
 {
     // While the thread is alive
     while (m_IsMultithreaded)
@@ -25,6 +25,16 @@ void WorldComponent::RemoveBlockThread()
 
             // Remove the block from the right chunk
             m_Generator.RemoveBlock(m_Chunks, m_EditBlockPosition);
+
+            // Let the main thread know that it should reload vertex buffers and colliders
+            m_ShouldReload = true;
+        }
+        else if (m_ShouldPlaceBlock)
+        {
+            m_ShouldPlaceBlock = false;
+
+            // Remove the block from the right chunk
+            m_Generator.PlaceBlock(m_Chunks, m_EditBlockPosition, m_EditBlockType);
 
             // Let the main thread know that it should reload vertex buffers and colliders
             m_ShouldReload = true;
@@ -54,6 +64,23 @@ WorldComponent::~WorldComponent()
 
     // Wait for the other thread to finish
     m_WorldThread.join();
+}
+
+void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
+{
+    XMFLOAT3 localHitPos{ hitPos.x - hitBlockPosition.x, hitPos.y - hitBlockPosition.y, hitPos.z - hitBlockPosition.z };
+
+    constexpr float blockFaceDistance{ 0.49f };
+    if (localHitPos.x >= blockFaceDistance) hitBlockPosition.x += 1.0f;
+    else if (localHitPos.x <= -blockFaceDistance) hitBlockPosition.x -= 1.0f;
+    else if (localHitPos.y >= blockFaceDistance) hitBlockPosition.y += 1.0f;
+    else if (localHitPos.y <= -blockFaceDistance) hitBlockPosition.y -= 1.0f;
+    else if (localHitPos.z >= blockFaceDistance) hitBlockPosition.z += 1.0f;
+    else if (localHitPos.z <= -blockFaceDistance) hitBlockPosition.z -= 1.0f;
+
+    m_EditBlockPosition = hitBlockPosition;
+    m_EditBlockType = block;
+    m_ShouldPlaceBlock = true;
 }
 
 void WorldComponent::DestroyBlock(const XMFLOAT3& position)
