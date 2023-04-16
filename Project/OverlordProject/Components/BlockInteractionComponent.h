@@ -8,7 +8,7 @@ class WireframeRenderer;
 class BlockInteractionComponent : public BaseComponent
 {
 public:
-	BlockInteractionComponent(WorldComponent* pWorld, WireframeRenderer* pSelection);
+	BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection);
 	virtual ~BlockInteractionComponent() = default;
 
 	BlockInteractionComponent(const BlockInteractionComponent& other) = delete;
@@ -21,5 +21,6 @@ protected:
 private:
 	WorldComponent* m_pWorld{};
 	WireframeRenderer* m_pSelection{};
+	PxScene* m_PxScene{};
 };
 
