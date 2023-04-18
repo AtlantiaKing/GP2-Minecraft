@@ -53,7 +53,7 @@ void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 	if(!m_pDiffuseMapVariable)
 		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
 
-	m_pDiffuseMapVariable->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.png")->GetShaderResourceView());
+	m_pDiffuseMapVariable->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.dds")->GetShaderResourceView());
 }
 
 void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneContext)
