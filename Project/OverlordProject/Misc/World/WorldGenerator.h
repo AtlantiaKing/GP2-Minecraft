@@ -34,7 +34,7 @@ public:
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 
-	BlockType GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const;
+	BlockType GetBlockType(const XMINT3& position, float worldHeight, float beachHeight, const Chunk& chunk) const;
 	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
 
 	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_IsBlockPredicate{};
@@ -45,13 +45,14 @@ private:
 	Perlin m_UnderSeaPerlin{};
 	Perlin m_HeightPerlin{};
 	Perlin m_UnderSeaInversedPerlin{};
+	Perlin m_BeachPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 3 };
+	int m_RenderDistance{ 10 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };
-	int m_BeachSize{ 2 };
+	int m_BeachSize{ 7 };
 	const int m_ChunkSize{ 16 };
 
 	Chunk m_Water{};

@@ -4,6 +4,7 @@
 
 WorldGenerator::WorldGenerator()
 	: m_HeightPerlin{ 2,5 }
+	, m_BeachPerlin{ 2, 1 }
 {
 	m_CubeVertices =
 	{
@@ -351,10 +352,12 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 			const int worldPosX{ chunkX * m_ChunkSize + x };
 			const int worldPosZ{ chunkY * m_ChunkSize + z };
 
-			float UnderseaNoise{ m_UnderSeaPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			float heightNoise{ m_HeightPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float UnderseaNoise{ m_UnderSeaPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float heightNoise{ m_HeightPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float beachMultiplier{ m_BeachPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 			
 			float worldHeight{};
+			const float beachSize{ (beachMultiplier * m_BeachSize) };
 
 			if (UnderseaNoise < static_cast<float>(m_SeaLevel) / m_TerrainHeight)
 			{
@@ -363,8 +366,8 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 			else
 			{
 				const float inversedSeaLevel{ UnderseaNoise * m_TerrainHeight - m_SeaLevel };
-				const bool canAddHeightMap{ UnderseaNoise * m_TerrainHeight - m_SeaLevel > m_BeachSize + 1 };
-				const float landBase{ canAddHeightMap ? m_BeachSize : inversedSeaLevel };
+				const bool canAddHeightMap{ inversedSeaLevel > beachSize + 1 };
+				const float landBase{ canAddHeightMap ? beachSize : inversedSeaLevel };
 				worldHeight = m_SeaLevel + landBase;
 				if (canAddHeightMap)
 				{
@@ -374,9 +377,13 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 
 			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
 
+			bool hasDirt{ false };
 			for (int y{ worldY - 1 }; y >= 0; --y)
 			{
-				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, worldHeight, chunk) } };
+				Block* pBlock{ new Block{ GetBlockType(XMINT3{x,y,z}, worldHeight, beachSize, chunk) } };
+
+				if (pBlock->type == BlockType::DIRT || pBlock->type == BlockType::GRASS) hasDirt = true;
+				if (pBlock->type == BlockType::SAND && hasDirt) pBlock->type = BlockType::DIRT;
 
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
@@ -386,13 +393,13 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 	chunks.push_back(chunk);
 }
 
-BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight, const Chunk& chunk) const
+BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight, float beachSize, const Chunk& chunk) const
 {
 	if (position.y == 0) return BlockType::BEDROCK;
 
 	if (position.y <= m_SeaLevel && position.y > worldHeight) return BlockType::WATER;
 
-	if (position.y <= m_SeaLevel + m_BeachSize) return BlockType::SAND;
+	if (position.y <= m_SeaLevel + beachSize) return BlockType::SAND;
 
 	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize]) return BlockType::GRASS;
 
