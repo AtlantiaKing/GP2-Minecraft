@@ -3,7 +3,8 @@
 #include "Misc/World/WorldData.h"
 
 WorldGenerator::WorldGenerator()
-	: m_HeightPerlin{ 2,5 }
+	: m_HeightPerlin{ 4, 5 }
+	, m_UnderSeaPerlin{ 5, 25 }
 	, m_BeachPerlin{ 2, 1 }
 {
 	m_CubeVertices =
@@ -352,30 +353,27 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 			const int worldPosX{ chunkX * m_ChunkSize + x };
 			const int worldPosZ{ chunkY * m_ChunkSize + z };
 
-			const float UnderseaNoise{ m_UnderSeaPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			const float heightNoise{ m_HeightPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			const float beachMultiplier{ m_BeachPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			
-			float worldHeight{};
-			const float beachSize{ (beachMultiplier * m_BeachSize) };
+			const float underseaNoise{ m_UnderSeaPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float seaWorldHeight{ underseaNoise * m_TerrainHeight };
 
-			if (UnderseaNoise < static_cast<float>(m_SeaLevel) / m_TerrainHeight)
+			const float heightNoise{ m_HeightPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			float worldHeight{};
+
+			if (seaWorldHeight < m_SeaLevel)
 			{
-				worldHeight = UnderseaNoise * m_TerrainHeight;
+				worldHeight = seaWorldHeight * 2 - m_SeaLevel;
 			}
 			else
 			{
-				const float inversedSeaLevel{ UnderseaNoise * m_TerrainHeight - m_SeaLevel };
-				const bool canAddHeightMap{ inversedSeaLevel > beachSize + 1 };
-				const float landBase{ canAddHeightMap ? beachSize : inversedSeaLevel };
-				worldHeight = m_SeaLevel + landBase;
-				if (canAddHeightMap)
-				{
-					worldHeight += heightNoise * (m_TerrainHeight - m_SeaLevel) * inversedSeaLevel / (m_TerrainHeight - m_SeaLevel);
-				}
+				const float amountAboveSealevel{ seaWorldHeight - m_SeaLevel };
+				const float percentageAboveSealevel{ amountAboveSealevel / (m_TerrainHeight - m_SeaLevel) };
+
+				worldHeight = m_SeaLevel + heightNoise * m_TerrainHeight * percentageAboveSealevel;
 			}
 
 			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
+			const float beachMultiplier{ m_BeachPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float beachSize{ (beachMultiplier * m_BeachSize) };
 
 			bool hasDirt{ false };
 			for (int y{ worldY - 1 }; y >= 0; --y)
