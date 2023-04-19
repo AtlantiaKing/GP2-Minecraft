@@ -16,7 +16,7 @@ public:
 protected:
 	void Initialize() override;
 	void CreateWorld();
-	void CreatePlayer(physx::PxMaterial* pPhysMat);
+	void CreatePlayer();
 	void Update() override;
 	void Draw() override;
 	void OnGUI() override;

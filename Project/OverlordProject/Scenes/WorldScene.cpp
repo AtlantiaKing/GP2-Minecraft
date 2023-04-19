@@ -11,16 +11,13 @@ void WorldScene::Initialize()
 	m_SceneContext.pInput->ForceMouseToCenter(true);
 	m_SceneContext.settings.drawPhysXDebug = false;
 
-	auto& physX{ PxGetPhysics() };
-	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
-
 	m_pSelection = AddChild(new GameObject{});
 	m_pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
 	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 
 	CreateWorld();
 
-	CreatePlayer(pPhysMat);
+	CreatePlayer();
 
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
@@ -33,8 +30,11 @@ void WorldScene::CreateWorld()
 	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
 }
 
-void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
+void WorldScene::CreatePlayer()
 {
+	auto& physX{ PxGetPhysics() };
+	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
+	
 	// Create player
 	m_pPlayer = AddChild(new GameObject{});
 
@@ -74,7 +74,7 @@ void WorldScene::CreatePlayer(physx::PxMaterial* pPhysMat)
 
 	// CAMERA
 	CameraComponent* pCamera{ pCameraGO->AddComponent(new CameraComponent{}) };
-	pCamera->SetFieldOfView(90.0f);
+	pCamera->SetFieldOfView(80.0f);
 	SetActiveCamera(pCamera); //Also sets pCamera in SceneContext
 
 	// POSITION

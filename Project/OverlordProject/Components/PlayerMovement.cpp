@@ -24,8 +24,9 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 	const auto& joyStickInput{ sceneContext.pInput->GetThumbstickPosition(false) };
 
 	constexpr float joystickMultiplier{ 20.0f };
-	const float horizontalInput{ mouseInput.x + joyStickInput.x * joystickMultiplier };
-	const float verticalInput{ mouseInput.y - joyStickInput.y * joystickMultiplier };
+	constexpr float mouseInputMultiplier{ 0.1f };
+	const float horizontalInput{ mouseInput.x * mouseInputMultiplier + joyStickInput.x * joystickMultiplier };
+	const float verticalInput{ mouseInput.y * mouseInputMultiplier - joyStickInput.y * joystickMultiplier };
 
 	// Rotate the camera around the local X axis
 	TransformComponent* pCameraTransform{ sceneContext.pCamera->GetTransform() };
