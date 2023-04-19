@@ -10,7 +10,24 @@ void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 {
 	if(!m_IsInitialized)
 	{
-		TODO_W7(L"Complete the ControllerComponent Intialization")
+		// Complete the capsule description
+		const XMFLOAT3& position{ GetTransform()->GetPosition() };
+		m_ControllerDesc.position = PxExtendedVec3{ position.x, position.y, position.z };
+		m_ControllerDesc.userData = this;
+
+		// Retrieve the controller manager from the PhysxProxy class
+		const auto& pControllerManager{ GetGameObject()->GetScene()->GetPhysxProxy()->GetControllerManager() };
+		
+		// Use the PxControllerManager to create a controller, and store the controller in the appropriate datamember
+		m_pController = pControllerManager->createController(m_ControllerDesc);
+		ASSERT_NULL_(m_pController);
+
+		// Store a pointer to the ControllerComponent in the userdata of the underlying PxActor
+		m_pController->getActor()->userData = this;
+
+		// Set the collision and collisionignore groups
+		SetCollisionGroup(static_cast<CollisionGroup>(m_CollisionGroups.word0));
+		SetCollisionIgnoreGroup(static_cast<CollisionGroup>(m_CollisionGroups.word1));
 	}
 }
 

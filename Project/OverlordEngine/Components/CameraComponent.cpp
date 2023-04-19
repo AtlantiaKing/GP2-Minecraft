@@ -63,8 +63,51 @@ void CameraComponent::SetActive(bool active)
 	pScene->SetActiveCamera(active?this:nullptr); //Switch to default camera if active==false
 }
 
-GameObject* CameraComponent::Pick(CollisionGroup /*ignoreGroups*/) const
+GameObject* CameraComponent::Pick(CollisionGroup ignoreGroups) const
 {
-	TODO_W7(L"Implement Picking Logic")
+	// Retrieve mouse position
+	const POINT& mousePos{ InputManager::GetMousePosition() };
+	// Retrieve half width/height of the screen
+	const float halfWidth{ GetGameObject()->GetScene()->GetSceneContext().windowWidth / 2.0f };
+	const float halfHeight{ GetGameObject()->GetScene()->GetSceneContext().windowHeight / 2.0f };
+
+	// Calculate the position in NDC space
+	const XMFLOAT2 ndcPos
+	{
+		(mousePos.x - halfWidth) / halfWidth,
+		(halfHeight - mousePos.y) / halfHeight
+	};
+	// Retrieve the inverse of the viexprojection matrix
+	const auto& vpInverse{ XMLoadFloat4x4(&GetViewProjectionInverse()) };
+
+	// Calculate the ray start and end coordinates
+	const XMVECTOR rayStart{ XMVector3TransformCoord(XMVECTOR{ ndcPos.x, ndcPos.y, 0.0f }, vpInverse) };
+	const XMVECTOR rayEnd{ XMVector3TransformCoord(XMVECTOR{ ndcPos.x, ndcPos.y, 1.0f }, vpInverse) };
+
+	// Store the XMVECTOR ray data in XMFLOAT3 variables
+	XMFLOAT3 rayStartF;
+	XMStoreFloat3(&rayStartF, rayStart);
+	XMFLOAT3 rayEndF;
+	XMStoreFloat3(&rayEndF, rayEnd);
+	
+	// Convert the XMFLOAT3 to PxVec3 variables
+	const PxVec3 rayOrigin{ rayStartF.x, rayStartF.y, rayStartF.z };
+	const PxVec3 rayDirection{ rayEndF.x - rayOrigin.x, rayEndF.y - rayOrigin.y, rayEndF.z - rayOrigin.z };
+
+	// Create the filter data for the raycast
+	PxQueryFilterData filterData{};
+	filterData.data.word0 = ~UINT(ignoreGroups);
+
+	// Shoot a ray from the camera
+	PxRaycastBuffer hit{};
+	if (GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(rayOrigin, rayDirection.getNormalized(), PX_MAX_F32, hit, PxHitFlag::eDEFAULT, filterData))
+	{
+		// Retrieve the base component of the rigid actor that has been hit
+		BaseComponent* pComponent{ static_cast<BaseComponent*>(hit.block.actor->userData) };
+		// Return the gameobject that owns the rigid actor
+		return pComponent->GetGameObject();
+	}
+
+	// Raycast didn't hit, return nullptr
 	return nullptr;
 }
