@@ -34,3 +34,7 @@ struct Block
 {
 	BlockType type{};
 };
+
+struct WaterBlock
+{
+};

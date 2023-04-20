@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
+    <ClInclude Include="Misc\World\Water.h" />
     <ClInclude Include="Misc\World\WorldData.h" />
     <ClInclude Include="Misc\World\TileAtlas.h" />
     <ClInclude Include="Components\PlayerMovement.h" />

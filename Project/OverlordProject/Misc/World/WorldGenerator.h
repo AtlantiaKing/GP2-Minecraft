@@ -5,6 +5,7 @@
 #include "Chunk.h"
 
 #include <vector>
+#include "Water.h"
 
 struct Block;
 
@@ -22,17 +23,19 @@ public:
 	void LoadWorld(std::vector<Chunk>& chunks);
 	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
 	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
-	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
+	bool ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
 	std::vector<XMFLOAT3> GetPositions(const Chunk& chunk) const;
-	Chunk& GetWater() { return m_Water; }
+	Water& GetWater() { return m_Water; }
 	int GetChunkSize() const { return m_ChunkSize; }
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
+	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
+	void CreateWaterVertices();
 
 	BlockType GetBlockType(const XMINT3& position, float worldHeight, float beachHeight, const Chunk& chunk) const;
 	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
@@ -55,6 +58,8 @@ private:
 	int m_BeachSize{ 7 };
 	const int m_ChunkSize{ 16 };
 
-	Chunk m_Water{};
+	std::unique_ptr<WaterBlock> m_pWaterBlock{ std::make_unique<WaterBlock>() };
+	Water m_Water{};
+	int m_WorldWidth{};
 };
 

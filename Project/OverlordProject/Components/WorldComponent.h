@@ -28,11 +28,14 @@ protected:
 
 private:
 	void StartWorldThread();
+	void StartEnvironmentalChanges();
 	void LoadColliders();
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 	void ReloadWorld(const SceneContext& sceneContext);
+	void ReloadWater(const SceneContext& sceneContext);
 
 	std::thread m_WorldThread{};
+	std::thread m_EnvironmentThread{};
 	bool m_IsMultithreaded{ true };
 
 	std::vector<Chunk> m_Chunks{};
@@ -49,5 +52,7 @@ private:
 	XMFLOAT3 m_EditBlockPosition{};
 	BlockType m_EditBlockType{};
 	bool m_ShouldReload{};
+	bool m_ShouldReloadWater{};
+	bool m_CanChangeEnvironment{};
 };
 

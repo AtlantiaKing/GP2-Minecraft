@@ -12,6 +12,30 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 
     // Start a new thread that removes blocks
     m_WorldThread = std::thread{ [this]() { StartWorldThread(); } };
+    // Start a new thread that has environmental logic
+    m_EnvironmentThread = std::thread{ [this]() { StartEnvironmentalChanges(); } };
+}
+
+WorldComponent::~WorldComponent()
+{
+    // Release all blocks
+    for (const Chunk& chunk : m_Chunks)
+    {
+        for (Block* pBlock : chunk.pBlocks)
+        {
+            delete pBlock;
+        }
+    }
+
+    // Release the collider cooking
+    m_pColliderCooking->release();
+
+    // Stop the other threads
+    m_IsMultithreaded = false;
+
+    // Wait for the other threads to finish
+    m_WorldThread.join();
+    m_EnvironmentThread.join();
 }
 
 void WorldComponent::StartWorldThread()
@@ -45,25 +69,28 @@ void WorldComponent::StartWorldThread()
     }
 }
 
-WorldComponent::~WorldComponent()
+void WorldComponent::StartEnvironmentalChanges()
 {
-    // Release all blocks
-    for (const Chunk& chunk : m_Chunks)
+    // Milliseconds per environmental tick
+    constexpr int tickTime{ 100 };
+
+    // While the thread is alive
+    while (m_IsMultithreaded)
     {
-        for (Block* pBlock : chunk.pBlocks)
+        const auto tickStart{ std::chrono::high_resolution_clock::now() };
+
+        // If the world is loaded, try changing the environment in the generator
+        if (m_CanChangeEnvironment && m_Generator.ChangeEnvironment(m_Chunks, m_ChunkCenter))
         {
-            delete pBlock;
+            m_ShouldReload = true;
+            m_ShouldReloadWater = true;
         }
+
+        // Wait until the tick has been completed
+        const auto elapsedTickTime{ std::chrono::high_resolution_clock::now() - tickStart };
+        const auto sleepTime{ std::chrono::milliseconds(static_cast<int>(tickTime)) - elapsedTickTime };
+        std::this_thread::sleep_for(sleepTime);
     }
-
-    // Release the collider cooking
-    m_pColliderCooking->release();
-
-    // Stop the other threads
-    m_IsMultithreaded = false;
-
-    // Wait for the other thread to finish
-    m_WorldThread.join();
 }
 
 void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
@@ -118,9 +145,10 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
 
     // Reload buffers and colliders
     ReloadWorld(sceneContext);
+    // Reload water buffers
+    ReloadWater(sceneContext);
 
-    // Set water mesh buffer
-    m_Renderer.SetBuffer(m_Generator.GetWater(), sceneContext);
+    m_CanChangeEnvironment = true;
 }
 
 void WorldComponent::Update(const SceneContext& sceneContext)
@@ -129,6 +157,11 @@ void WorldComponent::Update(const SceneContext& sceneContext)
     {
         ReloadWorld(sceneContext);
         m_ShouldReload = false;
+    }
+    if (m_ShouldReloadWater)
+    {
+        ReloadWater(sceneContext);
+        m_ShouldReloadWater = false;
     }
 }
 
@@ -222,11 +255,17 @@ void WorldComponent::LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, 
 
 void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
 {
-    // Set up the vertex buffers
+    // Set up the vertex buffer
     m_Renderer.SetBuffers(m_Chunks, sceneContext);
 
     // Create a collider for the world
     LoadColliders();
+}
+
+void WorldComponent::ReloadWater(const SceneContext& sceneContext)
+{
+    // Set up the vertex buffer
+    m_Renderer.SetBuffer(m_Generator.GetWater(), sceneContext);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)

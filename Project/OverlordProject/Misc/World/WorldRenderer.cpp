@@ -33,6 +33,30 @@ void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
 	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexBuffer);
 }
 
+void WorldRenderer::SetBuffer(Water& water, const SceneContext& sceneContext)
+{
+	const auto& vertices{ water.vertices };
+
+	if (vertices.size() == 0) return;
+
+	//*************
+	//VERTEX BUFFER
+	D3D11_BUFFER_DESC vertexBuffDesc{};
+	vertexBuffDesc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTex) * vertices.size());
+	vertexBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
+	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
+	vertexBuffDesc.MiscFlags = 0;
+
+	if (water.pVertexBuffer) SafeRelease(water.pVertexBuffer);
+
+	D3D11_SUBRESOURCE_DATA initData{};
+	initData.pSysMem = vertices.data();
+
+	water.vertexBufferSize = static_cast<int>(water.vertices.size());
+	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &water.pVertexBuffer);
+}
+
 WorldRenderer::~WorldRenderer()
 {
 	SafeRelease(m_pInputLayout);
@@ -111,6 +135,34 @@ void WorldRenderer::Draw(Chunk& chunk, const SceneContext& sceneContext)
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
-		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertices.size()), 0);
+		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
+	}
+}
+
+void WorldRenderer::Draw(Water& water, const SceneContext& sceneContext)
+{
+	const D3D11Context& deviceContext{ sceneContext.d3dContext };
+
+	constexpr XMFLOAT4X4 worldMatrix{ 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+	XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
+	const auto viewProjection = XMLoadFloat4x4(&sceneContext.pCamera->GetViewProjection());
+
+	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
+	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
+
+	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
+
+	constexpr UINT offset = 0;
+	constexpr UINT stride = sizeof(VertexPosNormTex);
+
+	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &water.pVertexBuffer, &stride, &offset);
+
+	D3DX11_TECHNIQUE_DESC techDesc{};
+	m_pTechnique->GetDesc(&techDesc);
+	for (UINT p = 0; p < techDesc.Passes; ++p)
+	{
+		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+		deviceContext.pDeviceContext->Draw(static_cast<UINT>(water.vertexBufferSize), 0);
 	}
 }
