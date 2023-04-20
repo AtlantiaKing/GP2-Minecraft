@@ -134,7 +134,6 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 	const int renderRadius{ m_RenderDistance - 1 };
 
 	m_WorldWidth = m_ChunkSize * (renderRadius * 2 + 1);
-	m_Water.pBlocks.resize(m_WorldHeight * m_WorldWidth * m_WorldWidth);
 
 	for (int x{ -renderRadius }; x <= renderRadius; ++x)
 	{
