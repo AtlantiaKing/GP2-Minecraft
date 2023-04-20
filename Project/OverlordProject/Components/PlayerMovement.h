@@ -18,6 +18,8 @@ private:
 
 	RigidBodyComponent* m_pPlayer{};
 
+	float m_SprintFOV{ 95.0f };
+	float m_FOV{ 80.0f };
 	float m_RotateSpeed{ 0.005f };
 	float m_MoveSpeed{ 4.317f };
 	float m_SprintSpeed{ 5.612f };

@@ -24,7 +24,7 @@ void CameraComponent::Update(const SceneContext& sceneContext)
 
 	if (m_PerspectiveProjection)
 	{
-		projection = XMMatrixPerspectiveFovLH(m_FOV, sceneContext.aspectRatio, m_NearPlane, m_FarPlane);
+		projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_FOV), sceneContext.aspectRatio, m_NearPlane, m_FarPlane);
 	}
 	else
 	{

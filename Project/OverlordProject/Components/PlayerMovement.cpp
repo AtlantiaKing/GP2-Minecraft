@@ -59,6 +59,25 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 
 void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 {
+	const XMFLOAT3& prevVelocity{ m_pPlayer->GetVelocity() };
+	float forwardSpeed;
+	XMStoreFloat(&forwardSpeed, XMVector3Dot(XMLoadFloat3(&prevVelocity), XMLoadFloat3(&m_pPlayer->GetTransform()->GetForward())));
+	forwardSpeed = std::max(forwardSpeed, 0.0f);
+
+	const float fovChangeOnSprint{ m_SprintFOV - m_FOV };
+	const float fovChange{ fovChangeOnSprint / (m_SprintSpeed - m_MoveSpeed) };
+	const float gotoFOV{ m_FOV + std::max((forwardSpeed - m_MoveSpeed) * fovChange, 0.0f) };
+	const float curFOV{ sceneContext.pCamera->GetFieldOfView() };
+	constexpr float fovChangeSpeed{ 10.0f };
+	if (abs(curFOV - gotoFOV) > 0.01f)
+	{
+		sceneContext.pCamera->SetFieldOfView(curFOV + (gotoFOV - curFOV) * sceneContext.pGameTime->GetElapsed() * fovChangeSpeed);
+	}
+	else
+	{
+		sceneContext.pCamera->SetFieldOfView(gotoFOV);
+	}
+
 	PxScene* physScene{ m_pPlayer->GetPxRigidActor()->getScene() };
 
 	const bool hasForwardInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'Z') || sceneContext.pInput->IsKeyboardKey(InputState::down, 'W') };
@@ -90,19 +109,6 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 	}
 
 	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
-
-	// TODO: Remove hardcoded FOV numbers
-	const float gotoFOV{ isSprinting ? 90.2f : 90.0f };
-	const float curFOV{ sceneContext.pCamera->GetFieldOfView() };
-	constexpr float fovChangeSpeed{ 10.0f };
-	if (abs(curFOV - gotoFOV) > 0.01f)
-	{
-		sceneContext.pCamera->SetFieldOfView(curFOV + (gotoFOV - curFOV) * sceneContext.pGameTime->GetElapsed() * fovChangeSpeed);
-	}
-	else
-	{
-		sceneContext.pCamera->SetFieldOfView(gotoFOV);
-	}
 
 	XMVECTOR velocityVec{ XMLoadFloat3(&velocity) };
 	const float verticalSpeed{ (verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed };
