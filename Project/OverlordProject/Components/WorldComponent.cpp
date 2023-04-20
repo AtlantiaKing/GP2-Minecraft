@@ -23,7 +23,7 @@ WorldComponent::~WorldComponent()
     {
         for (Block* pBlock : chunk.pBlocks)
         {
-            delete pBlock;
+            if(pBlock) delete pBlock;
         }
     }
 
@@ -265,7 +265,7 @@ void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
 void WorldComponent::ReloadWater(const SceneContext& sceneContext)
 {
     // Set up the vertex buffer
-    m_Renderer.SetBuffer(m_Generator.GetWater(), sceneContext);
+    m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)

@@ -30,12 +30,11 @@ public:
 	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
 	std::vector<XMFLOAT3> GetPositions(const Chunk& chunk) const;
-	Water& GetWater() { return m_Water; }
+	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
 	int GetChunkSize() const { return m_ChunkSize; }
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
-	void CreateWaterVertices();
 
 	BlockType GetBlockType(const XMINT3& position, float worldHeight, float beachHeight, const Chunk& chunk) const;
 	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
@@ -52,14 +51,15 @@ private:
 	TileAtlas m_TileMap{};
 
 	int m_RenderDistance{ 10 };
+	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };
 	int m_BeachSize{ 7 };
 	const int m_ChunkSize{ 16 };
 
-	std::unique_ptr<WaterBlock> m_pWaterBlock{ std::make_unique<WaterBlock>() };
-	Water m_Water{};
+	std::unique_ptr<Block> m_pWaterBlock{ std::make_unique<Block>(BlockType::WATER) };
+	std::vector<Chunk> m_WaterChunks{};
 	int m_WorldWidth{};
 };
 
