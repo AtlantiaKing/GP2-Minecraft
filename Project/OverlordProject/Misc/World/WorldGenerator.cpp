@@ -273,6 +273,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 
 	// A list of all the extra blocks that should be added
 	std::vector<XMINT3> newBlocks{};
+	std::vector<XMINT3> removeBlocks{};
 
 	// For every block in the recalculate range
 	for (int x{ minX }; x < maxX; ++x)
@@ -283,6 +284,24 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 			{
 				// If there is no water block on this position, do nothing
 				if (!m_Water.pBlocks[x + z * m_WorldWidth + y * m_WorldWidth * m_WorldWidth]) continue;
+
+				// Calculate the position from water space to world space
+				const XMINT3 positionWorld
+				{
+					x - (m_RenderDistance - 1) * m_ChunkSize,
+					y,
+					z - (m_RenderDistance - 1) * m_ChunkSize
+				};
+				// If there is a block at this position, continue to the next face of the block
+				if (m_IsBlockPredicate(chunks, positionWorld))
+				{
+					// Add this block to removal
+					removeBlocks.push_back({ x,y,z });
+
+					// Keep track that the environment should be reset
+					changedEnvironment = true;
+					continue;
+				}
 
 				// For each side of the water
 				for (unsigned int i{}; i <= static_cast<unsigned int>(FaceDirection::BOTTOM); ++i)
@@ -327,6 +346,11 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 		for (const XMINT3& block : newBlocks)
 		{
 			m_Water.pBlocks[block.x + block.z * m_WorldWidth + block.y * m_WorldWidth * m_WorldWidth] = m_pWaterBlock.get();
+		}
+		// remove the blocks from the water object
+		for (const XMINT3& block : removeBlocks)
+		{
+			m_Water.pBlocks[block.x + block.z * m_WorldWidth + block.y * m_WorldWidth * m_WorldWidth] = nullptr;
 		}
 
 		// Reload the water vertices
