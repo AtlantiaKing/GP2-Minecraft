@@ -75,6 +75,7 @@ void WorldScene::CreatePlayer()
 	// CAMERA
 	CameraComponent* pCamera{ pCameraGO->AddComponent(new CameraComponent{}) };
 	pCamera->SetFieldOfView(80.0f);
+	pCamera->SetFarClippingPlane(150.0f);
 	SetActiveCamera(pCamera); //Also sets pCamera in SceneContext
 
 	// POSITION
