@@ -32,13 +32,23 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 	TransformComponent* pCameraTransform{ sceneContext.pCamera->GetTransform() };
 	if (abs(verticalInput))
 	{
-		const XMFLOAT4 cameraRotationQuat{ pCameraTransform->GetRotation() };
-		XMVECTOR cameraRotation{ XMLoadFloat4(&cameraRotationQuat) };
-		
-		constexpr XMVECTOR rotationAxis{ 1.0f,0.0f,0.0f };
-		cameraRotation = XMQuaternionMultiply(cameraRotation, XMQuaternionRotationAxis(rotationAxis, m_RotateSpeed * verticalInput));
+		const XMFLOAT4& cameraRotationQuat{ pCameraTransform->GetRotation() };
 
-		pCameraTransform->Rotate(cameraRotation);
+		XMVECTOR curAxis;
+		float curAngle;
+		XMQuaternionToAxisAngle(&curAxis, &curAngle, XMLoadFloat4(&cameraRotationQuat));
+
+		curAngle += m_RotateSpeed * verticalInput;
+
+		if (curAngle < 0) curAngle += XM_2PI;
+		if (curAngle > XM_2PI) curAngle -= XM_2PI;
+
+		if (curAngle > XM_PIDIV2 && curAngle < XM_PI) 
+			curAngle = XM_PIDIV2;
+		if (curAngle < XM_2PI - XM_PIDIV2 && curAngle > XM_PI) 
+			curAngle = XM_2PI - XM_PIDIV2;
+
+		pCameraTransform->Rotate(XMQuaternionRotationAxis({1.0f,0.0f,0.0f}, curAngle));
 	}
 
 	// Rotate the player around the global Y axis
