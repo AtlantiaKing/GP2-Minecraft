@@ -47,17 +47,38 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		m_pSelection->GetTransform()->Translate(blockPos);
 
 
-		if (InputManager::IsMouseButton(InputState::pressed, 1))
-		{
-			m_pWorld->DestroyBlock(blockPos);
-		}
-		else if (InputManager::IsMouseButton(InputState::pressed, 2))
+		if (InputManager::IsMouseButton(InputState::pressed, 2))
 		{
 			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, BlockType::DIRT);
+			m_IsBreakingBlock = false;
+		}
+		
+		if (m_IsBreakingBlock)
+		{
+			if (InputManager::IsMouseButton(InputState::down, 1))
+			{
+				m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
+				// TODO: Replace 1.0 with the break time of the current block
+				if (m_BlockBreakProgress > 1.0f)
+				{
+					m_pWorld->DestroyBlock(blockPos);
+					m_IsBreakingBlock = false;
+				}
+			}
+			else
+			{
+				m_IsBreakingBlock = false;
+			}
+		}
+		else if (InputManager::IsMouseButton(InputState::down, 1))
+		{
+			m_IsBreakingBlock = true;
+			m_BlockBreakProgress = 0.0f;
 		}
 	}
 	else
 	{
 		m_pSelection->SetVisibility(false);
+		m_IsBreakingBlock = false;
 	}
 }

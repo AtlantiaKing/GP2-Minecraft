@@ -22,5 +22,8 @@ private:
 	WorldComponent* m_pWorld{};
 	WireframeRenderer* m_pSelection{};
 	PxScene* m_PxScene{};
+
+	bool m_IsBreakingBlock{};
+	float m_BlockBreakProgress{};
 };
 
