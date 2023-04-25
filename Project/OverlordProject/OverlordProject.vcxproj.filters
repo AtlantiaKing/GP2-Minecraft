@@ -17,6 +17,7 @@
     <ClCompile Include="Components\PlayerMovement.cpp" />
     <ClCompile Include="Components\WireframeRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
+    <ClCompile Include="Components\BlockBreakRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -37,5 +38,6 @@
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\Water.h" />
+    <ClInclude Include="Components\BlockBreakRenderer.h" />
   </ItemGroup>
 </Project>

@@ -2,14 +2,16 @@
 #include "BlockInteractionComponent.h"
 
 #include "WorldComponent.h"
-#include "Components/WireframeRenderer.h"
+#include "WireframeRenderer.h"
+#include "BlockBreakRenderer.h"
 
 #include "Managers/InputManager.h"
 
-BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection)
+BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer)
 	: m_pWorld{ pWorld }
 	, m_pSelection{ pSelection }
 	, m_PxScene{ pxScene }
+	, m_pBreakRenderer{ pBreakRenderer }
 {
 }
 
@@ -46,6 +48,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		};
 		m_pSelection->GetTransform()->Translate(blockPos);
 
+		if (HasChangedPosition(blockPos)) m_IsBreakingBlock = false;
 
 		if (InputManager::IsMouseButton(InputState::pressed, 2))
 		{
@@ -57,12 +60,13 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		{
 			if (InputManager::IsMouseButton(InputState::down, 1))
 			{
+				// TODO: Add the break speed of the current block
 				m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
-				// TODO: Replace 1.0 with the break time of the current block
+
+				// Destroy the block if the progress has reached 100%
 				if (m_BlockBreakProgress > 1.0f)
 				{
 					m_pWorld->DestroyBlock(blockPos);
-					m_IsBreakingBlock = false;
 				}
 			}
 			else
@@ -75,10 +79,33 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			m_IsBreakingBlock = true;
 			m_BlockBreakProgress = 0.0f;
 		}
+
+
+		// Enable/Disable the breaking block renderer
+		m_pBreakRenderer->SetVisibility(m_IsBreakingBlock);
+
+		if (m_IsBreakingBlock)
+		{
+			// Set the right stage to the breaking renderer
+			constexpr int nrBreakStages{ 10 };
+			m_pBreakRenderer->SetBreakingStage(std::min(static_cast<int>(m_BlockBreakProgress * nrBreakStages), nrBreakStages - 1));
+		}
 	}
 	else
 	{
 		m_pSelection->SetVisibility(false);
+		m_pBreakRenderer->SetVisibility(false);
 		m_IsBreakingBlock = false;
 	}
+}
+
+bool BlockInteractionComponent::HasChangedPosition(const XMFLOAT3& position)
+{
+	bool hasChanged{ abs(position.x - m_PrevPosition.x) > FLT_EPSILON ||
+		abs(position.y - m_PrevPosition.y) > FLT_EPSILON ||
+		abs(position.z - m_PrevPosition.z) > FLT_EPSILON };
+
+	m_PrevPosition = position;
+
+	return hasChanged;
 }

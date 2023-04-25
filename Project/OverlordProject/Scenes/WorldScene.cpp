@@ -4,6 +4,7 @@
 #include "Components/WorldComponent.h"
 #include "Components/PlayerMovement.h"
 #include "Components/WireframeRenderer.h"
+#include "Components/BlockBreakRenderer.h"
 #include "Components/BlockInteractionComponent.h"
 
 void WorldScene::Initialize()
@@ -11,11 +12,13 @@ void WorldScene::Initialize()
 	m_SceneContext.pInput->ForceMouseToCenter(true);
 	m_SceneContext.settings.drawPhysXDebug = false;
 
+	CreateWorld();
+
 	m_pSelection = AddChild(new GameObject{});
 	m_pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
+	BlockBreakRenderer* pBreakRenderer{ m_pSelection->AddComponent(new BlockBreakRenderer{ m_SceneContext }) };
+	pBreakRenderer->SetVisibility(false);
 	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
-
-	CreateWorld();
 
 	CreatePlayer();
 
@@ -66,7 +69,13 @@ void WorldScene::CreatePlayer()
 	}
 
 	// INTERACTION
-	m_pPlayer->AddComponent(new BlockInteractionComponent{ pPlayerRb->GetPxRigidActor()->getScene(), m_pWorld, m_pSelection->GetComponent<WireframeRenderer>()});
+	m_pPlayer->AddComponent(new BlockInteractionComponent
+		{
+			pPlayerRb->GetPxRigidActor()->getScene(), 
+			m_pWorld, 
+			m_pSelection->GetComponent<WireframeRenderer>(),
+			m_pSelection->GetComponent<BlockBreakRenderer>()
+		});
 
 
 	// Create camera

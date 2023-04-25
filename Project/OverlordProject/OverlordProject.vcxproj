@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Components\BlockBreakRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
@@ -128,6 +129,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components\BlockBreakRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\Water.h" />

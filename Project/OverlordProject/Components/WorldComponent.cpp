@@ -112,6 +112,8 @@ void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPositio
 
 void WorldComponent::DestroyBlock(const XMFLOAT3& position)
 {
+    if (m_ShouldRemoveBlock) return;
+
     m_EditBlockPosition = position;
     m_ShouldRemoveBlock = true;
 }

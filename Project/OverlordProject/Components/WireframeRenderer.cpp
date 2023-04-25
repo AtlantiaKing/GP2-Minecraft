@@ -46,7 +46,7 @@ WireframeRenderer::WireframeRenderer(const SceneContext& sceneContext)
 	//VERTEX BUFFER
 	D3D11_BUFFER_DESC vertexBuffDesc{};
 	vertexBuffDesc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
-	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTex) * vertices.size());
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPos) * vertices.size());
 	vertexBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
