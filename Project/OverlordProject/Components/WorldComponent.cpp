@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "WorldComponent.h"
+
+#include "Prefabs/ItemEntity.h"
+#include "Prefabs/CubePrefab.h"
+
 #include <chrono>
 
 WorldComponent::WorldComponent(const SceneContext& sceneContext)
@@ -47,10 +51,10 @@ void WorldComponent::StartWorldThread()
     {
         if (m_ShouldRemoveBlock)
         {
-            m_ShouldRemoveBlock = false;
-
             // Remove the block from the right chunk
             m_Generator.RemoveBlock(m_Chunks, m_EditBlockPosition);
+
+            m_ShouldRemoveBlock = false;
 
             // Let the main thread know that it should reload vertex buffers and colliders
             m_ShouldReload = true;
@@ -118,6 +122,8 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position)
 
     m_EditBlockPosition = position;
     m_ShouldRemoveBlock = true;
+
+    GetScene()->AddChild(new ItemEntity{ BlockType::DIRT, m_EditBlockPosition });
 }
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)

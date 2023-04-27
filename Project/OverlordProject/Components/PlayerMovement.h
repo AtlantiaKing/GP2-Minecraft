@@ -9,9 +9,11 @@ public:
 	PlayerMovement(PlayerMovement&& other) noexcept = delete;
 	PlayerMovement& operator=(const PlayerMovement& other) = delete;
 	PlayerMovement& operator=(PlayerMovement&& other) noexcept = delete;
+
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Update(const SceneContext& sceneContext) override;
+
 private:
 	void UpdateRotation(const SceneContext& sceneContext) const;
 	void UpdateVelocity(const SceneContext& sceneContext) const;

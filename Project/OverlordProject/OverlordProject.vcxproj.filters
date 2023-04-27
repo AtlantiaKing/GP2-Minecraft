@@ -15,9 +15,12 @@
     <ClCompile Include="Utils\Perlin.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
-    <ClCompile Include="Components\WireframeRenderer.cpp" />
+    <ClCompile Include="Components\Rendering\WireframeRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
-    <ClCompile Include="Components\BlockBreakRenderer.cpp" />
+    <ClCompile Include="Components\Rendering\BlockBreakRenderer.cpp" />
+    <ClCompile Include="Prefabs\ItemEntity.cpp" />
+    <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
+    <ClCompile Include="Components\ItemFloatComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -34,10 +37,13 @@
     <ClInclude Include="Misc\World\WorldData.h" />
     <ClInclude Include="Misc\World\TileAtlas.h" />
     <ClInclude Include="Components\PlayerMovement.h" />
-    <ClInclude Include="Components\WireframeRenderer.h" />
+    <ClInclude Include="Components\Rendering\WireframeRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\Water.h" />
-    <ClInclude Include="Components\BlockBreakRenderer.h" />
+    <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />
+    <ClInclude Include="Prefabs\ItemEntity.h" />
+    <ClInclude Include="Components\Rendering\BlockRenderer.h" />
+    <ClInclude Include="Components\ItemFloatComponent.h" />
   </ItemGroup>
 </Project>

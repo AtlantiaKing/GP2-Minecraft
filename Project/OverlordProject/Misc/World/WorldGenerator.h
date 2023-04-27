@@ -37,7 +37,6 @@ private:
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
 
 	BlockType GetBlockType(const XMINT3& position, float worldHeight, float beachHeight, const Chunk& chunk) const;
-	FaceType GetFaceType(BlockType blockType, FaceDirection faceDirection) const;
 
 	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_IsBlockPredicate{};
 	std::function<bool(const std::vector<Chunk>& chunks, Block* pBlock, const XMINT3& position)> m_CanRenderPredicate{};

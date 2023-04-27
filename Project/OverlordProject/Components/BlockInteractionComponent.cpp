@@ -2,8 +2,8 @@
 #include "BlockInteractionComponent.h"
 
 #include "WorldComponent.h"
-#include "WireframeRenderer.h"
-#include "BlockBreakRenderer.h"
+#include "Rendering/WireframeRenderer.h"
+#include "Rendering/BlockBreakRenderer.h"
 
 #include "Managers/InputManager.h"
 

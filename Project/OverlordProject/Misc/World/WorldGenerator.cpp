@@ -443,7 +443,7 @@ void WorldGenerator::CreateVertices(const std::vector<Chunk>& chunks, Chunk& chu
 						+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
 						XMStoreFloat3(&v.Position, pos);
 
-						v.TexCoord = m_TileMap.GetUV(GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
+						v.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
 
 						vertices.push_back(v);
 					}
@@ -554,25 +554,4 @@ BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight
 	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize]) return BlockType::GRASS;
 
 	return BlockType::DIRT;
-}
-
-FaceType WorldGenerator::GetFaceType(BlockType blockType, FaceDirection faceDirection) const
-{
-	switch (blockType)
-	{
-	case BlockType::GRASS:
-	{
-		switch (faceDirection)
-		{
-		case FaceDirection::UP:
-			return FaceType::GRASS;
-		case FaceDirection::BOTTOM:
-			return FaceType::DIRT;
-		default:
-			return FaceType::GRASS_SIDE;
-		}
-	}
-	}
-
-	return static_cast<FaceType>(blockType);
 }

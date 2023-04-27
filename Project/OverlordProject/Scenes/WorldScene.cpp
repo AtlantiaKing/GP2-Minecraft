@@ -3,8 +3,8 @@
 
 #include "Components/WorldComponent.h"
 #include "Components/PlayerMovement.h"
-#include "Components/WireframeRenderer.h"
-#include "Components/BlockBreakRenderer.h"
+#include "Components/Rendering/WireframeRenderer.h"
+#include "Components/Rendering/BlockBreakRenderer.h"
 #include "Components/BlockInteractionComponent.h"
 
 void WorldScene::Initialize()

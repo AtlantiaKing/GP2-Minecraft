@@ -93,8 +93,11 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Components\BlockBreakRenderer.cpp" />
+    <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
+    <ClCompile Include="Components\Rendering\BlockBreakRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
+    <ClCompile Include="Components\ItemFloatComponent.cpp" />
+    <ClCompile Include="Prefabs\ItemEntity.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
     <ClCompile Include="Utils\Perlin.cpp" />
@@ -121,7 +124,7 @@
     <ClCompile Include="Components\WorldComponent.cpp" />
     <ClCompile Include="Misc\World\WorldRenderer.cpp" />
     <ClCompile Include="Misc\World\WorldGenerator.cpp" />
-    <ClCompile Include="Components\WireframeRenderer.cpp" />
+    <ClCompile Include="Components\Rendering\WireframeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OverlordEngine\OverlordEngine.vcxproj">
@@ -129,8 +132,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Components\BlockBreakRenderer.h" />
+    <ClInclude Include="Components\Rendering\BlockRenderer.h" />
+    <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
+    <ClInclude Include="Components\ItemFloatComponent.h" />
+    <ClInclude Include="Prefabs\ItemEntity.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\Water.h" />
     <ClInclude Include="Misc\World\WorldData.h" />
@@ -147,7 +153,7 @@
     <ClInclude Include="Components\WorldComponent.h" />
     <ClInclude Include="Misc\World\WorldRenderer.h" />
     <ClInclude Include="Misc\World\WorldGenerator.h" />
-    <ClInclude Include="Components\WireframeRenderer.h" />
+    <ClInclude Include="Components\Rendering\WireframeRenderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -23,3 +23,24 @@ XMFLOAT2 TileAtlas::GetUV(FaceType blockType, const XMFLOAT2& originalUV) const
 
 	return blockUV;
 }
+
+FaceType TileAtlas::GetFaceType(BlockType blockType, FaceDirection faceDirection) const
+{
+	switch (blockType)
+	{
+	case BlockType::GRASS:
+	{
+		switch (faceDirection)
+		{
+		case FaceDirection::UP:
+			return FaceType::GRASS;
+		case FaceDirection::BOTTOM:
+			return FaceType::DIRT;
+		default:
+			return FaceType::GRASS_SIDE;
+		}
+	}
+	}
+
+	return static_cast<FaceType>(blockType);
+}
