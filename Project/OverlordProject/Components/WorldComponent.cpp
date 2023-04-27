@@ -6,6 +6,8 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 {
 	m_Renderer.LoadEffect(sceneContext);
 
+    m_enablePostDraw = true;
+
     // Create the cooking interface
     auto& physX{ PxGetPhysics() };
     m_pColliderCooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
@@ -273,5 +275,9 @@ void WorldComponent::ReloadWater(const SceneContext& sceneContext)
 void WorldComponent::Draw(const SceneContext& sceneContext)
 {
     m_Renderer.Draw(m_Chunks, sceneContext);
+}
+
+void WorldComponent::PostDraw(const SceneContext& sceneContext)
+{
     m_Renderer.Draw(m_Generator.GetWater(), sceneContext);
 }

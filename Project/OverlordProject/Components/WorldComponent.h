@@ -25,6 +25,7 @@ protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Update(const SceneContext& sceneContext) override;
 	virtual void Draw(const SceneContext& sceneContext) override;
+	virtual void PostDraw(const SceneContext& sceneContext) override;
 
 private:
 	void StartWorldThread();

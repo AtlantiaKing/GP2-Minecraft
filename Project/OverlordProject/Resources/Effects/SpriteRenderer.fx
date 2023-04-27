@@ -18,7 +18,10 @@ BlendState EnableBlending
 
 DepthStencilState NoDepth
 {
-    DepthEnable = FALSE;
+    DepthEnable = false;
+    DepthWriteMask = zero;
+    DepthFunc = less;
+    StencilEnable = false;
 };
 
 RasterizerState BackCulling
@@ -130,7 +133,7 @@ technique11 Default
     {
         SetRasterizerState(BackCulling);
         SetBlendState(EnableBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
-		//SetDepthStencilState(NoDepth,0);
+		SetDepthStencilState(NoDepth,0);
         SetVertexShader(CompileShader(vs_4_0, MainVS()));
         SetGeometryShader(CompileShader(gs_4_0, MainGS()));
         SetPixelShader(CompileShader(ps_4_0, MainPS()));

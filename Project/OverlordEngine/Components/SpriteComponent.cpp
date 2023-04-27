@@ -5,7 +5,9 @@ SpriteComponent::SpriteComponent(const std::wstring& spriteAsset, const XMFLOAT2
 	m_SpriteAsset(spriteAsset),
 	m_Pivot(pivot),
 	m_Color(color)
-{}
+{
+	m_enablePostDraw = true;
+}
 
 void SpriteComponent::Initialize(const SceneContext& /*sceneContext*/)
 {
@@ -18,7 +20,7 @@ void SpriteComponent::SetTexture(const std::wstring& spriteAsset)
 	m_pTexture = ContentManager::Load<TextureData>(m_SpriteAsset);
 }
 
-void SpriteComponent::Draw(const SceneContext& sceneContext)
+void SpriteComponent::PostDraw(const SceneContext& sceneContext)
 {
 	if (!m_pTexture)
 		return;

@@ -21,7 +21,7 @@ public:
 
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
-	void Draw(const SceneContext& sceneContext) override;
+	void PostDraw(const SceneContext& sceneContext) override;
 
 private:
 	TextureData* m_pTexture{};
