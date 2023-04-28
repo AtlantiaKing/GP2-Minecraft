@@ -76,12 +76,13 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 
 	const float fovChangeOnSprint{ m_SprintFOV - m_FOV };
 	const float fovChange{ fovChangeOnSprint / (m_SprintSpeed - m_MoveSpeed) };
-	const float gotoFOV{ m_FOV + std::max((forwardSpeed - m_MoveSpeed) * fovChange, 0.0f) };
+	const float gotoFOV{ XMConvertToRadians(m_FOV + std::max((forwardSpeed - m_MoveSpeed) * fovChange, 0.0f)) };
 	const float curFOV{ sceneContext.pCamera->GetFieldOfView() };
 	constexpr float fovChangeSpeed{ 10.0f };
 	if (abs(curFOV - gotoFOV) > 0.01f)
 	{
-		sceneContext.pCamera->SetFieldOfView(curFOV + (gotoFOV - curFOV) * sceneContext.pGameTime->GetElapsed() * fovChangeSpeed);
+		const float fov{ curFOV + (gotoFOV - curFOV) * sceneContext.pGameTime->GetElapsed() * fovChangeSpeed };
+		sceneContext.pCamera->SetFieldOfView(fov);
 	}
 	else
 	{
