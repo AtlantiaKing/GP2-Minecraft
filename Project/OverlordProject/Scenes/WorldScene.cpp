@@ -94,10 +94,24 @@ void WorldScene::CreatePlayer()
 void WorldScene::Update()
 {
 	m_pWorld->UpdateColliders(m_pPlayer->GetTransform()->GetWorldPosition());
+
+	const auto& lightDir{ m_SceneContext.pLights->GetDirectionalLight().direction };
+	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
+
+	const XMVECTOR directionVec{ XMLoadFloat3(&direction) };
+	XMVECTOR positionVec{ XMLoadFloat3(&m_pPlayer->GetTransform()->GetPosition()) };
+
+	positionVec -= directionVec * 150;
+
+	XMFLOAT3 position;
+	XMStoreFloat3(&position, positionVec);
+
+	m_SceneContext.pLights->SetDirectionalLight(position, direction);
 }
 
 void WorldScene::Draw()
 {
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { 0.1f, 0.1f }, { 1.f,0.f });
 }
 
 void WorldScene::OnGUI()

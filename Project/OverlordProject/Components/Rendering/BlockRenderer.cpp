@@ -5,6 +5,8 @@
 
 BlockRenderer::BlockRenderer(BlockType type, const SceneContext& sceneContext)
 {
+	m_enableShadowMapDraw = true;
+
 	TileAtlas tileAltas{};
 
 	std::vector<VertexPosNormTex> vertices =
@@ -119,4 +121,11 @@ void BlockRenderer::Draw(const SceneContext& sceneContext)
 		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
 		deviceContext.pDeviceContext->Draw(static_cast<UINT>(m_NrVertices), 0);
 	}
+}
+
+void BlockRenderer::ShadowMapDraw(const SceneContext& sceneContext)
+{
+	constexpr int nrVertices{ 6 * 6 };
+	constexpr UINT stride = sizeof(VertexPosNormTex);
+	ShadowMapRenderer::Get()->DrawMesh(sceneContext, m_pVertexBuffer, nrVertices, stride, GetTransform()->GetWorld());
 }

@@ -63,7 +63,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	//		*viewHeight> 100.f
 	//		*nearZ>0.1f
 	//		*farZ>500.f
-	const XMMATRIX lightProjMatrix{ XMMatrixOrthographicLH(sceneContext.aspectRatio * 100.0f, 100.0f, 0.1f, 500.0f) };
+	const XMMATRIX lightProjMatrix{ XMMatrixOrthographicLH(sceneContext.aspectRatio * 10.0f, 10.0f, 0.1f, 500.0f) };
 	//- Use XMMatrixLookAtLH to create a View Matrix
 	//		*eyePosition: Position of the Direction Light (SceneContext::pLights > Retrieve Directional Light)
 	//		*focusPosition: Calculate using the Direction Light position and direction
@@ -127,6 +127,38 @@ void ShadowMapRenderer::DrawMesh(const SceneContext& sceneContext, MeshFilter* p
 			curTechniqueContext.pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
 			pDeviceContext->DrawIndexed(subMesh.indexCount, 0, 0);
 		}
+	}
+}
+
+void ShadowMapRenderer::DrawMesh(const SceneContext& sceneContext, ID3D11Buffer* pVertexBuffer, int nrVertices, UINT stride, const XMFLOAT4X4& meshWorld)
+{	
+	// Set the relevant variables on the ShadowMapMaterial
+	//		- world of the mesh
+	m_pShadowMapGenerator->SetVariable_Matrix(L"gWorld", reinterpret_cast<const float*>(&meshWorld));
+
+	//2. Retrieve the correct TechniqueContext for m_GeneratorTechniqueContexts
+	const MaterialTechniqueContext& curTechniqueContext{ m_GeneratorTechniqueContexts[static_cast<int>(ShadowGeneratorType::Static)] };
+	//4. Setup Pipeline for Drawing (Similar to ModelComponent::Draw, but for our ShadowMapMaterial)
+	const auto pDeviceContext = sceneContext.d3dContext.pDeviceContext;
+	//	- Set InputLayout (see TechniqueContext)
+	pDeviceContext->IASetInputLayout(curTechniqueContext.pInputLayout);
+	//	- Set PrimitiveTopology
+	pDeviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//		- Set VertexBuffer
+	const UINT offset = 0;
+	pDeviceContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
+	//		- Set IndexBuffer
+	pDeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+	//		- Set correct TechniqueContext on ShadowMapMaterial - use ShadowGeneratorType as ID (BaseMaterial::SetTechnique)
+	m_pShadowMapGenerator->SetTechnique(static_cast<int>(ShadowGeneratorType::Static));
+	//		- Perform Draw Call (same as usual, iterate Technique Passes, Apply, Draw - See ModelComponent::Draw for reference)
+	D3DX11_TECHNIQUE_DESC techDesc{};
+	curTechniqueContext.pTechnique->GetDesc(&techDesc);
+
+	for (UINT p = 0; p < techDesc.Passes; ++p)
+	{
+		curTechniqueContext.pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
+		pDeviceContext->Draw(nrVertices, 0);
 	}
 }
 

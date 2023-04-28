@@ -11,6 +11,7 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 	m_Renderer.LoadEffect(sceneContext);
 
     m_enablePostDraw = true;
+    //m_enableShadowMapDraw = true;
 
     // Create the cooking interface
     auto& physX{ PxGetPhysics() };
@@ -286,4 +287,12 @@ void WorldComponent::Draw(const SceneContext& sceneContext)
 void WorldComponent::PostDraw(const SceneContext& sceneContext)
 {
     m_Renderer.Draw(m_Generator.GetWater(), sceneContext);
+}
+
+void WorldComponent::ShadowMapDraw(const SceneContext& sceneContext)
+{
+    for (const Chunk& chunk : m_Chunks)
+    {
+        m_Renderer.DrawShadowMap(chunk, sceneContext);
+    }
 }

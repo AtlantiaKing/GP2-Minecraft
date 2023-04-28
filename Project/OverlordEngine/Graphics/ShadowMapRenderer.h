@@ -13,6 +13,7 @@ public:
 
 	void Begin(const SceneContext&);
 	void DrawMesh(const SceneContext& sceneContext, MeshFilter* pMeshFilter, const XMFLOAT4X4& meshWorld, const std::vector<XMFLOAT4X4>& meshBones = {});
+	void DrawMesh(const SceneContext& sceneContext, ID3D11Buffer* pVertexBuffer, int nrVertices, UINT stride, const XMFLOAT4X4& meshWorld);
 	void End(const SceneContext&) const;
 
 	ID3D11ShaderResourceView* GetShadowMap() const;

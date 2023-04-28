@@ -16,7 +16,7 @@ public:
 protected:
 	virtual void Initialize(const SceneContext&) override {}
 	virtual void Draw(const SceneContext& sceneContext) override;
-
+	virtual void ShadowMapDraw(const SceneContext& sceneContext) override;
 private:
 	ID3DX11EffectMatrixVariable* m_pWorldVar{};
 	ID3DX11EffectMatrixVariable* m_pWvpVar{};

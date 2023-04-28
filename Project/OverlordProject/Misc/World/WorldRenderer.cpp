@@ -68,16 +68,17 @@ void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
 	EffectHelper::BuildInputLayout(sceneContext.d3dContext.pDevice, m_pTechnique, &m_pInputLayout);
 
-	if (!m_pWorldVar)
-		m_pWorldVar = m_pEffect->GetVariableBySemantic("World")->AsMatrix();
+	m_pWorldVar = m_pEffect->GetVariableBySemantic("World")->AsMatrix();
 
-	if (!m_pWvpVar)
-		m_pWvpVar = m_pEffect->GetVariableBySemantic("WorldViewProjection")->AsMatrix();
+	m_pWvpVar = m_pEffect->GetVariableBySemantic("WorldViewProjection")->AsMatrix();
 
-	if(!m_pDiffuseMapVariable)
-		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+	m_pLightWvpVar = m_pEffect->GetVariableByName("gLightWorldViewProj")->AsMatrix();
 
-	m_pDiffuseMapVariable->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.dds")->GetShaderResourceView());
+	m_pShadowMapVariable = m_pEffect->GetVariableByName("gShadowMap")->AsShaderResource();
+
+	m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource()->SetResource(ContentManager::Load<TextureData>(L"Textures\\TileAtlas.dds")->GetShaderResourceView());
+
+	m_pLightDirVar = m_pEffect->GetVariableByName("gLightDirection")->AsVector();
 }
 
 void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneContext)
@@ -90,6 +91,13 @@ void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneCo
 
 	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
 	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
+	m_pLightWvpVar->SetMatrix(reinterpret_cast<const float*>(&ShadowMapRenderer::Get()->GetLightVP()));
+
+	// Update the ShadowMap texture
+	m_pShadowMapVariable->SetResource(ShadowMapRenderer::Get()->GetShadowMap());
+
+	// Update the Light Direction (retrieve the direction from the LightManager > sceneContext)
+	m_pLightDirVar->SetFloatVector(reinterpret_cast<const float*>(&sceneContext.pLights->GetDirectionalLight().direction));
 
 	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
@@ -121,6 +129,13 @@ void WorldRenderer::Draw(Chunk& chunk, const SceneContext& sceneContext)
 
 	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
 	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
+	m_pLightWvpVar->SetMatrix(reinterpret_cast<const float*>(&ShadowMapRenderer::Get()->GetLightVP()));
+
+	// Update the ShadowMap texture
+	m_pShadowMapVariable->SetResource(ShadowMapRenderer::Get()->GetShadowMap());
+
+	// Update the Light Direction (retrieve the direction from the LightManager > sceneContext)
+	m_pLightDirVar->SetFloatVector(reinterpret_cast<const float*>(&sceneContext.pLights->GetDirectionalLight().direction));
 
 	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
@@ -149,6 +164,13 @@ void WorldRenderer::Draw(Water& water, const SceneContext& sceneContext)
 
 	m_pWorldVar->SetMatrix(reinterpret_cast<float*>(&world));
 	m_pWvpVar->SetMatrix(reinterpret_cast<const float*>(&viewProjection));
+	m_pLightWvpVar->SetMatrix(reinterpret_cast<const float*>(&ShadowMapRenderer::Get()->GetLightVP()));
+
+	// Update the ShadowMap texture
+	m_pShadowMapVariable->SetResource(ShadowMapRenderer::Get()->GetShadowMap());
+
+	// Update the Light Direction (retrieve the direction from the LightManager > sceneContext)
+	m_pLightDirVar->SetFloatVector(reinterpret_cast<const float*>(&sceneContext.pLights->GetDirectionalLight().direction));
 
 	deviceContext.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
@@ -165,4 +187,12 @@ void WorldRenderer::Draw(Water& water, const SceneContext& sceneContext)
 		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
 		deviceContext.pDeviceContext->Draw(static_cast<UINT>(water.vertexBufferSize), 0);
 	}
+}
+
+void WorldRenderer::DrawShadowMap(const Chunk& chunk, const SceneContext& sceneContext)
+{
+	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr XMFLOAT4X4 worldMatrix{ 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+
+	ShadowMapRenderer::Get()->DrawMesh(sceneContext, chunk.pVertexBuffer, chunk.vertexBufferSize, stride, worldMatrix);
 }
