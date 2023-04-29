@@ -141,8 +141,11 @@ void GameScene::RootUpdate()
 	Update();
 
 	//Root-Scene Update
-	for (const auto pChild : m_pChildren)
+	//for (const auto pChild : m_pChildren)
+	for (int i{}; i < m_pChildren.size(); ++i)
 	{
+		auto pChild{ m_pChildren[i] };
+
 		pChild->RootUpdate(m_SceneContext);
 	}
 
