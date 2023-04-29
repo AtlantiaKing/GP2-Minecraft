@@ -37,7 +37,8 @@ enum class BlockType : BYTE
 struct Block
 {
 	BlockType type{};
-	float hardness{};
+	float breakTime{};
+	Block* dropBlock{};
 };
 
 struct WaterBlock

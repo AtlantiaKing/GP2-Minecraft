@@ -25,15 +25,6 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 
 WorldComponent::~WorldComponent()
 {
-    // Release all blocks
-    for (const Chunk& chunk : m_Chunks)
-    {
-        for (Block* pBlock : chunk.pBlocks)
-        {
-            if(pBlock) delete pBlock;
-        }
-    }
-
     // Release the collider cooking
     m_pColliderCooking->release();
 
@@ -124,7 +115,14 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position)
     m_EditBlockPosition = position;
     m_ShouldRemoveBlock = true;
 
-    GetScene()->AddChild(new ItemEntity{ BlockType::DIRT, m_EditBlockPosition });
+    const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
+
+    GetScene()->AddChild(new ItemEntity{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock->type, position});
+}
+
+Block* WorldComponent::GetBlockAt(int x, int y, int z)
+{
+    return m_Generator.GetBlockAt(x, y, z, m_Chunks);
 }
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)

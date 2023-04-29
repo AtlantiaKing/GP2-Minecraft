@@ -129,9 +129,6 @@ WorldGenerator::WorldGenerator()
 		}
 		}
 	}
-
-	Block* pBlock{ BlockManager::Get()->GetBlock("grass_block") };
-	std::cout << pBlock->hardness << "\n";
 }
 
 void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
@@ -181,7 +178,6 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 	const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
 	if (!it->pBlocks[blockIdx]) return;
 
-	delete it->pBlocks[blockIdx];
 	it->pBlocks[blockIdx] = nullptr;
 
 	CreateVertices(chunks, *it);
@@ -236,7 +232,7 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 	const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
 	if (it->pBlocks[blockIdx]) return;
 
-	it->pBlocks[blockIdx] = new Block{ block };
+	it->pBlocks[blockIdx] = BlockManager::Get()->GetBlock(block);
 
 	CreateVertices(chunks, *it);
 
@@ -265,6 +261,30 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 		if (neighbourIt != chunks.end())
 			CreateVertices(chunks, *neighbourIt);
 	}
+}
+
+Block* WorldGenerator::GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const
+{
+	const XMINT2 chunkPos
+	{
+		x < 0 ? (static_cast<int>(x) + 1) / m_ChunkSize - 1 : static_cast<int>(x) / m_ChunkSize,
+		z < 0 ? (static_cast<int>(z) + 1) / m_ChunkSize - 1 : static_cast<int>(z) / m_ChunkSize
+	};
+
+	auto it{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+		{
+			return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+		}) };
+	if (it == chunks.end()) return nullptr;
+
+	const XMINT3 lookUpPos{ static_cast<int>(x) - chunkPos.x * m_ChunkSize, static_cast<int>(y), static_cast<int>(z) - chunkPos.y * m_ChunkSize };
+
+	if (lookUpPos.x < 0 || lookUpPos.x >= m_ChunkSize
+		|| lookUpPos.z < 0 || lookUpPos.z >= m_ChunkSize
+		|| lookUpPos.y < 0 || lookUpPos.y >= m_WorldHeight) return nullptr;
+
+	const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
+	return it->pBlocks[blockIdx];
 }
 
 bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter)
@@ -528,16 +548,13 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 				if (blockType == BlockType::WATER)
 				{
 					waterChunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = m_pWaterBlock.get();
-					/*const int waterPosX{ worldPosX + m_ChunkSize * (m_RenderDistance - 1) };
-					const int waterPosZ{ worldPosZ + m_ChunkSize * (m_RenderDistance - 1) };
-					m_Water.pBlocks[waterPosX + waterPosZ * m_WorldWidth + y * m_WorldWidth * m_WorldWidth] = m_pWaterBlock.get();*/
 					continue;
 				}
 
-				Block* pBlock{ new Block{ blockType } };
+				Block* pBlock{ BlockManager::Get()->GetBlock(blockType) };
 
 				if (pBlock->type == BlockType::DIRT || pBlock->type == BlockType::GRASS) hasDirt = true;
-				if (pBlock->type == BlockType::SAND && hasDirt) pBlock->type = BlockType::DIRT;
+				if (pBlock->type == BlockType::SAND && hasDirt) pBlock = BlockManager::Get()->GetBlock(BlockType::DIRT);
 
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}

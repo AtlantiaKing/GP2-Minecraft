@@ -48,6 +48,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		};
 		m_pSelection->GetTransform()->Translate(blockPos);
 
+		// Get current block
+		Block* pBlock{ m_pWorld->GetBlockAt(static_cast<int>(blockPos.x), static_cast<int>(blockPos.y), static_cast<int>(blockPos.z)) };
+
 		if (HasChangedPosition(blockPos)) m_IsBreakingBlock = false;
 
 		if (InputManager::IsMouseButton(InputState::pressed, 2))
@@ -60,13 +63,16 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		{
 			if (InputManager::IsMouseButton(InputState::down, 1))
 			{
-				// TODO: Add the break speed of the current block
-				m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
-
-				// Destroy the block if the progress has reached 100%
-				if (m_BlockBreakProgress > 1.0f)
+				if (pBlock)
 				{
-					m_pWorld->DestroyBlock(blockPos);
+					// Increment breaking time
+					m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
+
+					// Destroy the block if the progress has reached 100%
+					if (m_BlockBreakProgress > pBlock->breakTime)
+					{
+						m_pWorld->DestroyBlock(blockPos);
+					}
 				}
 			}
 			else
@@ -84,11 +90,11 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		// Enable/Disable the breaking block renderer
 		m_pBreakRenderer->SetVisibility(m_IsBreakingBlock);
 
-		if (m_IsBreakingBlock)
+		if (m_IsBreakingBlock && pBlock)
 		{
 			// Set the right stage to the breaking renderer
 			constexpr int nrBreakStages{ 10 };
-			m_pBreakRenderer->SetBreakingStage(std::min(static_cast<int>(m_BlockBreakProgress * nrBreakStages), nrBreakStages - 1));
+			m_pBreakRenderer->SetBreakingStage(std::min(static_cast<int>(m_BlockBreakProgress / pBlock->breakTime * nrBreakStages), nrBreakStages - 1));
 		}
 	}
 	else

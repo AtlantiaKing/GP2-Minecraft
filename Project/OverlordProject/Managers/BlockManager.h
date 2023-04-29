@@ -11,14 +11,16 @@ public:
 	BlockManager& operator=(BlockManager&& other) noexcept = delete;
 
 	Block* GetBlock(const std::string& identifier);
+	Block* GetBlock(BlockType type);
 protected:
 	virtual void Initialize() override {};
 
 private:
 	friend Singleton<BlockManager>;
 	BlockManager();
-	virtual ~BlockManager() = default;
+	~BlockManager();
 
-	std::unordered_map<std::string, Block*> m_pBlocks{};
+	std::unordered_map<std::string, Block*> m_pBlocksByIdentifier{};
+	std::unordered_map<BlockType, Block*> m_pBlocksByType{};
 };
 

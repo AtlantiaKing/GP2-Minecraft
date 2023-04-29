@@ -20,6 +20,7 @@ public:
 
 	void PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
 	void DestroyBlock(const XMFLOAT3& position);
+	Block* GetBlockAt(int x, int y, int z);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 
 protected:

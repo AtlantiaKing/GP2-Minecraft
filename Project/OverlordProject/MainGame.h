@@ -3,7 +3,7 @@ class MainGame final : public OverlordGame
 {
 public:
 	MainGame() = default;
-	~MainGame() override = default;
+	~MainGame() override;
 	MainGame(const MainGame& other) = delete;
 	MainGame(MainGame&& other) noexcept = delete;
 	MainGame& operator=(const MainGame& other) = delete;
