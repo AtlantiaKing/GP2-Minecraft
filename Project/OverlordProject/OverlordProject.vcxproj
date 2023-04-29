@@ -56,7 +56,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>"$(SolutionDir)3rdParty\rapidjson";$(SolutionDir)OverlordEngine;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdParty;$(SolutionDir)OverlordEngine;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>"$(SolutionDir)3rdParty\rapidjson";$(SolutionDir)OverlordEngine;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdParty;$(SolutionDir)OverlordEngine;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -93,10 +93,12 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Managers\BlockManager.cpp" />
     <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
     <ClCompile Include="Components\Rendering\BlockBreakRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
     <ClCompile Include="Components\ItemFloatComponent.cpp" />
+    <ClCompile Include="Misc\Json\JsonReader.cpp" />
     <ClCompile Include="Prefabs\ItemEntity.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
@@ -132,10 +134,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Managers\BlockManager.h" />
     <ClInclude Include="Components\Rendering\BlockRenderer.h" />
     <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Components\ItemFloatComponent.h" />
+    <ClInclude Include="Misc\Json\JsonReader.h" />
     <ClInclude Include="Prefabs\ItemEntity.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\Water.h" />

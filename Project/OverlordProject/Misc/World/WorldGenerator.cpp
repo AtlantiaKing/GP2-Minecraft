@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "WorldGenerator.h"
+
 #include "Misc/World/WorldData.h"
+#include "Managers/BlockManager.h"
 
 WorldGenerator::WorldGenerator()
 	: m_HeightPerlin{ 4, 5 }
@@ -127,6 +129,9 @@ WorldGenerator::WorldGenerator()
 		}
 		}
 	}
+
+	Block* pBlock{ BlockManager::Get()->GetBlock("grass_block") };
+	std::cout << pBlock->hardness << "\n";
 }
 
 void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
