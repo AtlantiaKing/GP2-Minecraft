@@ -34,6 +34,7 @@ public:
 	int GetChunkSize() const { return m_ChunkSize; }
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
+	void SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position);
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
 
 	Block* GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachHeight, const Biome& biome) const;
@@ -45,8 +46,8 @@ private:
 
 	Perlin m_UnderSeaPerlin{};
 	Perlin m_HeightPerlin{};
-	Perlin m_UnderSeaInversedPerlin{};
 	Perlin m_BeachPerlin{};
+	Perlin m_BigVegitationPerlin{};
 	TileAtlas m_TileMap{};
 
 	int m_RenderDistance{ 10 };
@@ -58,6 +59,7 @@ private:
 
 	std::unique_ptr<Block> m_pWaterBlock{ std::make_unique<Block>(BlockType::WATER) };
 	std::vector<Chunk> m_WaterChunks{};
+	std::vector<std::pair<const Structure*, XMINT3>> m_StructuresToSpawn{};
 	int m_WorldWidth{};
 };
 

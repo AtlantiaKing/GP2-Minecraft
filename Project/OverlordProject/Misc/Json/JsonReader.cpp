@@ -118,7 +118,9 @@ void JsonReader::ReadStructure(const rapidjson::Document& structure, const std::
 {
 	Structure s{};
 
-	for (const auto& blockData : structure.GetArray())
+	const auto& blocksArray{ structure["blocks"] };
+
+	for (const auto& blockData : blocksArray.GetArray())
 	{
 		StructureBlock b{};
 
@@ -136,6 +138,8 @@ void JsonReader::ReadStructure(const rapidjson::Document& structure, const std::
 
 		s.blocks.push_back(b);
 	}
+
+	s.pSpawnOnBlock = blocks.at(structure["spawn_block"].GetString());
 
 	structures[name] = s;
 }

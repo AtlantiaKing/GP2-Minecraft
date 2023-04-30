@@ -64,6 +64,7 @@ struct StructureBlock
 struct Structure
 {
 	std::vector<StructureBlock> blocks{};
+	Block* pSpawnOnBlock{};
 };
 
 struct Biome

@@ -8,6 +8,7 @@ WorldGenerator::WorldGenerator()
 	: m_HeightPerlin{ 4, 5 }
 	, m_UnderSeaPerlin{ 5, 25 }
 	, m_BeachPerlin{ 2, 1 }
+	, m_BigVegitationPerlin{ 5, 0.1f }
 {
 	m_CubeVertices =
 	{
@@ -144,6 +145,15 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 			LoadChunk(chunks, x, y);
 		}
 	}
+
+	for (const auto& structure : m_StructuresToSpawn)
+	{
+		SpawnStructure(chunks, structure.first, structure.second);
+	}
+	m_StructuresToSpawn.clear();
+
+	SpawnStructure(chunks, BlockManager::Get()->GetBiome("forest").bigVegitation, {1,150,1});
+
 
 	for (Chunk& chunk : chunks)
 	{
@@ -560,11 +570,57 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
+
+			float bigVegitationNoise{ m_BigVegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+
+			constexpr float vegitationSpawnChance{ 0.6f };
+			if (bigVegitationNoise > vegitationSpawnChance)
+			{
+				if (chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
+				{
+					m_StructuresToSpawn.push_back(std::make_pair(biome.bigVegitation, XMINT3{ worldPosX,surfaceY + 1,worldPosZ }));
+				}
+			}
 		}
 	}
 
 	chunks.push_back(chunk);
 	m_WaterChunks.push_back(waterChunk);
+}
+
+void WorldGenerator::SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position)
+{
+	for (const StructureBlock& b : structure->blocks)
+	{
+		const XMINT3 bPos
+		{
+			position.x + b.position.x,
+			position.y + b.position.y,
+			position.z + b.position.z
+		};
+
+		const XMINT2 chunkPos
+		{
+			bPos.x < 0 ? (static_cast<int>(bPos.x) + 1) / m_ChunkSize - 1 : static_cast<int>(bPos.x) / m_ChunkSize,
+			bPos.z < 0 ? (static_cast<int>(bPos.z) + 1) / m_ChunkSize - 1 : static_cast<int>(bPos.z) / m_ChunkSize
+		};
+
+		auto it{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+			}) };
+		if (it == chunks.end()) return;
+
+		const XMINT3 lookUpPos{ static_cast<int>(bPos.x) - chunkPos.x * m_ChunkSize, static_cast<int>(bPos.y), static_cast<int>(bPos.z) - chunkPos.y * m_ChunkSize };
+
+		if (lookUpPos.x < 0 || lookUpPos.x >= m_ChunkSize
+			|| lookUpPos.z < 0 || lookUpPos.z >= m_ChunkSize
+			|| lookUpPos.y < 0 || lookUpPos.y >= m_WorldHeight) return;
+
+		const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
+
+		it->pBlocks[blockIdx] = b.pBlock;
+	}
 }
 
 Block* WorldGenerator::GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachSize, const Biome& biome) const
