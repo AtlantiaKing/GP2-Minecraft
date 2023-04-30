@@ -571,7 +571,7 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 
 			float bigVegitationNoise{ m_BigVegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 
-			constexpr float vegitationSpawnChance{ 0.6f };
+			constexpr float vegitationSpawnChance{ 0.65f };
 			if (bigVegitationNoise > vegitationSpawnChance)
 			{
 				if (chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
