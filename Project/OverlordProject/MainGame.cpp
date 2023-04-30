@@ -33,7 +33,7 @@ void MainGame::Initialize()
 	//  8 spawn on land (best seed to play on)
 	//  6 good looking mountain but needs render distance bigger then 15
 	//srand(static_cast<unsigned int>(time(nullptr)));
-	srand(3);
+	srand(8);
 
 	SceneManager::Get()->AddGameScene(new WorldScene());
 }

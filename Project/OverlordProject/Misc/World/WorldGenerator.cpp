@@ -571,10 +571,10 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 
 			float bigVegitationNoise{ m_BigVegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 
-			constexpr float vegitationSpawnChance{ 0.65f };
+			constexpr float vegitationSpawnChance{ 0.7f };
 			if (bigVegitationNoise > vegitationSpawnChance)
 			{
-				if (chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
+				if (biome.bigVegitation != nullptr && chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
 				{
 					m_StructuresToSpawn.push_back(std::make_pair(biome.bigVegitation, XMINT3{ worldPosX,surfaceY + 1,worldPosZ }));
 				}
@@ -627,7 +627,7 @@ Block* WorldGenerator::GetBlock(const XMINT3& position, float worldHeight, int s
 
 	if (position.y <= m_SeaLevel && position.y > worldHeight) return m_pWaterBlock.get();
 
-	if (position.y <= m_SeaLevel + beachSize) return biome.beach.pBlock;
+	if (surfaceY <= m_SeaLevel + beachSize && position.y > m_SeaLevel - beachSize) return biome.beach.pBlock;
 
 	if (position.y == surfaceY) return biome.topLayer;
 
