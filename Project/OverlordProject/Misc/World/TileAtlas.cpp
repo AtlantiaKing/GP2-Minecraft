@@ -40,6 +40,18 @@ FaceType TileAtlas::GetFaceType(BlockType blockType, FaceDirection faceDirection
 			return FaceType::GRASS_SIDE;
 		}
 	}
+	case BlockType::SANDSTONE:
+	{
+		switch (faceDirection)
+		{
+		case FaceDirection::UP:
+			return FaceType::SANDSTONE_TOP;
+		case FaceDirection::BOTTOM:
+			return FaceType::SANDSTONE_BOTTOM;
+		default:
+			return FaceType::SANDSTONE_SIDE;
+		}
+	}
 	}
 
 	return static_cast<FaceType>(blockType);

@@ -19,5 +19,30 @@
 	},
 	"small_vegitation": "grass.json",
 	"big_vegitation": "tree.json"
+},
+{
+    "name": "desert",
+	"top_layer": "sand",
+	"layers": 
+	[
+	{
+		"block": "sand",
+		"size": 3
+	},
+	{
+		"block": "sandstone",
+		"size": 5
+	},
+	{
+		"block": "stone"
+	}
+	],
+	"beach":
+	{
+		"block": "sand",
+		"size": 7
+	},
+	"small_vegitation": "dead_bush.json",
+	"big_vegitation": "cactus.json"
 }
 ]
