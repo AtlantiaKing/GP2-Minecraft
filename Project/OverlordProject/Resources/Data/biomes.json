@@ -17,8 +17,8 @@
 		"block": "sand",
 		"size": 7
 	},
-	"small_vegitation": "grass.json",
-	"big_vegitation": "tree.json"
+	"small_vegitation": "grass",
+	"big_vegitation": "tree"
 },
 {
     "name": "desert",
@@ -42,7 +42,7 @@
 		"block": "sand",
 		"size": 7
 	},
-	"small_vegitation": "dead_bush.json",
-	"big_vegitation": "cactus.json"
+	"small_vegitation": "dead_bush",
+	"big_vegitation": "cactus"
 }
 ]

@@ -26,5 +26,7 @@ private:
 	std::unordered_map<BlockType, Block*> m_pBlocksByType{};
 
 	std::unordered_map<std::string, Biome> m_BiomesByIdentifier{};
+
+	std::unordered_map<std::string, Structure> m_StructuresByIdentifier{};
 };
 

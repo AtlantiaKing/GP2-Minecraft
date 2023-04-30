@@ -35,7 +35,7 @@ void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std
 	blocks[block["name"].GetString()] = pBlock;
 }
 
-std::unordered_map<std::string, Biome> JsonReader::ReadBiomes(const std::unordered_map<std::string, Block*>& blocks)
+std::unordered_map<std::string, Biome> JsonReader::ReadBiomes(const std::unordered_map<std::string, Block*>& blocks, const std::unordered_map<std::string, Structure>& structures)
 {
 	std::ifstream input{ "Resources/Data/biomes.json" };
 	std::stringstream jsonStream{};
@@ -47,13 +47,13 @@ std::unordered_map<std::string, Biome> JsonReader::ReadBiomes(const std::unorder
 
 	for (const auto& chunk : d.GetArray())
 	{
-		ReadBiome(chunk, chunks, blocks);
+		ReadBiome(chunk, chunks, blocks, structures);
 	}
 
 	return chunks;
 }
 
-void JsonReader::ReadBiome(const rapidjson::Value& chunk, std::unordered_map<std::string, Biome>& chunks, const std::unordered_map<std::string, Block*>& blocks)
+void JsonReader::ReadBiome(const rapidjson::Value& chunk, std::unordered_map<std::string, Biome>& biomes, const std::unordered_map<std::string, Block*>& blocks, const std::unordered_map<std::string, Structure>& structures)
 {
 	Biome data{};
 
@@ -79,7 +79,63 @@ void JsonReader::ReadBiome(const rapidjson::Value& chunk, std::unordered_map<std
 	beach.size = beachData["size"].GetInt();
 	data.beach = beach;
 
-	chunks[chunk["name"].GetString()] = data;
+	const auto structureIt{ structures.find(chunk["big_vegitation"].GetString()) };
+	data.bigVegitation = structureIt != structures.end() ? &structures.at(chunk["big_vegitation"].GetString()) : nullptr;
 
-	// TODO: read small and big vegitation structures
+	// TODO: read small vegitation structures
+
+	biomes[chunk["name"].GetString()] = data;
+}
+
+std::unordered_map<std::string, Structure> JsonReader::ReadStructures(const std::unordered_map<std::string, Block*>& blocks)
+{
+	std::ifstream input{ "Resources/Data/structures.json" };
+	std::stringstream jsonStream{};
+	jsonStream << input.rdbuf();
+	rapidjson::Document d;
+	d.Parse(jsonStream.str().c_str());
+
+	std::unordered_map<std::string, Structure> structures{};
+
+	for (const auto& structureName : d.GetArray())
+	{
+		std::stringstream structureFilePath{};
+		structureFilePath << "Resources/Data/" << structureName.GetString() << ".json";
+
+		std::ifstream structureFile{ structureFilePath.str() };
+		std::stringstream structureStream{};
+		structureStream << structureFile.rdbuf();
+		rapidjson::Document structure;
+		structure.Parse(structureStream.str().c_str());
+
+		ReadStructure(structure, structureName.GetString(), structures, blocks);
+	}
+
+	return structures;
+}
+
+void JsonReader::ReadStructure(const rapidjson::Document& structure, const std::string& name, std::unordered_map<std::string, Structure>& structures, const std::unordered_map<std::string, Block*>& blocks)
+{
+	Structure s{};
+
+	for (const auto& blockData : structure.GetArray())
+	{
+		StructureBlock b{};
+
+		b.pBlock = blocks.at(blockData["block"].GetString());
+
+		const auto& position{ blockData["position"] };
+		const XMINT3 pos
+		{
+			position["x"].GetInt(),
+			position["y"].GetInt(),
+			position["z"].GetInt()
+		};
+
+		b.position = pos;
+
+		s.blocks.push_back(b);
+	}
+
+	structures[name] = s;
 }

@@ -22,22 +22,24 @@ enum class FaceType : BYTE
 	COBBLESTONE,
 	SANDSTONE_SIDE,
 	SANDSTONE_BOTTOM,
-	SANDSTONE_TOP
+	SANDSTONE_TOP,
+	OAK_LOG_SIDE,
+	OAK_LOG_TOP,
+	OAK_LEAVES
 };
 
 enum class BlockType : BYTE
 {
-	DIRT,
-	GRASS,
-	GRASS_SIDE,			// NOT USED, JUST PADDING
-	SAND,
-	WATER,
-	BEDROCK,
-	STONE,
-	COBBLESTONE,
-	SANDSTONE,
-	SANDSTONE_BOTTOM,	// NOT USED, JUST PADDING
-	SANDSTONE_TOP		// NOT USED, JUST PADDING
+	DIRT = 0,
+	GRASS = 1,
+	SAND = 3,
+	WATER = 4,
+	BEDROCK = 5,
+	STONE = 6,
+	COBBLESTONE = 7,
+	SANDSTONE = 8,
+	OAK_LOG = 11,
+	OAK_LEAVES = 13
 };
 
 struct Block
@@ -53,10 +55,22 @@ struct BlockLayer
 	int size{};
 };
 
+struct StructureBlock
+{
+	Block* pBlock{};
+	XMINT3 position{};
+};
+
+struct Structure
+{
+	std::vector<StructureBlock> blocks{};
+};
+
 struct Biome
 {
 	Block* topLayer{};
 	std::vector<BlockLayer> layers{};
 	BlockLayer beach{};
+	const Structure* bigVegitation{};
 	// TODO: Add vegitation structures
 };

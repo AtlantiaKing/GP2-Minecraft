@@ -40,5 +40,15 @@
 	"name": "sandstone",
 	"id": 8,
 	"hardness": 0.8
+},
+{
+	"name": "oak_log",
+	"id": 11,
+	"hardness": 2
+},
+{
+	"name": "oak_leaves",
+	"id": 13,
+	"hardness": 0.2
 }
 ]

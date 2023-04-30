@@ -16,7 +16,9 @@ BlockManager::BlockManager()
 		m_pBlocksByType[blockPair.second->type] = blockPair.second;
 	}
 
-	m_BiomesByIdentifier = json.ReadBiomes(m_pBlocksByIdentifier);
+	m_StructuresByIdentifier = json.ReadStructures(m_pBlocksByIdentifier);
+
+	m_BiomesByIdentifier = json.ReadBiomes(m_pBlocksByIdentifier, m_StructuresByIdentifier);
 }
 
 BlockManager::~BlockManager()
