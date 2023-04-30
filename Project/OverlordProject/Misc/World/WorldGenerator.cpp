@@ -152,8 +152,6 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 	}
 	m_StructuresToSpawn.clear();
 
-	SpawnStructure(chunks, BlockManager::Get()->GetBiome("forest").bigVegitation, {1,150,1});
-
 
 	for (Chunk& chunk : chunks)
 	{

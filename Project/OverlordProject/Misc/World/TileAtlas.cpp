@@ -52,6 +52,17 @@ FaceType TileAtlas::GetFaceType(BlockType blockType, FaceDirection faceDirection
 			return FaceType::SANDSTONE_SIDE;
 		}
 	}
+	case BlockType::OAK_LOG:
+	{
+		switch (faceDirection)
+		{
+		case FaceDirection::UP:
+		case FaceDirection::BOTTOM:
+			return FaceType::OAK_LOG_TOP;
+		default:
+			return FaceType::OAK_LOG_SIDE;
+		}
+	}
 	}
 
 	return static_cast<FaceType>(blockType);
