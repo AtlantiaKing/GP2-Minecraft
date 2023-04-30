@@ -40,3 +40,17 @@ struct Block
 	float breakTime{};
 	Block* dropBlock{};
 };
+
+struct BlockLayer
+{
+	Block* pBlock{};
+	int size{};
+};
+
+struct Biome
+{
+	Block* topLayer{};
+	std::vector<BlockLayer> layers{};
+	BlockLayer beach{};
+	// TODO: Add vegitation structures
+};

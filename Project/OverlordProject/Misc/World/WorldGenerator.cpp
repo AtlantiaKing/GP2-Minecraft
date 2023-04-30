@@ -499,6 +499,8 @@ std::vector<XMFLOAT3> WorldGenerator::GetPositions(const Chunk& chunk) const
 
 void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunkY)
 {
+	Biome biome{ BlockManager::Get()->GetBiome("forest") };
+
 	const int m_ChunkSizeSqr{ m_ChunkSize * m_ChunkSize };
 
 	Chunk chunk{};
@@ -540,18 +542,18 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 			const float beachSize{ (beachMultiplier * m_BeachSize) };
 
 			bool hasDirt{ false };
-			for (int y{ worldY - 1 }; y >= 0; --y)
+
+			const int surfaceY{ worldY - 1 };
+			for (int y{ surfaceY }; y >= 0; --y)
 			{
 				const XMINT3 blockPosition{ XMINT3{x,y,z} };
-				const BlockType blockType{ GetBlockType(blockPosition, worldHeight, beachSize, chunk) };
+				Block* pBlock{ GetBlock(blockPosition, worldHeight, surfaceY, beachSize, biome) };
 
-				if (blockType == BlockType::WATER)
+				if (pBlock->type == BlockType::WATER)
 				{
-					waterChunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = m_pWaterBlock.get();
+					waterChunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 					continue;
 				}
-
-				Block* pBlock{ BlockManager::Get()->GetBlock(blockType) };
 
 				if (pBlock->type == BlockType::DIRT || pBlock->type == BlockType::GRASS) hasDirt = true;
 				if (pBlock->type == BlockType::SAND && hasDirt) pBlock = BlockManager::Get()->GetBlock(BlockType::DIRT);
@@ -565,15 +567,31 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 	m_WaterChunks.push_back(waterChunk);
 }
 
-BlockType WorldGenerator::GetBlockType(const XMINT3& position, float worldHeight, float beachSize, const Chunk& chunk) const
+Block* WorldGenerator::GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachSize, const Biome& biome) const
 {
-	if (position.y == 0) return BlockType::BEDROCK;
+	if (position.y == 0) return BlockManager::Get()->GetBlock(BlockType::BEDROCK);
 
-	if (position.y <= m_SeaLevel && position.y > worldHeight) return BlockType::WATER;
+	if (position.y <= m_SeaLevel && position.y > worldHeight) return m_pWaterBlock.get();
 
-	if (position.y <= m_SeaLevel + beachSize) return BlockType::SAND;
+	if (position.y <= m_SeaLevel + beachSize) return biome.beach.pBlock;
 
-	if (!chunk.pBlocks[position.x + position.z * m_ChunkSize + (position.y + 1) * m_ChunkSize * m_ChunkSize]) return BlockType::GRASS;
+	if (position.y == surfaceY) return biome.topLayer;
 
-	return BlockType::DIRT;
+	Block* pRestLayer{};
+	int curY{ surfaceY - 1 };
+
+	for (const BlockLayer& layer : biome.layers)
+	{
+		if (layer.size == -1)
+		{
+			pRestLayer = layer.pBlock;
+			break;
+		}
+
+		if (position.y > curY - layer.size) return layer.pBlock;
+
+		curY -= layer.size;
+	}
+
+	return pRestLayer;
 }

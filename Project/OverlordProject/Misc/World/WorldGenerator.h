@@ -36,7 +36,7 @@ private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
 
-	BlockType GetBlockType(const XMINT3& position, float worldHeight, float beachHeight, const Chunk& chunk) const;
+	Block* GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachHeight, const Biome& biome) const;
 
 	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_IsBlockPredicate{};
 	std::function<bool(const std::vector<Chunk>& chunks, Block* pBlock, const XMINT3& position)> m_CanRenderPredicate{};
@@ -49,7 +49,7 @@ private:
 	Perlin m_BeachPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 10 };
+	int m_RenderDistance{ 1 };
 	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
