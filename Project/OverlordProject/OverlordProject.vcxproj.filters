@@ -42,7 +42,6 @@
     <ClInclude Include="Components\Rendering\WireframeRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
-    <ClInclude Include="Misc\World\Water.h" />
     <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />
     <ClInclude Include="Prefabs\ItemEntity.h" />
     <ClInclude Include="Components\Rendering\BlockRenderer.h" />

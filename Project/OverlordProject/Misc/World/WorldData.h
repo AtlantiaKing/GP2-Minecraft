@@ -40,7 +40,3 @@ struct Block
 	float breakTime{};
 	Block* dropBlock{};
 };
-
-struct WaterBlock
-{
-};

@@ -1,6 +1,5 @@
 #pragma once
 #include "Chunk.h"
-#include "Water.h"
 
 class WorldRenderer final
 {
@@ -10,10 +9,8 @@ public:
 	void LoadEffect(const SceneContext& sceneContext);
 	void SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext);
 	void SetBuffer(Chunk& chunk, const SceneContext& sceneContext);
-	void SetBuffer(Water& chunk, const SceneContext& sceneContext);
 
 	void Draw(std::vector<Chunk>& chunks, const SceneContext& sceneContext);
-	void Draw(Water& water, const SceneContext& sceneContext);
 	void DrawShadowMap(const Chunk& chunk, const SceneContext& sceneContext);
 private:
 	void Draw(Chunk& chunk, const SceneContext& sceneContext);
