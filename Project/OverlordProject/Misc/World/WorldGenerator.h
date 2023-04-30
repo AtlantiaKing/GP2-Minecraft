@@ -23,6 +23,7 @@ public:
 	void LoadWorld(std::vector<Chunk>& chunks);
 	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
 	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
+	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 	bool ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
