@@ -49,12 +49,11 @@ private:
 	Perlin m_BeachPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 1 };
+	int m_RenderDistance{ 10 };
 	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };
-	int m_BeachSize{ 7 };
 	const int m_ChunkSize{ 16 };
 
 	std::unique_ptr<Block> m_pWaterBlock{ std::make_unique<Block>(BlockType::WATER) };

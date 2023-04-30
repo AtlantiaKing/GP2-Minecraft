@@ -539,7 +539,7 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 
 			const int worldY = std::min(std::max(static_cast<int>(worldHeight), m_SeaLevel + 1), m_WorldHeight - 1);
 			const float beachMultiplier{ m_BeachPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
-			const float beachSize{ (beachMultiplier * m_BeachSize) };
+			const float beachSize{ (beachMultiplier * biome.beach.size) };
 
 			bool hasDirt{ false };
 
