@@ -49,6 +49,20 @@ public:
 	XMFLOAT2 TexCoord = {};
 };
 
+struct VertexPosNormTexTransparency
+{
+public:
+
+	VertexPosNormTexTransparency() = default;
+	VertexPosNormTexTransparency(XMFLOAT3 pos, XMFLOAT3 norm, XMFLOAT2 texCoord) :
+		Position(pos), Normal(norm), TexCoord(texCoord) {}
+
+	XMFLOAT3 Position = {};
+	XMFLOAT3 Normal = {};
+	XMFLOAT2 TexCoord = {};
+	bool Transparent {};
+};
+
 struct QuadPosNormCol
 {
 public:

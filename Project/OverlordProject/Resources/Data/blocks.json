@@ -2,53 +2,71 @@
 {
     "name": "dirt",
 	"id": 0,
+	"mesh": 0,
     "hardness": 0.5
 },
 {
     "name": "grass_block",
 	"id": 1,
 	"hardness": 0.6,
+	"mesh": 0,
 	"drop": "dirt"
 },
 {
     "name": "sand",
 	"id": 3,
+	"mesh": 0,
     "hardness": 0.5
 },
 {
     "name": "water",
 	"id": 4,
-    "hardness": -1.0
+    "hardness": -1.0,
+	"mesh": 0,
+	"transparent": true
 },
 {
     "name": "cobblestone",
 	"id": 7,
+	"mesh": 0,
     "hardness": 2.0
 },
 {
     "name": "stone",
 	"id": 6,
     "hardness": 1.5,
+	"mesh": 0,
 	"drop": "cobblestone"
 },
 {
     "name": "bedrock",
 	"id": 5,
+	"mesh": 0,
     "hardness": -1.0
 },
 {
 	"name": "sandstone",
 	"id": 8,
+	"mesh": 0,
 	"hardness": 0.8
 },
 {
 	"name": "oak_log",
 	"id": 11,
+	"mesh": 0,
 	"hardness": 2
 },
 {
 	"name": "oak_leaves",
 	"id": 13,
+	"mesh": 0,
 	"hardness": 0.2
+},
+{
+	"name": "grass",
+	"id": 14,
+	"hardness": 0,
+	"mesh": 1,
+	"transparent": true
 }
 ]

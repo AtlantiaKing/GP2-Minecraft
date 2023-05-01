@@ -50,6 +50,8 @@ void WorldComponent::StartWorldThread()
 
             // Let the main thread know that it should reload vertex buffers and colliders
             m_ShouldReload = true;
+            // Let the main thread know that it should reload vertex buffers and colliders
+            m_ShouldReloadWater = true;
         }
         else if (m_ShouldPlaceBlock)
         {

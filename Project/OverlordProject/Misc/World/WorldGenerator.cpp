@@ -8,41 +8,8 @@ WorldGenerator::WorldGenerator()
 	: m_HeightPerlin{ 4, 5 }
 	, m_UnderSeaPerlin{ 5, 25 }
 	, m_BeachPerlin{ 2, 1 }
-	, m_BigVegitationPerlin{ 5, 0.1f }
+	, m_VegitationPerlin{ 5, 0.1f }
 {
-	m_CubeVertices =
-	{
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0, 0.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 1.0, 1.0 } },
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0 } },
-
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0, 0.0f } },
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 1.0, 1.0 } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 0.0f } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0 } },
-
-			{ { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0, 0.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0, 1.0 } },
-			{ { 0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
-			{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0 } },
-
-			{ { -0.5f, 0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0, 0.0f } },
-			{ { -0.5f, -0.5f, -0.5f }, { -1.0f, 0.0f, 0.0f }, { 1.0, 1.0 } },
-			{ { -0.5f, 0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { -1.0f, 0.0f, 0.0f }, { 0.0f, 1.0 } },
-
-			{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0, 0.0f } },
-			{ { 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0, 1.0 } },
-			{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
-			{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0 } },
-
-			{ { 0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0, 0.0f } },
-			{ { 0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 1.0, 1.0 } },
-			{ { -0.5f, -0.5f, -0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } },
-			{ { -0.5f, -0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 1.0 } }
-	};
-
 	m_IsBlockPredicate = [&](const std::vector<Chunk>& chunks, const XMINT3& position) -> bool
 	{
 		const XMINT2 chunkPos
@@ -65,7 +32,7 @@ WorldGenerator::WorldGenerator()
 
 		return it->pBlocks[lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize];
 	};
-	m_CanRenderPredicate = [&](const std::vector<Chunk>& chunks, Block* pBlock, const XMINT3& neighbourPos) -> bool
+	m_CanRenderPredicate = [&](const std::vector<Chunk>& chunks, const XMINT3& neighbourPos) -> bool
 	{
 		const XMINT2 chunkPos
 		{ 
@@ -89,10 +56,12 @@ WorldGenerator::WorldGenerator()
 
 		if (!pNeighbour) return true;
 
-		if (pBlock->type != BlockType::WATER && pNeighbour->type == BlockType::WATER) return true;
+		if (pNeighbour->mesh == BlockMesh::CROSS) return true;
 
 		return false;
 	};
+
+	m_pWaterBlock = std::make_unique<Block>(BlockType::WATER, BlockMesh::CUBE, nullptr, -1.0f, true);
 
 	for (int i{}; i <= static_cast<int>(FaceDirection::BOTTOM); ++i)
 	{
@@ -152,14 +121,19 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 	}
 	m_StructuresToSpawn.clear();
 
+	std::vector<std::vector<Chunk>*> predicateChunks{};
+	predicateChunks.push_back(&chunks);
 
 	for (Chunk& chunk : chunks)
 	{
-		CreateVertices(chunks, chunk);
+		CreateVertices(chunks, chunk, predicateChunks);
 	}
+
+	predicateChunks.push_back(&m_WaterChunks);
+
 	for (Chunk& chunk : m_WaterChunks)
 	{
-		CreateVertices(m_WaterChunks, chunk);
+		CreateVertices(m_WaterChunks, chunk, predicateChunks);
 	}
 }
 
@@ -188,7 +162,20 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 
 	it->pBlocks[blockIdx] = nullptr;
 
-	CreateVertices(chunks, *it);
+	std::vector<std::vector<Chunk>*> predicateChunks{};
+	predicateChunks.push_back(&chunks);
+	CreateVertices(chunks, *it, predicateChunks);
+
+	auto waterIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& waterChunk)
+		{
+			return waterChunk.position.x == chunkPos.x && waterChunk.position.y == chunkPos.y;
+		}) };
+	if (it == chunks.end()) return;
+
+	std::vector<std::vector<Chunk>*> predicateWaterChunks{};
+	predicateWaterChunks.push_back(&chunks);
+	predicateWaterChunks.push_back(&m_WaterChunks);
+	CreateVertices(m_WaterChunks, *waterIt, predicateWaterChunks);
 
 	if (lookUpPos.x == 0 || lookUpPos.x == m_ChunkSize - 1)
 	{
@@ -198,9 +185,15 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 			{
 				return chunk.position.x == otherChunkX && chunk.position.y == chunkPos.y;
 			}) };
+		auto neighbourWaterIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == otherChunkX && chunk.position.y == chunkPos.y;
+			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt);
+			CreateVertices(chunks, *neighbourIt, predicateChunks);
+		if (neighbourWaterIt != m_WaterChunks.end())
+			CreateVertices(m_WaterChunks, *neighbourIt, predicateWaterChunks);
 	}
 
 	if (lookUpPos.z == 0 || lookUpPos.z == m_ChunkSize - 1)
@@ -211,9 +204,15 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 			{
 				return chunk.position.x == chunkPos.x && chunk.position.y == otherChunkY;
 			}) };
+		auto neighbourWaterIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == chunkPos.x && chunk.position.y == otherChunkY;
+			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt);
+			CreateVertices(chunks, *neighbourIt, predicateChunks);
+		if (neighbourWaterIt != m_WaterChunks.end())
+			CreateVertices(m_WaterChunks, *neighbourIt, predicateWaterChunks);
 	}
 }
 
@@ -242,7 +241,9 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 
 	it->pBlocks[blockIdx] = BlockManager::Get()->GetBlock(block);
 
-	CreateVertices(chunks, *it);
+	std::vector<std::vector<Chunk>*> predicateChunks{};
+	predicateChunks.push_back(&chunks);
+	CreateVertices(chunks, *it, predicateChunks);
 
 	if (lookUpPos.x == 0 || lookUpPos.x == m_ChunkSize - 1)
 	{
@@ -254,7 +255,7 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt);
+			CreateVertices(chunks, *neighbourIt, predicateChunks);
 	}
 
 	if (lookUpPos.z == 0 || lookUpPos.z == m_ChunkSize - 1)
@@ -267,7 +268,7 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt);
+			CreateVertices(chunks, *neighbourIt, predicateChunks);
 	}
 }
 
@@ -325,7 +326,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 				if (m_IsBlockPredicate(chunks, position))
 				{
 					// Add this block to removal
-					removeBlocks.push_back({ x,y,z });
+					removeBlocks.emplace_back(position);
 
 					// Keep track that the environment should be reset
 					changedEnvironment = true;
@@ -352,7 +353,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 					if (m_IsBlockPredicate(chunks, neighbourPosition)) continue;
 
 					// Add the block to the list of new blocks
-					newBlocks.push_back(neighbourPosition);
+					newBlocks.emplace_back(neighbourPosition);
 
 					// Keep track that the environment should be reset
 					changedEnvironment = true;
@@ -421,9 +422,12 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 		}
 
 		// Reload the water vertices
+		std::vector<std::vector<Chunk>*> predicateChunks{};
+		predicateChunks.push_back(&chunks);
+		predicateChunks.push_back(&m_WaterChunks);
 		for (const auto& chunk : chunksThatNeedUpdate)
 		{
-			CreateVertices(m_WaterChunks, *chunk);
+			CreateVertices(m_WaterChunks, *chunk, predicateChunks);
 		}
 	}
 
@@ -431,11 +435,11 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 	return changedEnvironment;
 }
 
-void WorldGenerator::CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk)
+void WorldGenerator::CreateVertices(const std::vector<Chunk>& /*chunks*/, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks)
 {
 	chunk.verticesChanged = true;
 
-	std::vector<VertexPosNormTex> vertices{};
+	std::vector<VertexPosNormTexTransparency> vertices{};
 	for (int x{}; x < m_ChunkSize; ++x)
 	{
 		for (int z{}; z < m_ChunkSize; ++z)
@@ -446,40 +450,13 @@ void WorldGenerator::CreateVertices(const std::vector<Chunk>& chunks, Chunk& chu
 
 				if (!pBlock) continue;
 
-				const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
-
-				for (unsigned int i{}; i <= static_cast<unsigned int>(FaceDirection::BOTTOM); ++i)
+				switch (pBlock->mesh)
 				{
-					const XMINT3& neightbourDirection{ m_NeighbouringBlocks[i] };
-
-					const XMVECTOR positionVector = XMLoadSInt3(&position);
-					const XMVECTOR neighbourDirection = XMLoadSInt3(&neightbourDirection);
-					XMINT3 neighbourPosition{};
-					const XMVECTOR neighbourPosVector = XMVectorAdd(positionVector, neighbourDirection);
-					XMStoreSInt3(&neighbourPosition, neighbourPosVector);
-
-					if (!m_CanRenderPredicate(chunks, pBlock, neighbourPosition)) continue;
-
-					constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
-					for (int vIdx : faceIndices)
-					{
-						VertexPosNormTex v{ m_CubeVertices[i * 4 + vIdx] };
-
-						if (pBlock->type == BlockType::WATER && !m_IsBlockPredicate(m_WaterChunks, {x,y+1,z}))
-						{
-							constexpr float waterOffset{ 0.125 };
-							if (v.Position.y > 0.0f) v.Position.y -= waterOffset;
-						}
-
-						XMVECTOR pos{ XMLoadFloat3(&v.Position) };
-						pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) }
-						+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
-						XMStoreFloat3(&v.Position, pos);
-
-						v.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
-
-						vertices.push_back(v);
-					}
+				case BlockMesh::CUBE:
+					CreateVerticesCube(chunk, x, y, z, predicateChunks, pBlock, vertices);
+					break;
+				case BlockMesh::CROSS:
+					CreateVerticesCross(chunk, x, y, z, pBlock, vertices);
 				}
 			}
 		}
@@ -489,13 +466,91 @@ void WorldGenerator::CreateVertices(const std::vector<Chunk>& chunks, Chunk& chu
 	chunk.loadedWater = true;
 }
 
+void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices)
+{
+	const auto& cubeVertices{ BlockManager::Get()->GetVertices("cube") };
+
+	const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
+
+	for (unsigned int i{}; i <= static_cast<unsigned int>(FaceDirection::BOTTOM); ++i)
+	{
+		const XMINT3& neightbourDirection{ m_NeighbouringBlocks[i] };
+
+		const XMVECTOR positionVector = XMLoadSInt3(&position);
+		const XMVECTOR neighbourDirection = XMLoadSInt3(&neightbourDirection);
+		XMINT3 neighbourPosition{};
+		const XMVECTOR neighbourPosVector = XMVectorAdd(positionVector, neighbourDirection);
+		XMStoreSInt3(&neighbourPosition, neighbourPosVector);
+
+		bool canRender{ true };
+		for (const auto& chunks : predicateChunks)
+		{
+			if (!m_CanRenderPredicate(*chunks, neighbourPosition))
+			{
+				canRender = false;
+				break;
+			}
+		}
+		if (!canRender) continue;
+
+		constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
+		for (int vIdx : faceIndices)
+		{
+			VertexPosNormTexTransparency v{ cubeVertices[i * 4 + vIdx] };
+
+			if (pBlock->type == BlockType::WATER && !m_IsBlockPredicate(m_WaterChunks, { x,y + 1,z }))
+			{
+				constexpr float waterOffset{ 0.125 };
+				if (v.Position.y > 0.0f) v.Position.y -= waterOffset;
+			}
+
+			XMVECTOR pos{ XMLoadFloat3(&v.Position) };
+			pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) }
+			+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
+			XMStoreFloat3(&v.Position, pos);
+
+			v.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
+
+			v.Transparent = pBlock->transparent;
+
+			vertices.emplace_back(v);
+		}
+	}
+}
+
+void WorldGenerator::CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices)
+{
+	const auto& crossVertices{ BlockManager::Get()->GetVertices("cross") };
+
+	const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
+
+	for (int faceIdx{}; faceIdx < static_cast<int>(crossVertices.size()) / 4; ++faceIdx)
+	{
+		constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
+		for (int vIdx : faceIndices)
+		{
+			VertexPosNormTexTransparency vertexCopy{ crossVertices[faceIdx * 4 + vIdx] };
+
+			XMVECTOR pos{ XMLoadFloat3(&vertexCopy.Position) };
+			pos += XMVECTOR{ static_cast<float>(position.x),static_cast<float>(position.y),static_cast<float>(position.z) };
+			XMStoreFloat3(&vertexCopy.Position, pos);
+
+			vertexCopy.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, FaceDirection::FORWARD), vertexCopy.TexCoord);
+
+			vertexCopy.Transparent = pBlock->transparent;
+
+			vertices.emplace_back(vertexCopy);
+		}
+	}
+}
+
 std::vector<XMFLOAT3> WorldGenerator::GetPositions(const Chunk& chunk) const
 {
 	std::vector<XMFLOAT3> vertices{};
 	vertices.reserve(chunk.vertices.size());
 
 	int i{};
-	for (const VertexPosNormTex& v : chunk.vertices)
+	for (const VertexPosNormTexTransparency& v : chunk.vertices)
 	{
 		vertices.emplace_back(v.Position);
 		++i;
@@ -563,27 +618,35 @@ void WorldGenerator::LoadChunk(std::vector<Chunk>& chunks, int chunkX, int chunk
 					continue;
 				}
 
-				if (pBlock->type == BlockType::DIRT || pBlock->type == BlockType::GRASS) hasDirt = true;
+				if (pBlock->type == BlockType::DIRT || pBlock->type == BlockType::GRASS_BLOCK) hasDirt = true;
 				if (pBlock->type == BlockType::SAND && hasDirt) pBlock = BlockManager::Get()->GetBlock(BlockType::DIRT);
 
 				chunk.pBlocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock;
 			}
 
-			float bigVegitationNoise{ m_BigVegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			float vegitationNoise{ m_VegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 
-			constexpr float vegitationSpawnChance{ 0.7f };
-			if (bigVegitationNoise > vegitationSpawnChance)
+			constexpr float bigVegitationSpawnChance{ 0.7f };	
+			constexpr float smallVegitationSpawnChance{ 0.5f };
+			if (vegitationNoise > bigVegitationSpawnChance)
 			{
 				if (biome.bigVegitation != nullptr && chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
 				{
-					m_StructuresToSpawn.push_back(std::make_pair(biome.bigVegitation, XMINT3{ worldPosX,surfaceY + 1,worldPosZ }));
+					m_StructuresToSpawn.emplace_back(std::make_pair(biome.bigVegitation, XMINT3{ worldPosX,surfaceY + 1,worldPosZ }));
+				}
+			}
+			else if (vegitationNoise < smallVegitationSpawnChance)
+			{
+				if (biome.smallVegitation != nullptr && chunk.pBlocks[x + z * m_ChunkSize + surfaceY * m_ChunkSizeSqr] == biome.bigVegitation->pSpawnOnBlock)
+				{
+					m_StructuresToSpawn.emplace_back(std::make_pair(biome.smallVegitation, XMINT3{ worldPosX,surfaceY + 1,worldPosZ }));
 				}
 			}
 		}
 	}
 
-	chunks.push_back(chunk);
-	m_WaterChunks.push_back(waterChunk);
+	chunks.emplace_back(chunk);
+	m_WaterChunks.emplace_back(waterChunk);
 }
 
 void WorldGenerator::SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position)

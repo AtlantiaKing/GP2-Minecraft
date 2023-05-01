@@ -6,6 +6,7 @@ float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
 float gLightIntensity = 1.0f;
 
 float gShadowMapBias = 0.00005f;
+float gAlphaEpsilon = 0.1f;
 
 Texture2D gDiffuseMap;
 Texture2D gShadowMap;
@@ -39,6 +40,7 @@ struct VS_INPUT
 	float3 pos : POSITION;
 	float3 normal : NORMAL;
 	float2 texCoord : TEXCOORD;
+	bool transparent : TRANSPARENT;
 };
 struct VS_OUTPUT
 {
@@ -54,11 +56,19 @@ DepthStencilState EnableDepth
 	DepthWriteMask = ALL;
 };
 
-RasterizerState NoCulling
+RasterizerState BackCulling
 {
 	CullMode = BACK;
 };
+RasterizerState NoCulling
+{
+	CullMode = NONE;
+};
 
+BlendState NoBlending
+{
+	BlendEnable[0] = FALSE;
+};
 BlendState Blending
 {
 	BlendEnable[0] = TRUE;
@@ -150,6 +160,8 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	diffuseStrength = saturate(diffuseStrength);
 	color_rgb = color_rgb * diffuseStrength;
 
+	if (color_a < gAlphaEpsilon) discard;
+
 	return float4( color_rgb * shadowValue * gLightIntensity, color_a );
 }
 
@@ -160,9 +172,9 @@ technique11 Default
 {
     pass P0
     {
-		SetRasterizerState(NoCulling);
+		SetRasterizerState(BackCulling);
 		SetDepthStencilState(EnableDepth, 0);
-		SetBlendState(Blending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+		SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 
 		SetVertexShader( CompileShader( vs_4_0, VS() ) );
 		SetGeometryShader( NULL );
@@ -170,3 +182,16 @@ technique11 Default
     }
 }
 
+technique11 Transparent
+{
+	pass P0
+	{
+		SetRasterizerState(NoCulling);
+		SetDepthStencilState(EnableDepth, 0);
+		SetBlendState(Blending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
+
+		SetVertexShader(CompileShader(vs_4_0, VS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, PS()));
+	}
+}

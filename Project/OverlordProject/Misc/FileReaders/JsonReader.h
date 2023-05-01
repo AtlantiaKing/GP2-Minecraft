@@ -9,6 +9,7 @@ class JsonReader final
 {
 public:
 	std::unordered_map<std::string, Block*> ReadBlocks();
+	std::vector<std::string> ReadBlockTypes();
 	std::unordered_map<std::string, Biome> ReadBiomes(const std::unordered_map<std::string, Block*>& blocks, const std::unordered_map<std::string, Structure>& structures);
 	std::unordered_map<std::string, Structure> ReadStructures(const std::unordered_map<std::string, Block*>& blocks);
 private:

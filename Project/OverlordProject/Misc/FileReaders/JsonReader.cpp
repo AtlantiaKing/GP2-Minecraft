@@ -19,6 +19,24 @@ std::unordered_map<std::string,Block*> JsonReader::ReadBlocks()
 	return blocks;
 }
 
+std::vector<std::string> JsonReader::ReadBlockTypes()
+{
+	std::vector<std::string> blockTypes{};
+
+	std::ifstream input{ "Resources/Data/blocktypes.json" };
+	std::stringstream jsonStream{};
+	jsonStream << input.rdbuf();
+	rapidjson::Document d;
+	d.Parse(jsonStream.str().c_str());
+
+	for (const auto& blockType : d.GetArray())
+	{
+		blockTypes.emplace_back(blockType.GetString());
+	}
+
+	return blockTypes;
+}
+
 void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std::string, Block*>& blocks)
 {
 	Block* pBlock{ new Block{} };
@@ -31,6 +49,11 @@ void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std
 	
 	const auto& dropIt = block.FindMember("drop");
 	pBlock->dropBlock = dropIt != block.MemberEnd() ? blocks[dropIt->value.GetString()] : pBlock;
+
+	const auto& transparentIt = block.FindMember("transparent");
+	pBlock->transparent = transparentIt != block.MemberEnd() ? transparentIt->value.GetBool() : false;
+
+	pBlock->mesh = static_cast<BlockMesh>(block["mesh"].GetInt());
 
 	blocks[block["name"].GetString()] = pBlock;
 }
@@ -69,7 +92,7 @@ void JsonReader::ReadBiome(const rapidjson::Value& chunk, std::unordered_map<std
 		const auto& sizeIt = layer.FindMember("size");
 		bLayer.size = sizeIt != layer.MemberEnd() ? sizeIt->value.GetInt() : -1;
 
-		data.layers.push_back(bLayer);
+		data.layers.emplace_back(bLayer);
 	}
 
 	const auto& beachData{ chunk["beach"] };
@@ -82,7 +105,8 @@ void JsonReader::ReadBiome(const rapidjson::Value& chunk, std::unordered_map<std
 	const auto structureIt{ structures.find(chunk["big_vegitation"].GetString()) };
 	data.bigVegitation = structureIt != structures.end() ? &structures.at(chunk["big_vegitation"].GetString()) : nullptr;
 
-	// TODO: read small vegitation structures
+	const auto smallStructureIt{ structures.find(chunk["small_vegitation"].GetString()) };
+	data.smallVegitation = structureIt != structures.end() ? &structures.at(chunk["small_vegitation"].GetString()) : nullptr;
 
 	biomes[chunk["name"].GetString()] = data;
 }
@@ -136,7 +160,7 @@ void JsonReader::ReadStructure(const rapidjson::Document& structure, const std::
 
 		b.position = pos;
 
-		s.blocks.push_back(b);
+		s.blocks.emplace_back(b);
 	}
 
 	s.pSpawnOnBlock = blocks.at(structure["spawn_block"].GetString());

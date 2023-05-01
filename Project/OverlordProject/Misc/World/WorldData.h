@@ -13,7 +13,7 @@ enum class FaceDirection : BYTE
 enum class FaceType : BYTE
 {
 	DIRT,
-	GRASS,
+	GRASS_BLOCK,
 	GRASS_SIDE,
 	SAND,
 	WATER,
@@ -25,13 +25,14 @@ enum class FaceType : BYTE
 	SANDSTONE_TOP,
 	OAK_LOG_SIDE,
 	OAK_LOG_TOP,
-	OAK_LEAVES
+	OAK_LEAVES,
+	GRASS
 };
 
 enum class BlockType : BYTE
 {
 	DIRT = 0,
-	GRASS = 1,
+	GRASS_BLOCK = 1,
 	SAND = 3,
 	WATER = 4,
 	BEDROCK = 5,
@@ -39,14 +40,23 @@ enum class BlockType : BYTE
 	COBBLESTONE = 7,
 	SANDSTONE = 8,
 	OAK_LOG = 11,
-	OAK_LEAVES = 13
+	OAK_LEAVES = 13,
+	GRASS = 14
+};
+
+enum class BlockMesh : BYTE
+{
+	CUBE,
+	CROSS
 };
 
 struct Block
 {
 	BlockType type{};
-	float breakTime{};
+	BlockMesh mesh{};
 	Block* dropBlock{};
+	float breakTime{};
+	bool transparent{};
 };
 
 struct BlockLayer
@@ -73,5 +83,5 @@ struct Biome
 	std::vector<BlockLayer> layers{};
 	BlockLayer beach{};
 	const Structure* bigVegitation{};
-	// TODO: Add vegitation structures
+	const Structure* smallVegitation{};
 };

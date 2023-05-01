@@ -98,7 +98,8 @@
     <ClCompile Include="Components\Rendering\BlockBreakRenderer.cpp" />
     <ClCompile Include="Components\BlockInteractionComponent.cpp" />
     <ClCompile Include="Components\ItemFloatComponent.cpp" />
-    <ClCompile Include="Misc\Json\JsonReader.cpp" />
+    <ClCompile Include="Misc\FileReaders\JsonReader.cpp" />
+    <ClCompile Include="Misc\FileReaders\ObjReader.cpp" />
     <ClCompile Include="Prefabs\ItemEntity.cpp" />
     <ClCompile Include="Misc\World\TileAtlas.cpp" />
     <ClCompile Include="Components\PlayerMovement.cpp" />
@@ -139,7 +140,8 @@
     <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />
     <ClInclude Include="Components\BlockInteractionComponent.h" />
     <ClInclude Include="Components\ItemFloatComponent.h" />
-    <ClInclude Include="Misc\Json\JsonReader.h" />
+    <ClInclude Include="Misc\FileReaders\JsonReader.h" />
+    <ClInclude Include="Misc\FileReaders\ObjReader.h" />
     <ClInclude Include="Prefabs\ItemEntity.h" />
     <ClInclude Include="Misc\World\Chunk.h" />
     <ClInclude Include="Misc\World\WorldData.h" />

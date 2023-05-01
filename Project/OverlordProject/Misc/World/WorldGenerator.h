@@ -35,19 +35,21 @@ public:
 private:
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 	void SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position);
-	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk);
+	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
+
+	void CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
+	void CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
 
 	Block* GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachHeight, const Biome& biome) const;
 
 	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_IsBlockPredicate{};
-	std::function<bool(const std::vector<Chunk>& chunks, Block* pBlock, const XMINT3& position)> m_CanRenderPredicate{};
+	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_CanRenderPredicate{};
 	XMINT3 m_NeighbouringBlocks[6]{};
-	std::vector<VertexPosNormTex> m_CubeVertices{};
 
 	Perlin m_UnderSeaPerlin{};
 	Perlin m_HeightPerlin{};
 	Perlin m_BeachPerlin{};
-	Perlin m_BigVegitationPerlin{};
+	Perlin m_VegitationPerlin{};
 	TileAtlas m_TileMap{};
 
 	int m_RenderDistance{ 10 };
@@ -57,7 +59,7 @@ private:
 	int m_SeaLevel{ 64 };
 	const int m_ChunkSize{ 16 };
 
-	std::unique_ptr<Block> m_pWaterBlock{ std::make_unique<Block>(BlockType::WATER) };
+	std::unique_ptr<Block> m_pWaterBlock{};
 	std::vector<Chunk> m_WaterChunks{};
 	std::vector<std::pair<const Structure*, XMINT3>> m_StructuresToSpawn{};
 	int m_WorldWidth{};

@@ -9,7 +9,7 @@ BlockRenderer::BlockRenderer(BlockType type, const SceneContext& sceneContext)
 
 	TileAtlas tileAltas{};
 
-	std::vector<VertexPosNormTex> vertices =
+	std::vector<VertexPosNormTexTransparency> vertices =
 	{
 		{ { 0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, tileAltas.GetUV(tileAltas.GetFaceType(type, FaceDirection::FORWARD), { 0.0f, 0.0f }) },
 		{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f }, tileAltas.GetUV(tileAltas.GetFaceType(type, FaceDirection::FORWARD), { 1.0, 0.0f }) },
@@ -65,7 +65,7 @@ BlockRenderer::BlockRenderer(BlockType type, const SceneContext& sceneContext)
 	//VERTEX BUFFER
 	D3D11_BUFFER_DESC vertexBuffDesc{};
 	vertexBuffDesc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
-	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTex) * vertices.size());
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTexTransparency) * vertices.size());
 	vertexBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
@@ -74,7 +74,7 @@ BlockRenderer::BlockRenderer(BlockType type, const SceneContext& sceneContext)
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	d3d11.pDeviceContext->Map(m_pVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
-	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormTex) * size);
+	memcpy(mappedResource.pData, vertices.data(), sizeof(VertexPosNormTexTransparency) * size);
 	d3d11.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 
 	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects\\World.fx");
@@ -111,7 +111,7 @@ void BlockRenderer::Draw(const SceneContext& sceneContext)
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	constexpr UINT offset = 0;
-	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
 	D3DX11_TECHNIQUE_DESC techDesc{};
@@ -126,6 +126,6 @@ void BlockRenderer::Draw(const SceneContext& sceneContext)
 void BlockRenderer::ShadowMapDraw(const SceneContext& sceneContext)
 {
 	constexpr int nrVertices{ 6 * 6 };
-	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 	ShadowMapRenderer::Get()->DrawMesh(sceneContext, m_pVertexBuffer, nrVertices, stride, GetTransform()->GetWorld());
 }

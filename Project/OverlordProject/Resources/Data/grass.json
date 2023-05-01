@@ -1,0 +1,14 @@
+{
+    "blocks": [
+    {
+    	"block": "grass",
+    	"position": 
+    	{
+    		"x": 0,
+    		"y": 0,
+    		"z": 0
+    	}
+    }
+    ],
+    "spawn_block": "grass_block"
+}

@@ -11,26 +11,37 @@ void WorldRenderer::SetBuffers(std::vector<Chunk>& chunks, const SceneContext& s
 
 void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
 {
-	const auto& vertices{ chunk.vertices };
+	auto& vertices{ chunk.vertices };
 
 	if (vertices.size() == 0) return;
+
+	std::stable_partition(begin(vertices), end(vertices), [](const VertexPosNormTexTransparency& v) { return !v.Transparent; });
+	const int nrTransparent{ static_cast<int>(std::count_if(begin(vertices), end(vertices), [](const VertexPosNormTexTransparency& v) {return v.Transparent; })) };
 
 	//*************
 	//VERTEX BUFFER
 	D3D11_BUFFER_DESC vertexBuffDesc{};
 	vertexBuffDesc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
-	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTex) * vertices.size());
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTexTransparency) * (vertices.size() - nrTransparent));
 	vertexBuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
 
 	if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
+	if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
 
 	D3D11_SUBRESOURCE_DATA initData{};
 	initData.pSysMem = vertices.data();
 
-	chunk.vertexBufferSize = static_cast<int>(chunk.vertices.size());
-	sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexBuffer);
+	chunk.vertexBufferSize = static_cast<int>(chunk.vertices.size()) - nrTransparent;
+	if (chunk.vertexBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexBuffer);
+
+	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTexTransparency) * nrTransparent);
+
+	std::stable_partition(begin(vertices), end(vertices), [](const VertexPosNormTexTransparency& v) { return v.Transparent; });
+
+	chunk.vertexTransparentBufferSize = nrTransparent;
+	if(chunk.vertexTransparentBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexTransparentBuffer);
 }
 
 WorldRenderer::~WorldRenderer()
@@ -41,8 +52,9 @@ WorldRenderer::~WorldRenderer()
 void WorldRenderer::LoadEffect(const SceneContext& sceneContext)
 {
 	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects\\World.fx");
-	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
-	EffectHelper::BuildInputLayout(sceneContext.d3dContext.pDevice, m_pTechnique, &m_pInputLayout);
+	m_pDefaultTechnique = m_pEffect->GetTechniqueByIndex(0);
+	m_pTransparentTechnique = m_pEffect->GetTechniqueByIndex(1);
+	EffectHelper::BuildInputLayout(sceneContext.d3dContext.pDevice, m_pDefaultTechnique, &m_pInputLayout);
 
 	m_pWorldVar = m_pEffect->GetVariableBySemantic("World")->AsMatrix();
 
@@ -79,18 +91,31 @@ void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneCo
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	constexpr UINT offset = 0;
-	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 
 	for (const Chunk& chunk : chunks)
 	{
 		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
 
 		D3DX11_TECHNIQUE_DESC techDesc{};
-		m_pTechnique->GetDesc(&techDesc);
+		m_pDefaultTechnique->GetDesc(&techDesc);
 		for (UINT p = 0; p < techDesc.Passes; ++p)
 		{
-			m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+			m_pDefaultTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
 			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
+		}
+	}
+
+	for (const Chunk& chunk : chunks)
+	{
+		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexTransparentBuffer, &stride, &offset);
+
+		D3DX11_TECHNIQUE_DESC techDesc{};
+		m_pTransparentTechnique->GetDesc(&techDesc);
+		for (UINT p = 0; p < techDesc.Passes; ++p)
+		{
+			m_pTransparentTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexTransparentBufferSize), 0);
 		}
 	}
 }
@@ -117,22 +142,31 @@ void WorldRenderer::Draw(Chunk& chunk, const SceneContext& sceneContext)
 	deviceContext.pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	constexpr UINT offset = 0;
-	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 
 	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
 
 	D3DX11_TECHNIQUE_DESC techDesc{};
-	m_pTechnique->GetDesc(&techDesc);
+	m_pDefaultTechnique->GetDesc(& techDesc);
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
-		m_pTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+		m_pDefaultTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
 		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
+	}
+
+	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexTransparentBuffer, &stride, &offset);
+
+	m_pTransparentTechnique->GetDesc(&techDesc);
+	for (UINT p = 0; p < techDesc.Passes; ++p)
+	{
+		m_pTransparentTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexTransparentBufferSize), 0);
 	}
 }
 
 void WorldRenderer::DrawShadowMap(const Chunk& chunk, const SceneContext& sceneContext)
 {
-	constexpr UINT stride = sizeof(VertexPosNormTex);
+	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 	constexpr XMFLOAT4X4 worldMatrix{ 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 
 	ShadowMapRenderer::Get()->DrawMesh(sceneContext, chunk.pVertexBuffer, chunk.vertexBufferSize, stride, worldMatrix);

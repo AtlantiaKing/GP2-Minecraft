@@ -17,7 +17,7 @@ void Perlin::SetOctaves(int nrOctaves)
 	for (int i{ 1 }; i <= nrOctaves; ++i)
 	{
 		m_MaxNoiseValue += 1.0f / i;
-		m_OctaveSeeds.push_back(XMFLOAT2{ (rand() % 1001 / 1000.0f) * 10000, (rand() % 1001 / 1000.0f) * 10000 });
+		m_OctaveSeeds.emplace_back(XMFLOAT2{ (rand() % 1001 / 1000.0f) * 10000, (rand() % 1001 / 1000.0f) * 10000 });
 	}
 }
 

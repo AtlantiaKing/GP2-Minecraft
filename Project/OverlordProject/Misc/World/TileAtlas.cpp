@@ -28,12 +28,12 @@ FaceType TileAtlas::GetFaceType(BlockType blockType, FaceDirection faceDirection
 {
 	switch (blockType)
 	{
-	case BlockType::GRASS:
+	case BlockType::GRASS_BLOCK:
 	{
 		switch (faceDirection)
 		{
 		case FaceDirection::UP:
-			return FaceType::GRASS;
+			return FaceType::GRASS_BLOCK;
 		case FaceDirection::BOTTOM:
 			return FaceType::DIRT;
 		default:

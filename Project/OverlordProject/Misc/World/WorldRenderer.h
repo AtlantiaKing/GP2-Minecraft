@@ -22,7 +22,8 @@ private:
 	ID3DX11EffectVectorVariable* m_pLightDirVar{};
 
 	ID3DX11Effect* m_pEffect;
-	ID3DX11EffectTechnique* m_pTechnique;
+	ID3DX11EffectTechnique* m_pDefaultTechnique;
+	ID3DX11EffectTechnique* m_pTransparentTechnique;
 	ID3D11InputLayout* m_pInputLayout;
 };
 

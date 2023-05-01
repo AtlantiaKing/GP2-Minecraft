@@ -21,8 +21,9 @@
     <ClCompile Include="Prefabs\ItemEntity.cpp" />
     <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
     <ClCompile Include="Components\ItemFloatComponent.cpp" />
-    <ClCompile Include="Misc\Json\JsonReader.cpp" />
+    <ClCompile Include="Misc\FileReaders\JsonReader.cpp" />
     <ClCompile Include="Managers\BlockManager.cpp" />
+    <ClCompile Include="Misc\FileReaders\ObjReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -46,7 +47,8 @@
     <ClInclude Include="Prefabs\ItemEntity.h" />
     <ClInclude Include="Components\Rendering\BlockRenderer.h" />
     <ClInclude Include="Components\ItemFloatComponent.h" />
-    <ClInclude Include="Misc\Json\JsonReader.h" />
+    <ClInclude Include="Misc\FileReaders\JsonReader.h" />
     <ClInclude Include="Managers\BlockManager.h" />
+    <ClInclude Include="Misc\FileReaders\ObjReader.h" />
   </ItemGroup>
 </Project>

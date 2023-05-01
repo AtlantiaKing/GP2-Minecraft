@@ -97,7 +97,7 @@ void WorldScene::Update()
 {
 	m_pWorld->UpdateColliders(m_pPlayer->GetTransform()->GetWorldPosition());
 
-	const auto& lightDir{ m_SceneContext.pLights->GetDirectionalLight().direction };
+	const auto& lightDir{m_SceneContext.pLights->GetDirectionalLight().direction};
 	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
 
 	const XMVECTOR directionVec{ XMLoadFloat3(&direction) };
