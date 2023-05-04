@@ -227,7 +227,7 @@ void WorldComponent::LoadColliders(bool reloadAll)
 
 void WorldComponent::LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat)
 {
-    // Get all the vertices of the world (these do not include water)
+    // Get all the vertices of the world
     std::vector<XMFLOAT3> vertices{ m_Generator.GetPositions(chunk) };
 
     // Create a list of indices (starts at 0 and ends at nrVertices)

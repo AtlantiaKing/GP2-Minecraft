@@ -553,12 +553,11 @@ std::vector<XMFLOAT3> WorldGenerator::GetPositions(const Chunk& chunk) const
 	std::vector<XMFLOAT3> vertices{};
 	vertices.reserve(chunk.vertices.size());
 
-	int i{};
 	for (const VertexPosNormTexTransparency& v : chunk.vertices)
 	{
+		if (v.Transparent) continue;
+
 		vertices.emplace_back(v.Position);
-		++i;
-		if (i >= chunk.vertices.size()) break;
 	}
 
 	return vertices;
