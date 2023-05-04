@@ -18,13 +18,15 @@ WorldGenerator::WorldGenerator()
 
 		return *pBlock;
 	};
-	m_CanRenderPredicate = [&](const std::vector<Chunk>& chunks, const XMINT3& neighbourPos) -> bool
+	m_CanRenderPredicate = [&](const std::vector<Chunk>& chunks, const XMINT3& neighbourPos, BlockType curBlock) -> bool
 	{
 		Block* const* pNeighbourBlock{ GetBlockInChunk(neighbourPos.x, neighbourPos.y, neighbourPos.z, chunks) };
 
 		if (!pNeighbourBlock || !*pNeighbourBlock) return true;
 
-		if ((*pNeighbourBlock)->mesh == BlockMesh::CROSS || (*pNeighbourBlock)->transparent) return true;
+		if ((*pNeighbourBlock)->mesh == BlockMesh::CROSS) return true;
+
+		if (curBlock != BlockType::WATER && (*pNeighbourBlock)->transparent) return true;
 
 		return false;
 	};
@@ -139,9 +141,15 @@ void WorldGenerator::ReloadChunks(std::vector<Chunk>& chunks, int changedX, int 
 			{
 				return chunk.position.x == pChunk->position.x && chunk.position.y == otherChunkY;
 			}) };
+		auto neighbourWaterIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+			{
+				return chunk.position.x == pChunk->position.x && chunk.position.y == otherChunkY;
+			}) };
 
 		if (neighbourIt != chunks.end())
 			CreateVertices(chunks, *neighbourIt, predicateChunks);
+		if (neighbourWaterIt != m_WaterChunks.end())
+			CreateVertices(m_WaterChunks, *neighbourIt, predicateWaterChunks);
 	}
 }
 
@@ -214,7 +222,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 	// If the environment has been changed
 	if (changedEnvironment)
 	{
-		std::vector<std::vector<Chunk>::iterator> chunksThatNeedUpdate{};
+		std::vector<Chunk*> chunksThatNeedUpdate{};
 
 		// Add the new water blocks to the water object
 		for (const XMINT3& block : newBlocks)
@@ -222,6 +230,11 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 			Block** pWaterBlock{ GetBlockInChunk(static_cast<int>(block.x),static_cast<int>(block.y),static_cast<int>(block.z), m_WaterChunks) };
 
 			*pWaterBlock = m_pWaterBlock.get();
+
+			Chunk* pChunk{ GetChunkAt(static_cast<int>(block.x),static_cast<int>(block.z), m_WaterChunks) };
+
+			if (std::find_if(begin(chunksThatNeedUpdate), end(chunksThatNeedUpdate), [pChunk](Chunk* pUpdateChunk) { return pUpdateChunk == pChunk; }) == end(chunksThatNeedUpdate))
+				chunksThatNeedUpdate.push_back(pChunk);
 		}
 
 		// remove the blocks from the water object
@@ -230,15 +243,20 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 			Block** pWaterBlock{ GetBlockInChunk(static_cast<int>(block.x),static_cast<int>(block.y),static_cast<int>(block.z), m_WaterChunks) };
 
 			*pWaterBlock = nullptr;
+
+			Chunk* pChunk{ GetChunkAt(static_cast<int>(block.x),static_cast<int>(block.z), m_WaterChunks) };
+
+			if (std::find_if(begin(chunksThatNeedUpdate), end(chunksThatNeedUpdate), [pChunk](Chunk* pUpdateChunk) { return pUpdateChunk == pChunk; }) == end(chunksThatNeedUpdate))
+				chunksThatNeedUpdate.push_back(pChunk);
 		}
 
 		// Reload the water vertices
 		std::vector<std::vector<Chunk>*> predicateChunks{};
 		predicateChunks.push_back(&chunks);
 		predicateChunks.push_back(&m_WaterChunks);
-		for (const auto& chunk : chunksThatNeedUpdate)
+		for (Chunk* pChunk : chunksThatNeedUpdate)
 		{
-			CreateVertices(m_WaterChunks, *chunk, predicateChunks);
+			CreateVertices(m_WaterChunks, *pChunk, predicateChunks);
 		}
 	}
 
@@ -297,7 +315,7 @@ void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const
 		bool canRender{ true };
 		for (const auto& chunks : predicateChunks)
 		{
-			if (!m_CanRenderPredicate(*chunks, neighbourPosition))
+			if (!m_CanRenderPredicate(*chunks, neighbourPosition, pBlock->type))
 			{
 				canRender = false;
 				break;

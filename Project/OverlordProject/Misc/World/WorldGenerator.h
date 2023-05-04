@@ -48,7 +48,7 @@ private:
 	Block* GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachHeight, const Biome& biome) const;
 
 	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_IsBlockPredicate{};
-	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position)> m_CanRenderPredicate{};
+	std::function<bool(const std::vector<Chunk>& chunks, const XMINT3& position, BlockType curBlock)> m_CanRenderPredicate{};
 	XMINT3 m_NeighbouringBlocks[6]{};
 
 	Perlin m_UnderSeaPerlin{};
