@@ -56,7 +56,7 @@ WorldGenerator::WorldGenerator()
 
 		if (!pNeighbour) return true;
 
-		if (pNeighbour->mesh == BlockMesh::CROSS) return true;
+		if (pNeighbour->mesh == BlockMesh::CROSS || pNeighbour->transparent) return true;
 
 		return false;
 	};
