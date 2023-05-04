@@ -127,7 +127,8 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position)
 
     // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
-    GetScene()->AddChild(new ItemEntity{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock->type, position});
+    Block* pDropBlock{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock };
+    if(pDropBlock) GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position});
 }
 
 Block* WorldComponent::GetBlockAt(int x, int y, int z)

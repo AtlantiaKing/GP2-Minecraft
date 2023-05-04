@@ -48,7 +48,16 @@ void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std
 	pBlock->breakTime =  1.0f / (1.0f / block["hardness"].GetFloat() / 30.0f) / 20.0f;
 	
 	const auto& dropIt = block.FindMember("drop");
-	pBlock->dropBlock = dropIt != block.MemberEnd() ? blocks[dropIt->value.GetString()] : pBlock;
+	if (dropIt != block.MemberEnd())
+	{
+		auto str{ dropIt->value.GetString() };
+		if (strcmp(str, "none") == 0) pBlock->dropBlock = nullptr;
+		else pBlock->dropBlock = blocks[str];
+	}
+	else
+	{
+		pBlock->dropBlock = pBlock;
+	}
 
 	const auto& transparentIt = block.FindMember("transparent");
 	pBlock->transparent = transparentIt != block.MemberEnd() ? transparentIt->value.GetBool() : false;
