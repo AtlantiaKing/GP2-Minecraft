@@ -22,7 +22,7 @@ public:
 	void LoadWorld(std::vector<Chunk>& chunks);
 	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
 	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
-	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
+	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks);
 	bool ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
@@ -33,7 +33,12 @@ public:
 	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
 	int GetChunkSize() const { return m_ChunkSize; }
 private:
+	Block** GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
+	Block* const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
+	Chunk* GetChunkAt(int x, int z, std::vector<Chunk>& chunks);
+
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
+	void ReloadChunks(std::vector<Chunk>& chunks, int changedX, int changedY, int changedZ);
 	void SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position);
 	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
 
@@ -52,7 +57,7 @@ private:
 	Perlin m_VegitationPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 10 };
+	int m_RenderDistance{ 5 };
 	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
