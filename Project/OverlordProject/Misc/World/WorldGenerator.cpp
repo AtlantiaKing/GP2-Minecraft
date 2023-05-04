@@ -438,6 +438,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 void WorldGenerator::CreateVertices(const std::vector<Chunk>& /*chunks*/, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks)
 {
 	chunk.verticesChanged = true;
+	chunk.needColliderChange = true;
 
 	std::vector<VertexPosNormTexTransparency> vertices{};
 	for (int x{}; x < m_ChunkSize; ++x)

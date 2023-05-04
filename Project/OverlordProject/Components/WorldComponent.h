@@ -30,12 +30,14 @@ protected:
 	virtual void PostDraw(const SceneContext& sceneContext) override;
 	virtual void ShadowMapDraw(const SceneContext& sceneContext) override;
 private:
-	void StartWorldThread();
-	void StartEnvironmentalChanges();
-	void LoadColliders();
+	void StartWorldThread(const SceneContext& sceneContext);
+	void StartEnvironmentalChanges(const SceneContext& sceneContext);
+	void LoadColliders(bool reloadAll = false);
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 	void ReloadWorld(const SceneContext& sceneContext);
 	void ReloadWater(const SceneContext& sceneContext);
+	void SwapWorld();
+	void SwapWater();
 
 	std::thread m_WorldThread{};
 	std::thread m_EnvironmentThread{};
@@ -54,8 +56,12 @@ private:
 	bool m_ShouldPlaceBlock{};
 	XMFLOAT3 m_EditBlockPosition{};
 	BlockType m_EditBlockType{};
+
 	bool m_ShouldReload{};
 	bool m_ShouldReloadWater{};
+	bool m_ShouldSwapWorld{};
+	bool m_ShouldSwapWater{};
+
 	bool m_CanChangeEnvironment{};
 };
 

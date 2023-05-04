@@ -16,12 +16,21 @@ struct Chunk
 
 	std::vector<VertexPosNormTexTransparency> vertices{};
 	std::vector<Block*> pBlocks{};
-	ID3D11Buffer* pVertexBuffer{};
-	int vertexBufferSize{};
-	ID3D11Buffer* pVertexTransparentBuffer{};
-	int vertexTransparentBufferSize{};
+
 	XMINT2 position;
+
+	ID3D11Buffer* pVertexBuffer{};
+	ID3D11Buffer* pBackVertexBuffer{};
+	ID3D11Buffer* pVertexTransparentBuffer{};
+	ID3D11Buffer* pBackVertexTransparentBuffer{};
+	
+	int vertexBufferSize{};
+	int backVertexBufferSize{};
+	int vertexTransparentBufferSize{};
+	int backVertexTransparentBufferSize{};
+
 	int colliderIdx{ -1 };
 	bool verticesChanged{ true };
+	bool needColliderChange{ true };
 	bool loadedWater{};
 };

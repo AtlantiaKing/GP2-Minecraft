@@ -11,16 +11,15 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 	m_Renderer.LoadEffect(sceneContext);
 
     m_enablePostDraw = true;
-    //m_enableShadowMapDraw = true;
 
     // Create the cooking interface
     auto& physX{ PxGetPhysics() };
     m_pColliderCooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
 
     // Start a new thread that removes blocks
-    m_WorldThread = std::thread{ [this]() { StartWorldThread(); } };
+    m_WorldThread = std::thread{ [this,sceneContext]() { StartWorldThread(sceneContext); } };
     // Start a new thread that has environmental logic
-    m_EnvironmentThread = std::thread{ [this]() { StartEnvironmentalChanges(); } };
+    m_EnvironmentThread = std::thread{ [this,sceneContext]() { StartEnvironmentalChanges(sceneContext); } };
 }
 
 WorldComponent::~WorldComponent()
@@ -36,7 +35,7 @@ WorldComponent::~WorldComponent()
     m_EnvironmentThread.join();
 }
 
-void WorldComponent::StartWorldThread()
+void WorldComponent::StartWorldThread(const SceneContext& sceneContext)
 {
     // While the thread is alive
     while (m_IsMultithreaded)
@@ -46,12 +45,15 @@ void WorldComponent::StartWorldThread()
             // Remove the block from the right chunk
             m_Generator.RemoveBlock(m_Chunks, m_EditBlockPosition);
 
+            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+            m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext, false);
+
+            // Reset ShouldRemoveBlock State
             m_ShouldRemoveBlock = false;
 
             // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldReload = true;
-            // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldReloadWater = true;
+            m_ShouldSwapWorld = true;
+            m_ShouldSwapWater = true;
         }
         else if (m_ShouldPlaceBlock)
         {
@@ -60,8 +62,10 @@ void WorldComponent::StartWorldThread()
             // Remove the block from the right chunk
             m_Generator.PlaceBlock(m_Chunks, m_EditBlockPosition, m_EditBlockType);
 
+            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+
             // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldReload = true;
+            m_ShouldSwapWorld = true;
         }
         
         // Don't overdo the CPU with this infinite while loop by sleeping the thread
@@ -69,7 +73,7 @@ void WorldComponent::StartWorldThread()
     }
 }
 
-void WorldComponent::StartEnvironmentalChanges()
+void WorldComponent::StartEnvironmentalChanges(const SceneContext& sceneContext)
 {
     // Milliseconds per environmental tick
     constexpr int tickTime{ 100 };
@@ -82,8 +86,12 @@ void WorldComponent::StartEnvironmentalChanges()
         // If the world is loaded, try changing the environment in the generator
         if (m_CanChangeEnvironment && m_Generator.ChangeEnvironment(m_Chunks, m_ChunkCenter))
         {
-            m_ShouldReload = true;
-            m_ShouldReloadWater = true;
+            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+            m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext, false);
+
+            // Let the main thread know that it should reload vertex buffers and colliders
+            m_ShouldSwapWorld = true;
+            m_ShouldSwapWater = true;
         }
 
         // Wait until the tick has been completed
@@ -117,8 +125,8 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position)
     m_EditBlockPosition = position;
     m_ShouldRemoveBlock = true;
 
+    // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
-
     GetScene()->AddChild(new ItemEntity{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock->type, position});
 }
 
@@ -141,7 +149,7 @@ void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
     {
         m_ChunkCenter = chunkPos;
 
-        LoadColliders();
+        LoadColliders(true);
     }
 }
 
@@ -174,15 +182,21 @@ void WorldComponent::Update(const SceneContext& sceneContext)
         ReloadWater(sceneContext);
         m_ShouldReloadWater = false;
     }
+    if (m_ShouldSwapWorld) SwapWorld();
+    if (m_ShouldSwapWater) SwapWater();
 }
 
-void WorldComponent::LoadColliders()
+void WorldComponent::LoadColliders(bool reloadAll)
 {
     auto& physX{ PxGetPhysics() };
     auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
     for (Chunk& chunk : m_Chunks)
     {
+        if (!reloadAll && !chunk.needColliderChange) continue;
+
+        chunk.needColliderChange = false;
+
         // Remove any chunks that are outside the range
         if (chunk.position.x < (m_ChunkCenter.x - 1) || chunk.position.x > (m_ChunkCenter.x + 1) || chunk.position.y < (m_ChunkCenter.y - 1) || chunk.position.y > (m_ChunkCenter.y + 1))
         {
@@ -205,8 +219,6 @@ void WorldComponent::LoadColliders()
 
             continue;
         }
-
-        if (!chunk.verticesChanged) continue;
 
         LoadChunkCollider(chunk, m_pColliderCooking, physX, pPhysMat);
     }
@@ -277,6 +289,51 @@ void WorldComponent::ReloadWater(const SceneContext& sceneContext)
 {
     // Set up the vertex buffer
     m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext);
+}
+
+void WorldComponent::SwapWorld()
+{
+    for(Chunk& chunk : m_Chunks)
+    {
+        if (chunk.pBackVertexBuffer && chunk.pBackVertexBuffer != chunk.pVertexBuffer)
+        {
+            SafeRelease(chunk.pVertexBuffer);
+
+            chunk.vertexBufferSize = chunk.backVertexBufferSize;
+            chunk.pVertexBuffer = chunk.pBackVertexBuffer;
+        }
+        if (chunk.pBackVertexTransparentBuffer && chunk.pBackVertexTransparentBuffer != chunk.pVertexTransparentBuffer)
+        {
+            SafeRelease(chunk.pVertexTransparentBuffer);
+
+            chunk.vertexTransparentBufferSize = chunk.backVertexTransparentBufferSize;
+            chunk.pVertexTransparentBuffer = chunk.pBackVertexTransparentBuffer;
+        }
+    }
+
+    m_ShouldSwapWorld = false;
+
+    // Create a collider for the world
+    LoadColliders();
+}
+
+void WorldComponent::SwapWater()
+{
+    for (Chunk& chunk : m_Generator.GetWater())
+    {
+        if (chunk.pBackVertexBuffer && chunk.pBackVertexBuffer != chunk.pVertexBuffer)
+        {
+            chunk.vertexBufferSize = chunk.backVertexBufferSize;
+            chunk.pVertexBuffer = chunk.pBackVertexBuffer;
+        }
+        if (chunk.pBackVertexTransparentBuffer && chunk.pBackVertexTransparentBuffer != chunk.pVertexTransparentBuffer)
+        {
+            chunk.vertexTransparentBufferSize = chunk.backVertexTransparentBufferSize;
+            chunk.pVertexTransparentBuffer = chunk.pBackVertexTransparentBuffer;
+        }
+    }
+
+    m_ShouldSwapWater = false;
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)

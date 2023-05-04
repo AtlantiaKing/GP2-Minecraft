@@ -3,7 +3,7 @@
     "name": "dirt",
 	"id": 0,
 	"mesh": 0,
-    "hardness": 0.5
+    "hardness": 0
 },
 {
     "name": "grass_block",

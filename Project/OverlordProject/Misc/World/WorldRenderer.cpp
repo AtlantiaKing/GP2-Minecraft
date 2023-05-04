@@ -1,16 +1,18 @@
 #include "stdafx.h"
 #include "WorldRenderer.h"
 
-void WorldRenderer::SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext)
+void WorldRenderer::SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext, bool instantApply)
 {
 	for (Chunk& chunk : chunks)
 	{
-		if(chunk.verticesChanged) SetBuffer(chunk, sceneContext);
+		if(chunk.verticesChanged) SetBuffer(chunk, sceneContext, instantApply);
 	}
 }
 
-void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
+void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext, bool instantApply)
 {
+	chunk.verticesChanged = false;
+
 	auto& vertices{ chunk.vertices };
 
 	if (vertices.size() == 0) return;
@@ -27,21 +29,26 @@ void WorldRenderer::SetBuffer(Chunk& chunk, const SceneContext& sceneContext)
 	vertexBuffDesc.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
 	vertexBuffDesc.MiscFlags = 0;
 
-	if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
-	if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+	ID3D11Buffer** pVBuffer{ instantApply ? &chunk.pVertexBuffer : &chunk.pBackVertexBuffer };
+	int& vBufferSize{ instantApply ? chunk.vertexBufferSize : chunk.backVertexBufferSize };
+	ID3D11Buffer** pVTransparentBuffer{ instantApply ? &chunk.pVertexTransparentBuffer : &chunk.pBackVertexTransparentBuffer };
+	int& vTransparentBufferSize{ instantApply ? chunk.vertexTransparentBufferSize : chunk.backVertexTransparentBufferSize };
+
+	if (instantApply && *pVBuffer) SafeRelease((*pVBuffer));
+	if (instantApply && *pVTransparentBuffer) SafeRelease((*pVTransparentBuffer));
 
 	D3D11_SUBRESOURCE_DATA initData{};
 	initData.pSysMem = vertices.data();
 
-	chunk.vertexBufferSize = static_cast<int>(chunk.vertices.size()) - nrTransparent;
-	if (chunk.vertexBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexBuffer);
+	vBufferSize = static_cast<int>(chunk.vertices.size()) - nrTransparent;
+	if (vBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, pVBuffer);
 
 	vertexBuffDesc.ByteWidth = static_cast<UINT>(sizeof(VertexPosNormTexTransparency) * nrTransparent);
 
 	std::stable_partition(begin(vertices), end(vertices), [](const VertexPosNormTexTransparency& v) { return v.Transparent; });
 
-	chunk.vertexTransparentBufferSize = nrTransparent;
-	if(chunk.vertexTransparentBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, &chunk.pVertexTransparentBuffer);
+	vTransparentBufferSize = nrTransparent;
+	if(vTransparentBufferSize > 0) sceneContext.d3dContext.pDevice->CreateBuffer(&vertexBuffDesc, &initData, pVTransparentBuffer);
 }
 
 WorldRenderer::~WorldRenderer()
