@@ -241,6 +241,9 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 
 	it->pBlocks[blockIdx] = BlockManager::Get()->GetBlock(block);
 
+	const int blockUnderIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + (lookUpPos.y-1) * m_ChunkSize * m_ChunkSize };
+	if (it->pBlocks[blockUnderIdx] && it->pBlocks[blockUnderIdx]->type == BlockType::GRASS_BLOCK) it->pBlocks[blockUnderIdx] = BlockManager::Get()->GetBlock(BlockType::DIRT);
+
 	std::vector<std::vector<Chunk>*> predicateChunks{};
 	predicateChunks.push_back(&chunks);
 	CreateVertices(chunks, *it, predicateChunks);
@@ -682,6 +685,12 @@ void WorldGenerator::SpawnStructure(std::vector<Chunk>& chunks, const Structure*
 		const int blockIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + lookUpPos.y * m_ChunkSize * m_ChunkSize };
 
 		it->pBlocks[blockIdx] = b.pBlock;
+
+		if (b.pBlock->mesh == BlockMesh::CUBE)
+		{
+			const int blockUnderIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + (lookUpPos.y - 1) * m_ChunkSize * m_ChunkSize };
+			if (it->pBlocks[blockUnderIdx] && it->pBlocks[blockUnderIdx]->type == BlockType::GRASS_BLOCK) it->pBlocks[blockUnderIdx] = BlockManager::Get()->GetBlock(BlockType::DIRT);
+		}
 	}
 }
 
