@@ -78,6 +78,9 @@ void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& pos
 
 	*pBlock = nullptr;
 
+	Block** pBlockUp{ GetBlockInChunk(static_cast<int>(position.x), static_cast<int>(position.y) + 1, static_cast<int>(position.z), chunks) };
+	if (pBlockUp && (*pBlockUp) && (*pBlockUp)->mesh == BlockMesh::CROSS) *pBlockUp = nullptr;
+
 	ReloadChunks(chunks, static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z));
 }
 
@@ -89,11 +92,8 @@ void WorldGenerator::PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& posi
 
 	*pBlock = BlockManager::Get()->GetBlock(block);
 
-	Chunk* pChunk{ GetChunkAt(static_cast<int>(position.x), static_cast<int>(position.z), chunks) };
-	const XMINT3 lookUpPos{ static_cast<int>(position.x) - pChunk->position.x * m_ChunkSize, static_cast<int>(position.y), static_cast<int>(position.z) - pChunk->position.y * m_ChunkSize };
-
-	const int blockUnderIdx{ lookUpPos.x + lookUpPos.z * m_ChunkSize + (lookUpPos.y-1) * m_ChunkSize * m_ChunkSize };
-	if (pChunk->pBlocks[blockUnderIdx] && pChunk->pBlocks[blockUnderIdx]->type == BlockType::GRASS_BLOCK) pChunk->pBlocks[blockUnderIdx] = BlockManager::Get()->GetBlock(BlockType::DIRT);
+	Block** pBlockDown{ GetBlockInChunk(static_cast<int>(position.x), static_cast<int>(position.y) - 1, static_cast<int>(position.z), chunks) };
+	if (pBlockDown && (*pBlockDown) && (*pBlockDown)->type == BlockType::GRASS_BLOCK) *pBlockDown = BlockManager::Get()->GetBlock(BlockType::DIRT);
 
 	ReloadChunks(chunks, static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z));
 }
