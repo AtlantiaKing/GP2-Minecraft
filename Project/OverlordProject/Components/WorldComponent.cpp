@@ -131,7 +131,7 @@ void WorldComponent::DestroyBlock(const XMFLOAT3& position)
     if(pDropBlock) GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position});
 }
 
-Block* WorldComponent::GetBlockAt(int x, int y, int z)
+Block* WorldComponent::GetBlockAt(int x, int y, int z) const
 {
     return m_Generator.GetBlockAt(x, y, z, m_Chunks);
 }

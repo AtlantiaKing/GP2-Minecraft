@@ -22,7 +22,7 @@ public:
 	void LoadWorld(std::vector<Chunk>& chunks);
 	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
 	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
-	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks);
+	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 	bool ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
@@ -35,12 +35,12 @@ public:
 private:
 	Block** GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
 	Block* const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
-	Chunk* GetChunkAt(int x, int z, std::vector<Chunk>& chunks);
+	Chunk* GetChunkAt(int x, int z, std::vector<Chunk>& chunks) const;
 
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
 	void ReloadChunks(std::vector<Chunk>& chunks, int changedX, int changedY, int changedZ);
 	void SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position);
-	void CreateVertices(const std::vector<Chunk>& chunks, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
+	void CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
 
 	void CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
 	void CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);

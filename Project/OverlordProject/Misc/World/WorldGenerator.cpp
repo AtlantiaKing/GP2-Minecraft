@@ -70,7 +70,6 @@ WorldGenerator::WorldGenerator()
 		}
 	}
 }
-
 void WorldGenerator::RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position)
 {
 	Block** pBlock{ GetBlockInChunk(static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z), chunks) };
@@ -111,8 +110,8 @@ void WorldGenerator::ReloadChunks(std::vector<Chunk>& chunks, int changedX, int 
 	predicateWaterChunks.push_back(&chunks);
 	predicateWaterChunks.push_back(&m_WaterChunks);
 
-	CreateVertices(chunks, *pChunk, predicateChunks);
-	CreateVertices(m_WaterChunks, *pWaterChunk, predicateWaterChunks);
+	CreateVertices(*pChunk, predicateChunks);
+	CreateVertices(*pWaterChunk, predicateWaterChunks);
 
 	if (lookUpPos.x == 0 || lookUpPos.x == m_ChunkSize - 1)
 	{
@@ -128,9 +127,9 @@ void WorldGenerator::ReloadChunks(std::vector<Chunk>& chunks, int changedX, int 
 			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt, predicateChunks);
+			CreateVertices(*neighbourIt, predicateChunks);
 		if (neighbourWaterIt != m_WaterChunks.end())
-			CreateVertices(m_WaterChunks, *neighbourIt, predicateWaterChunks);
+			CreateVertices(*neighbourIt, predicateWaterChunks);
 	}
 
 	if (lookUpPos.z == 0 || lookUpPos.z == m_ChunkSize - 1)
@@ -147,9 +146,9 @@ void WorldGenerator::ReloadChunks(std::vector<Chunk>& chunks, int changedX, int 
 			}) };
 
 		if (neighbourIt != chunks.end())
-			CreateVertices(chunks, *neighbourIt, predicateChunks);
+			CreateVertices(*neighbourIt, predicateChunks);
 		if (neighbourWaterIt != m_WaterChunks.end())
-			CreateVertices(m_WaterChunks, *neighbourIt, predicateWaterChunks);
+			CreateVertices(*neighbourIt, predicateWaterChunks);
 	}
 }
 
@@ -256,7 +255,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 		predicateChunks.push_back(&m_WaterChunks);
 		for (Chunk* pChunk : chunksThatNeedUpdate)
 		{
-			CreateVertices(m_WaterChunks, *pChunk, predicateChunks);
+			CreateVertices(*pChunk, predicateChunks);
 		}
 	}
 
@@ -264,7 +263,7 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 	return changedEnvironment;
 }
 
-void WorldGenerator::CreateVertices(const std::vector<Chunk>& /*chunks*/, Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks)
+void WorldGenerator::CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks)
 {
 	chunk.verticesChanged = true;
 	chunk.needColliderChange = true;
@@ -374,7 +373,7 @@ void WorldGenerator::CreateVerticesCross(Chunk& chunk, int x, int y, int z, Bloc
 	}
 }
 
-Block* WorldGenerator::GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks)
+Block* WorldGenerator::GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const
 {
 	Block* const* pBlock{ GetBlockInChunk(x,y,z,chunks) };
 
@@ -423,14 +422,14 @@ void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks)
 
 	for (Chunk& chunk : chunks)
 	{
-		CreateVertices(chunks, chunk, predicateChunks);
+		CreateVertices(chunk, predicateChunks);
 	}
 
 	predicateChunks.push_back(&m_WaterChunks);
 
 	for (Chunk& chunk : m_WaterChunks)
 	{
-		CreateVertices(m_WaterChunks, chunk, predicateChunks);
+		CreateVertices(chunk, predicateChunks);
 	}
 }
 
@@ -630,7 +629,7 @@ Block* const* WorldGenerator::GetBlockInChunk(int x, int y, int z, const std::ve
 	return it->pBlocks.data() + blockIdx;
 }
 
-Chunk* WorldGenerator::GetChunkAt(int x, int z, std::vector<Chunk>& chunks)
+Chunk* WorldGenerator::GetChunkAt(int x, int z, std::vector<Chunk>& chunks) const
 {
 	const XMINT2 chunkPos
 	{
