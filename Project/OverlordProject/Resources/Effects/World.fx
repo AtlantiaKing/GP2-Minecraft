@@ -136,10 +136,7 @@ float EvaluateShadowMap(float4 lpos)
 
 	float shadowMapDepth = sum / 16.0;
 
-	// If clip space z value greater than shadow map value then pixel is in shadow
-	if (shadowMapDepth < lpos.z) return 0.4f;
-
-	return 1.0f;
+	return shadowMapDepth * 0.5f + 0.5f;
 }
 
 //--------------------------------------------------------------------------------------
@@ -156,8 +153,9 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	
 	//HalfLambert Diffuse :)
 	float diffuseStrength = dot(input.normal, -gLightDirection);
-	diffuseStrength = diffuseStrength * 0.5 + 0.5;
+	diffuseStrength = diffuseStrength * 0.5f + 0.5f;
 	diffuseStrength = saturate(diffuseStrength);
+	diffuseStrength = diffuseStrength * 0.8f + 0.2f;
 	color_rgb = color_rgb * diffuseStrength;
 
 	clip(color_a - gAlphaEpsilon);
