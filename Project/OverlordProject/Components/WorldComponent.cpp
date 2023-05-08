@@ -340,6 +340,10 @@ void WorldComponent::SwapWater()
 void WorldComponent::Draw(const SceneContext& sceneContext)
 {
     m_Renderer.Draw(m_Chunks, sceneContext);
+}
+
+void WorldComponent::PostDraw(const SceneContext& sceneContext)
+{
     m_Renderer.Draw(m_Generator.GetWater(), sceneContext);
 }
 
