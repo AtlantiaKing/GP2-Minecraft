@@ -160,7 +160,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	diffuseStrength = saturate(diffuseStrength);
 	color_rgb = color_rgb * diffuseStrength;
 
-	if (color_a < gAlphaEpsilon) discard;
+	clip(color_a - gAlphaEpsilon);
 
 	return float4( color_rgb * shadowValue * gLightIntensity, color_a );
 }
