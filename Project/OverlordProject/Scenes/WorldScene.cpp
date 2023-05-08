@@ -6,6 +6,7 @@
 #include "Components/Rendering/WireframeRenderer.h"
 #include "Components/Rendering/BlockBreakRenderer.h"
 #include "Components/BlockInteractionComponent.h"
+#include "Components/Inventory.h"
 
 void WorldScene::Initialize()
 {
@@ -56,6 +57,8 @@ void WorldScene::CreatePlayer()
 
 	// MOVEMENT
 	m_pPlayer->AddComponent(new PlayerMovement{ pPlayerRb });
+
+	m_pPlayer->AddComponent(new Inventory{});
 
 	// POSITION
 	PxQueryFilterData filter{};
