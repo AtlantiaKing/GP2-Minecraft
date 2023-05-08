@@ -100,25 +100,28 @@ void WorldRenderer::Draw(std::vector<Chunk>& chunks, const SceneContext& sceneCo
 	constexpr UINT offset = 0;
 	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 
+	D3DX11_TECHNIQUE_DESC techDesc{};
+	m_pDefaultTechnique->GetDesc(&techDesc);
 	for (const Chunk& chunk : chunks)
 	{
+		if (!chunk.pVertexBuffer) continue;
+
 		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
 
-		D3DX11_TECHNIQUE_DESC techDesc{};
-		m_pDefaultTechnique->GetDesc(&techDesc);
 		for (UINT p = 0; p < techDesc.Passes; ++p)
 		{
 			m_pDefaultTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
 			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
 		}
 	}
-
+;
+	m_pTransparentTechnique->GetDesc(&techDesc);
 	for (const Chunk& chunk : chunks)
 	{
+		if (!chunk.pVertexTransparentBuffer) continue;
+
 		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexTransparentBuffer, &stride, &offset);
 
-		D3DX11_TECHNIQUE_DESC techDesc{};
-		m_pTransparentTechnique->GetDesc(&techDesc);
 		for (UINT p = 0; p < techDesc.Passes; ++p)
 		{
 			m_pTransparentTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
@@ -151,23 +154,29 @@ void WorldRenderer::Draw(Chunk& chunk, const SceneContext& sceneContext)
 	constexpr UINT offset = 0;
 	constexpr UINT stride = sizeof(VertexPosNormTexTransparency);
 
-	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
-
 	D3DX11_TECHNIQUE_DESC techDesc{};
-	m_pDefaultTechnique->GetDesc(& techDesc);
-	for (UINT p = 0; p < techDesc.Passes; ++p)
+	if (chunk.pVertexBuffer)
 	{
-		m_pDefaultTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
-		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
+		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexBuffer, &stride, &offset);
+
+		m_pDefaultTechnique->GetDesc(&techDesc);
+		for (UINT p = 0; p < techDesc.Passes; ++p)
+		{
+			m_pDefaultTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexBufferSize), 0);
+		}
 	}
 
-	deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexTransparentBuffer, &stride, &offset);
-
-	m_pTransparentTechnique->GetDesc(&techDesc);
-	for (UINT p = 0; p < techDesc.Passes; ++p)
+	if (chunk.pVertexTransparentBuffer)
 	{
-		m_pTransparentTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
-		deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexTransparentBufferSize), 0);
+		deviceContext.pDeviceContext->IASetVertexBuffers(0, 1, &chunk.pVertexTransparentBuffer, &stride, &offset);
+
+		m_pTransparentTechnique->GetDesc(&techDesc);
+		for (UINT p = 0; p < techDesc.Passes; ++p)
+		{
+			m_pTransparentTechnique->GetPassByIndex(p)->Apply(0, deviceContext.pDeviceContext);
+			deviceContext.pDeviceContext->Draw(static_cast<UINT>(chunk.vertexTransparentBufferSize), 0);
+		}
 	}
 }
 
