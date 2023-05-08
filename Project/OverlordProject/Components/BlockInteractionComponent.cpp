@@ -6,6 +6,7 @@
 #include "Rendering/BlockBreakRenderer.h"
 
 #include "Managers/InputManager.h"
+#include "Inventory.h"
 
 BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer)
 	: m_pWorld{ pWorld }
@@ -74,11 +75,18 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	// RIGHT MOUSE CLICK
 	if (InputManager::IsMouseButton(InputState::pressed, 2))
 	{
-		// Place a block
-		m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, BlockType::DIRT);
+		Inventory* pInventory{ GetGameObject()->GetComponent<Inventory>() };
 
-		// Reset block breaking
-		m_IsBreakingBlock = false;
+		if (pInventory->HasOfType(BlockType::DIRT))
+		{
+			// Place a block
+			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, BlockType::DIRT);
+
+			// Reset block breaking
+			m_IsBreakingBlock = false;
+
+			pInventory->Remove(BlockType::DIRT);
+		}
 	}
 
 	// LEFT MOUSE CLICK

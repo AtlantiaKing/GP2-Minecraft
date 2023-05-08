@@ -19,7 +19,9 @@ public:
 
 	virtual void Initialize(const SceneContext&) {}
 
-	void Add(BlockType pBlock);
+	void Add(BlockType block);
+	void Remove(BlockType block);
+	bool HasOfType(BlockType block) const;
 private:
 	std::unordered_map<BlockType, int> m_Hotbar{};
 };
