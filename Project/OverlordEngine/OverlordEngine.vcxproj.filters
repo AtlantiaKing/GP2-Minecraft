@@ -119,5 +119,7 @@
     <ClInclude Include="Graphics\ShadowMapRenderer.h" />
     <ClInclude Include="Components\ParticleEmitterComponent.h" />
     <ClInclude Include="Lab_Todos.h" />
+    <ClInclude Include="Observer\Observer.h" />
+    <ClInclude Include="Observer\Subject.h" />
   </ItemGroup>
 </Project>
