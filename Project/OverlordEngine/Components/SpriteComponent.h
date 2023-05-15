@@ -14,6 +14,7 @@ public:
 
 	const XMFLOAT2& GetPivot() const { return m_Pivot; }
 	const XMFLOAT4& GetColor() const { return m_Color; }
+	const XMFLOAT2& GetSize() const;
 
 	void SetPivot(const XMFLOAT2& pivot) { m_Pivot = pivot; }
 	void SetColor(const XMFLOAT4& color) { m_Color = color; }
