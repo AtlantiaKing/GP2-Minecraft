@@ -17,9 +17,12 @@ public:
 	ToolbarHUD& operator=(const ToolbarHUD& other) = delete;
 	ToolbarHUD& operator=(ToolbarHUD&& other) noexcept = delete;
 
-	virtual void Initialize(const SceneContext&) override {};
 	virtual void Notify(const std::unordered_map<BlockType, int>& inventory) override;
 	virtual void OnSubjectDestroy() override;
+	
+protected:
+	virtual void Initialize(const SceneContext&) override {};
+
 private:
 	Inventory* m_pInventory;
 };

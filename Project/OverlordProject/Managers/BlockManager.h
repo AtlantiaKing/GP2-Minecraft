@@ -12,7 +12,6 @@ public:
 	Block* GetBlock(const std::string& identifier) const;
 	Block* GetBlock(BlockType type) const;
 	const std::string& GetBlockName(BlockType type) const;
-	std::wstring GetBlockNameW(BlockType type) const;
 
 	const std::vector<VertexPosNormTexTransparency>& GetVertices(const std::string& identifier) const;
 

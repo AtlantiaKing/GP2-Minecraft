@@ -27,6 +27,7 @@
     <ClCompile Include="Components\ItemPickup.cpp" />
     <ClCompile Include="Components\Inventory.cpp" />
     <ClCompile Include="Components\ToolbarHUD.cpp" />
+    <ClCompile Include="Components\ItemCounter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -56,5 +57,6 @@
     <ClInclude Include="Components\ItemPickup.h" />
     <ClInclude Include="Components\Inventory.h" />
     <ClInclude Include="Components\ToolbarHUD.h" />
+    <ClInclude Include="Components\ItemCounter.h" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 
 #include "Inventory.h"
 #include "Managers/BlockManager.h"
+#include "ItemCounter.h"
 
 ToolbarHUD::ToolbarHUD(Inventory* pInventory)
 	: m_pInventory{ pInventory }
@@ -25,12 +26,16 @@ void ToolbarHUD::Notify(const std::unordered_map<BlockType, int>& inventory)
 	{
 		if (pChildren.size() == curSlot) return;
 
+		GameObject* pItemObj{ pChildren[curSlot] };
 		SpriteComponent* pItemRenderer{ pChildren[curSlot]->GetComponent<SpriteComponent>() };
 
 		std::wstringstream filePath{};
-		filePath << L"Textures/InventoryIcons/" << BlockManager::Get()->GetBlockNameW(inventoryPair.first) << ".dds";
+		filePath << L"Textures/InventoryIcons/" << StringUtil::utf8_decode(BlockManager::Get()->GetBlockName(inventoryPair.first)) << ".dds";
 
 		pItemRenderer->SetTexture(filePath.str());
+
+		GameObject* pAmountObj{ pItemObj->GetChild<GameObject>() };
+		pAmountObj->GetComponent<ItemCounter>()->SetAmount(inventoryPair.second);
 
 		++curSlot;
 	}

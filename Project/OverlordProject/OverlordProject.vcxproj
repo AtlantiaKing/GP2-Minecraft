@@ -95,6 +95,7 @@
   <ItemGroup>
     <ClCompile Include="Components\ItemPickup.cpp" />
     <ClCompile Include="Components\Inventory.cpp" />
+    <ClCompile Include="Components\ItemCounter.cpp" />
     <ClCompile Include="Managers\BlockManager.cpp" />
     <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
     <ClCompile Include="Components\Rendering\BlockBreakRenderer.cpp" />
@@ -140,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="Components\ItemPickup.h" />
     <ClInclude Include="Components\Inventory.h" />
+    <ClInclude Include="Components\ItemCounter.h" />
     <ClInclude Include="Managers\BlockManager.h" />
     <ClInclude Include="Components\Rendering\BlockRenderer.h" />
     <ClInclude Include="Components\Rendering\BlockBreakRenderer.h" />

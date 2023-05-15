@@ -8,6 +8,7 @@
 #include "Components/BlockInteractionComponent.h"
 #include "Components/Inventory.h"
 #include "Components/ToolbarHUD.h"
+#include "Components/ItemCounter.h"
 
 void WorldScene::Initialize()
 {
@@ -38,15 +39,16 @@ void WorldScene::Initialize()
 	constexpr int nrItems{ 10 };
 	constexpr float hotbarMargin{ 4.0f };
 	const auto& hotbarSize{ pHotbarTexture->GetSize() };
-	const auto& hotbarCenter{ pHotbar->GetTransform()->GetWorldPosition() };
 	const float itemSize{ (hotbarSize.x - hotbarMargin * 2.0f) / nrItems };
 
 	for (int i{}; i < nrItems; ++i)
 	{
 		GameObject* pHotbarItem{ pHotbar->AddChild(new GameObject{}) };
 		pHotbarItem->AddComponent(new SpriteComponent{ L"Textures\\InventoryIcons\\air.dds", { 0.0f, 1.0f } });
-		pHotbarItem->GetTransform()->Translate(hotbarCenter.x - nrItems / 2.0f * itemSize + itemSize * i, hotbarCenter.y, 0.0f);
-		pHotbarItem->AddComponent(new SpriteComponent{ L"Textures\\InventoryIcons\\air.dds", { 0.0f, 1.0f } });
+		pHotbarItem->GetTransform()->Translate(-nrItems / 2.0f * itemSize + itemSize * i, 0.0f, 0.0f);
+		GameObject* pHotbarAmount{ pHotbarItem->AddChild(new GameObject{}) };
+		pHotbarAmount->AddComponent(new ItemCounter{});
+		pHotbarAmount->GetTransform()->Translate(itemSize - hotbarMargin / 2.0f, -hotbarMargin, 0.0f);
 	}
 }
 
