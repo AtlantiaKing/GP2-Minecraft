@@ -137,7 +137,7 @@ void SpriteRenderer::Draw(const SceneContext& sceneContext)
 		m_pEVar_TextureSRV->SetResource(texData->GetShaderResourceView());
 
 		//Set Texture Size
-		auto texSize = texData->GetDimension();
+		const auto& texSize = texData->GetDimension();
 		m_pEVar_TextureSize->SetFloatVector(&texSize.x);
 
 		//Set Transform
