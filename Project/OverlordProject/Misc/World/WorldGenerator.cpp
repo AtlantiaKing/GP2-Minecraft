@@ -228,6 +228,8 @@ bool WorldGenerator::ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2&
 		{
 			Block** pWaterBlock{ GetBlockInChunk(static_cast<int>(block.x),static_cast<int>(block.y),static_cast<int>(block.z), m_WaterChunks) };
 
+			if (!pWaterBlock) continue;
+
 			*pWaterBlock = m_pWaterBlock.get();
 
 			Chunk* pChunk{ GetChunkAt(static_cast<int>(block.x),static_cast<int>(block.z), m_WaterChunks) };
