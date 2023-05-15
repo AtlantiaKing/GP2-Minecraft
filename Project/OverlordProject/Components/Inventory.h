@@ -18,14 +18,23 @@ public:
 	Inventory& operator=(const Inventory& other) = delete;
 	Inventory& operator=(Inventory&& other) noexcept = delete;
 
-	virtual void Initialize(const SceneContext&) {}
-
 	void Add(BlockType block);
 	void Remove(BlockType block);
 	bool HasOfType(BlockType block) const;
+	bool HasEquipedItem() const;
+	BlockType GetEquipedItem() const;
+	int GetMaxItems() const;
+	int GetSlot() const;
 	Subject<std::unordered_map<BlockType, int>>& OnInventoryChange() { return m_OnInventoryChange; }
+
+protected:
+	virtual void Initialize(const SceneContext&) {};
+	virtual void Update(const SceneContext& sceneContext);
+
 private:
 	std::unordered_map<BlockType, int> m_Hotbar{};
 	Subject<std::unordered_map<BlockType, int>> m_OnInventoryChange{};
+	int m_CurSlot{};
+	const int m_MaxItems{ 10 };
 };
 

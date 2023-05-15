@@ -77,15 +77,18 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	{
 		Inventory* pInventory{ GetGameObject()->GetComponent<Inventory>() };
 
-		if (pInventory->HasOfType(BlockType::DIRT))
+		if (pInventory->HasEquipedItem())
 		{
+			// Get equiped block
+			BlockType selectedBlock{ pInventory->GetEquipedItem() };
+
 			// Place a block
-			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, BlockType::DIRT);
+			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, selectedBlock);
 
 			// Reset block breaking
 			m_IsBreakingBlock = false;
 
-			pInventory->Remove(BlockType::DIRT);
+			pInventory->Remove(selectedBlock);
 		}
 	}
 

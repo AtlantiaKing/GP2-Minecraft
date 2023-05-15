@@ -9,7 +9,7 @@ class Inventory;
 class ToolbarHUD final : public BaseComponent, public Observer<std::unordered_map<BlockType, int>>
 {
 public:
-	ToolbarHUD(Inventory* pInventory);
+	ToolbarHUD(Inventory* pInventory, const XMFLOAT2& screenSize);
 	virtual ~ToolbarHUD();
 
 	ToolbarHUD(const ToolbarHUD& other) = delete;
@@ -19,11 +19,15 @@ public:
 
 	virtual void Notify(const std::unordered_map<BlockType, int>& inventory) override;
 	virtual void OnSubjectDestroy() override;
+
+	void SetSelection(GameObject* pSelection);
 	
 protected:
 	virtual void Initialize(const SceneContext&) override {};
 
 private:
-	Inventory* m_pInventory;
+	Inventory* m_pInventory{};
+	GameObject* m_pSelection{};
+	XMFLOAT2 m_ScreenSize{};
 };
 

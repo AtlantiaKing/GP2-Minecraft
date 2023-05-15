@@ -31,12 +31,14 @@ void WorldScene::Initialize()
 
 	m_SceneContext.pLights->SetDirectionalLight({ 0.0f,0.0f,0.0f }, { 0.09901f, -0.99015f, 0.09901f });
 
+	Inventory* pInventory{ m_pPlayer->GetComponent<Inventory>() };
+
 	GameObject* pHotbar{ AddChild(new GameObject{}) };
 	SpriteComponent* pHotbarTexture{ pHotbar->AddComponent(new SpriteComponent{ L"Textures\\hotbar.dds", { 0.5f, 1.0f } }) };
-	pHotbar->AddComponent(new ToolbarHUD{ m_pPlayer->GetComponent<Inventory>() });
+	ToolbarHUD* pToolbarHud{ pHotbar->AddComponent(new ToolbarHUD{ pInventory, { m_SceneContext.windowWidth, m_SceneContext.windowHeight } }) };
 	pHotbar->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight, 0.0f);
 
-	constexpr int nrItems{ 10 };
+	const int nrItems{ pInventory->GetMaxItems() };
 	constexpr float hotbarMargin{ 4.0f };
 	const auto& hotbarSize{ pHotbarTexture->GetSize() };
 	const float itemSize{ (hotbarSize.x - hotbarMargin * 2.0f) / nrItems };
@@ -50,6 +52,12 @@ void WorldScene::Initialize()
 		pHotbarAmount->AddComponent(new ItemCounter{});
 		pHotbarAmount->GetTransform()->Translate(itemSize - hotbarMargin / 2.0f, -hotbarMargin, 0.0f);
 	}
+
+	GameObject* pHotbarSelection{ AddChild(new GameObject{}) };
+	pHotbarSelection->AddComponent(new SpriteComponent{ L"Textures\\inventoryselection.dds", { 0.5f, 1.0f } });
+	pHotbarSelection->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f - itemSize * nrItems / 2.0f + itemSize / 2.0f, m_SceneContext.windowHeight, 0.0f);
+
+	pToolbarHud->SetSelection(pHotbarSelection);
 }
 
 void WorldScene::CreateWorld()
