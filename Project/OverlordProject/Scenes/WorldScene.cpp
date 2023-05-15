@@ -7,6 +7,7 @@
 #include "Components/Rendering/BlockBreakRenderer.h"
 #include "Components/BlockInteractionComponent.h"
 #include "Components/Inventory.h"
+#include "Components/ToolbarHUD.h"
 
 void WorldScene::Initialize()
 {
@@ -28,6 +29,25 @@ void WorldScene::Initialize()
 	pCursor->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight / 2.0f, 0.0f);
 
 	m_SceneContext.pLights->SetDirectionalLight({ 0.0f,0.0f,0.0f }, { 0.09901f, -0.99015f, 0.09901f });
+
+	GameObject* pHotbar{ AddChild(new GameObject{}) };
+	SpriteComponent* pHotbarTexture{ pHotbar->AddComponent(new SpriteComponent{ L"Textures\\hotbar.dds", { 0.5f, 1.0f } }) };
+	pHotbar->AddComponent(new ToolbarHUD{ m_pPlayer->GetComponent<Inventory>() });
+	pHotbar->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight, 0.0f);
+
+	constexpr int nrItems{ 10 };
+	constexpr float hotbarMargin{ 4.0f };
+	const auto& hotbarSize{ pHotbarTexture->GetSize() };
+	const auto& hotbarCenter{ pHotbar->GetTransform()->GetWorldPosition() };
+	const float itemSize{ (hotbarSize.x - hotbarMargin * 2.0f) / nrItems };
+
+	for (int i{}; i < nrItems; ++i)
+	{
+		GameObject* pHotbarItem{ pHotbar->AddChild(new GameObject{}) };
+		pHotbarItem->AddComponent(new SpriteComponent{ L"Textures\\InventoryIcons\\air.dds", { 0.0f, 1.0f } });
+		pHotbarItem->GetTransform()->Translate(hotbarCenter.x - nrItems / 2.0f * itemSize + itemSize * i, hotbarCenter.y, 0.0f);
+		pHotbarItem->AddComponent(new SpriteComponent{ L"Textures\\InventoryIcons\\air.dds", { 0.0f, 1.0f } });
+	}
 }
 
 void WorldScene::CreateWorld()

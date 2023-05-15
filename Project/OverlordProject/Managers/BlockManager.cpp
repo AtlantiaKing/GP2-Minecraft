@@ -62,6 +62,20 @@ Block* BlockManager::GetBlock(BlockType type) const
 	return nullptr;
 }
 
+const std::string& BlockManager::GetBlockName(BlockType type) const
+{
+	const auto it{ std::find_if(begin(m_pBlocksByIdentifier), end(m_pBlocksByIdentifier), [type](const auto& blockPair) { return blockPair.second->type == type; }) };
+
+	return it->first;
+}
+
+std::wstring BlockManager::GetBlockNameW(BlockType type) const
+{
+	std::wstringstream wStream{};
+	wStream << GetBlockName(type).c_str();
+	return wStream.str();
+}
+
 const std::vector<VertexPosNormTexTransparency>& BlockManager::GetVertices(const std::string& identifier) const
 {
 	const auto it{ m_VerticesByIdentifier.find(identifier) };

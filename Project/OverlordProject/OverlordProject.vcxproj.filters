@@ -26,6 +26,7 @@
     <ClCompile Include="Misc\FileReaders\ObjReader.cpp" />
     <ClCompile Include="Components\ItemPickup.cpp" />
     <ClCompile Include="Components\Inventory.cpp" />
+    <ClCompile Include="Components\ToolbarHUD.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -54,5 +55,6 @@
     <ClInclude Include="Misc\FileReaders\ObjReader.h" />
     <ClInclude Include="Components\ItemPickup.h" />
     <ClInclude Include="Components\Inventory.h" />
+    <ClInclude Include="Components\ToolbarHUD.h" />
   </ItemGroup>
 </Project>

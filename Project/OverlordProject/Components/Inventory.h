@@ -3,6 +3,7 @@
 #include "Components/BaseComponent.h"
 
 #include "Misc/World/WorldData.h"
+#include "Observer/Subject.h"
 
 struct Block;
 
@@ -22,7 +23,9 @@ public:
 	void Add(BlockType block);
 	void Remove(BlockType block);
 	bool HasOfType(BlockType block) const;
+	Subject<std::unordered_map<BlockType, int>>& OnInventoryChange() { return m_OnInventoryChange; }
 private:
 	std::unordered_map<BlockType, int> m_Hotbar{};
+	Subject<std::unordered_map<BlockType, int>> m_OnInventoryChange{};
 };
 
