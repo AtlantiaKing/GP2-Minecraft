@@ -7,12 +7,28 @@ void Inventory::Update(const SceneContext& sceneContext)
 	{
 		++m_CurSlot %= m_MaxItems;
 		OnInventoryChange().Notify(m_Hotbar);
+		return;
 	}
 	else if (sceneContext.pInput->IsKeyboardKey(InputState::pressed, VK_LEFT))
 	{
 		--m_CurSlot;
 		if (m_CurSlot < 0) m_CurSlot = m_MaxItems - 1;
 		OnInventoryChange().Notify(m_Hotbar);
+		return;
+	}
+
+	for (char c{ '0' }; c <= '9'; ++c)
+	{
+		if (!sceneContext.pInput->IsKeyboardKey(InputState::pressed, c)) continue;
+			
+		if(c == '0')
+			m_CurSlot = 9;
+		else
+			m_CurSlot = static_cast<int>(c - '1');
+
+		OnInventoryChange().Notify(m_Hotbar);
+
+		break;
 	}
 }
 
