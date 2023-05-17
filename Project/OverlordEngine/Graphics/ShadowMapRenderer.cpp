@@ -15,8 +15,8 @@ void ShadowMapRenderer::Initialize()
 	RENDERTARGET_DESC renderTargetDesc{};
 	renderTargetDesc.enableColorBuffer = false;
 	renderTargetDesc.enableDepthSRV = true;
-	renderTargetDesc.width = 1280;
-	renderTargetDesc.height = 720;
+	renderTargetDesc.width = 1920;
+	renderTargetDesc.height = 1080;
 
 	m_pShadowRenderTarget = new RenderTarget(m_GameContext.d3dContext);
 	m_pShadowRenderTarget->Create(renderTargetDesc);
@@ -45,6 +45,14 @@ void ShadowMapRenderer::UpdateMeshFilter(const SceneContext& sceneContext, MeshF
 
 void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 {
+	D3D11_VIEWPORT viewport{};
+	viewport.Width = static_cast<FLOAT>(m_pShadowRenderTarget->GetDesc().width);
+	viewport.Height = static_cast<FLOAT>(m_pShadowRenderTarget->GetDesc().height);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	sceneContext.d3dContext.pDeviceContext->RSSetViewports(1, &viewport);
 	//This function is called once right before we start the Shadow Pass (= generating the ShadowMap)
 	//This function is responsible for setting the pipeline into the correct state, meaning
 	//	- Making sure the ShadowMap is unbound from the pipeline as a ShaderResource (SRV), so we can bind it as a RenderTarget (RTV)
@@ -59,11 +67,11 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 
 	//2. Calculate the Light ViewProjection and store in m_LightVP
 	// - Use XMMatrixOrtographicLH to create Projection Matrix (constants used for the demo below - feel free to change)
-	//		*viewWidth> 100.f * aspectRatio
-	//		*viewHeight> 100.f
+	//		*viewWidth> 20.f * aspectRatio
+	//		*viewHeight> 20.f
 	//		*nearZ>0.1f
 	//		*farZ>500.f
-	const XMMATRIX lightProjMatrix{ XMMatrixOrthographicLH(sceneContext.aspectRatio * 10.0f, 10.0f, 0.1f, 500.0f) };
+	const XMMATRIX lightProjMatrix{ XMMatrixOrthographicLH(sceneContext.aspectRatio * 20.0f, 20.0f, 0.1f, 500.0f) };
 	//- Use XMMatrixLookAtLH to create a View Matrix
 	//		*eyePosition: Position of the Direction Light (SceneContext::pLights > Retrieve Directional Light)
 	//		*focusPosition: Calculate using the Direction Light position and direction
@@ -162,7 +170,7 @@ void ShadowMapRenderer::DrawMesh(const SceneContext& sceneContext, ID3D11Buffer*
 	}
 }
 
-void ShadowMapRenderer::End(const SceneContext&) const
+void ShadowMapRenderer::End(const SceneContext& sceneContext) const
 {
 	//This function is called at the end of the Shadow-pass, all shadow-casting meshes should be drawn to the ShadowMap at this point.
 	//Now we can reset the Main Game Rendertarget back to the original RenderTarget, this also Unbinds the ShadowMapRenderTarget as RTV from the Pipeline, and can safely use it as a ShaderResourceView after this point.
@@ -170,6 +178,15 @@ void ShadowMapRenderer::End(const SceneContext&) const
 	//1. Reset the Main Game RenderTarget back to default (OverlordGame::SetRenderTarget)
 	//		- Have a look inside the function, there is a easy way to do this...
 	m_GameContext.pGame->SetRenderTarget(nullptr);
+
+	D3D11_VIEWPORT viewport{};
+	viewport.Width = static_cast<FLOAT>(m_GameContext.windowWidth);
+	viewport.Height = static_cast<FLOAT>(m_GameContext.windowHeight);
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	sceneContext.d3dContext.pDeviceContext->RSSetViewports(1, &viewport);
 }
 
 ID3D11ShaderResourceView* ShadowMapRenderer::GetShadowMap() const

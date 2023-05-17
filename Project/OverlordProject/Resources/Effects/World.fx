@@ -100,8 +100,8 @@ VS_OUTPUT VS(VS_INPUT input){
 
 float2 texOffset(int u, int v)
 {
-	//TODO: return offseted value (our shadow map has the following dimensions: 1280 * 720)
-	return float2(u / 1280.0f, v / 720.0f);
+	//TODO: return offseted value (our shadow map has the following dimensions: 1920 * 1080)
+	return float2(u / 1920.0f, v / 1080.0f);
 }
 
 float EvaluateShadowMap(float4 lpos)
