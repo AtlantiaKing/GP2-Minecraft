@@ -21,6 +21,7 @@ public:
 	void PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
 	void DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
+	void SetRenderDistance(int renderDistance);
 
 	Block* GetBlockAt(int x, int y, int z) const;
 

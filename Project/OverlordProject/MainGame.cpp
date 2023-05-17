@@ -3,6 +3,7 @@
 
 // Scenes
 #include "Scenes/WorldScene.h"
+#include "Scenes/MainMenuScene.h"
 
 // Managers
 #include "Managers/BlockManager.h"
@@ -35,7 +36,8 @@ void MainGame::Initialize()
 	//srand(static_cast<unsigned int>(time(nullptr)));
 	srand(8);
 
-	SceneManager::Get()->AddGameScene(new WorldScene());
+	SceneManager::Get()->AddGameScene(new MainMenuScene());
+	//SceneManager::Get()->AddGameScene(new WorldScene());
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

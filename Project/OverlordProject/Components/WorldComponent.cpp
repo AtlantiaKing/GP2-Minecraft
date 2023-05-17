@@ -154,6 +154,11 @@ void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
     }
 }
 
+void WorldComponent::SetRenderDistance(int renderDistance)
+{
+    m_Generator.SetRenderDistance(renderDistance);
+}
+
 void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
     // Add a rigidbody component to the world gameobject
