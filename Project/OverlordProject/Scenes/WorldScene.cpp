@@ -9,6 +9,8 @@
 #include "Components/Inventory.h"
 #include "Components/ToolbarHUD.h"
 #include "Components/ItemCounter.h"
+#include <Components/Health.h>
+#include <Components/HealthHUD.h>
 
 void WorldScene::Initialize()
 {
@@ -39,9 +41,9 @@ void WorldScene::Initialize()
 	pHotbar->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight, 0.0f);
 
 	const int nrItems{ pInventory->GetMaxItems() };
-	constexpr float hotbarMargin{ 4.0f };
+	constexpr float pixelSize{ 4.0f };
 	const auto& hotbarSize{ pHotbarTexture->GetSize() };
-	const float itemSize{ (hotbarSize.x - hotbarMargin * 2.0f) / nrItems };
+	const float itemSize{ (hotbarSize.x - pixelSize * 2.0f) / nrItems };
 
 	for (int i{}; i < nrItems; ++i)
 	{
@@ -50,7 +52,7 @@ void WorldScene::Initialize()
 		pHotbarItem->GetTransform()->Translate(-nrItems / 2.0f * itemSize + itemSize * i, 0.0f, 0.0f);
 		GameObject* pHotbarAmount{ pHotbarItem->AddChild(new GameObject{}) };
 		pHotbarAmount->AddComponent(new ItemCounter{});
-		pHotbarAmount->GetTransform()->Translate(itemSize - hotbarMargin / 2.0f, -hotbarMargin, 0.0f);
+		pHotbarAmount->GetTransform()->Translate(itemSize - pixelSize / 2.0f, -pixelSize, 0.0f);
 	}
 
 	GameObject* pHotbarSelection{ AddChild(new GameObject{}) };
@@ -58,6 +60,28 @@ void WorldScene::Initialize()
 	pHotbarSelection->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f - itemSize * nrItems / 2.0f + itemSize / 2.0f, m_SceneContext.windowHeight, 0.0f);
 
 	pToolbarHud->SetSelection(pHotbarSelection);
+
+	Health* pHealth{ m_pPlayer->AddComponent(new Health{}) };
+
+	GameObject* pHealthHUD{ AddChild(new GameObject{}) };
+	pHealthHUD->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f - hotbarSize.x / 2.0f, m_SceneContext.windowHeight - hotbarSize.y - pixelSize, 0.0f);
+	pHealthHUD->AddComponent(new HealthHUD{ pHealth });
+	
+	float curHealthPosOffset{};
+	for (int i{}; i < pHealth->GetMaxHealth(); ++i)
+	{
+		GameObject* pHalfHeart{ pHealthHUD->AddChild(new GameObject{}) };
+
+		std::wstringstream spritePath{};
+		spritePath << L"Textures/Health/HeartFull" << (i % 2) << L".png";
+
+		SpriteComponent* pHeartSprite{ pHalfHeart->AddComponent(new SpriteComponent{ spritePath.str(), { 0.0f, 1.0f } }) };
+		pHalfHeart->GetTransform()->Translate(curHealthPosOffset, 0.0f, 0.0f);
+		curHealthPosOffset += pHeartSprite->GetSize().x;
+		if (i % 2 == 1) curHealthPosOffset -= pixelSize;
+	}
+
+	pHealth->Damage(1);
 }
 
 void WorldScene::CreateWorld()

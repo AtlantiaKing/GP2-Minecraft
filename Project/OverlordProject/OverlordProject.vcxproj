@@ -96,6 +96,8 @@
     <ClCompile Include="Components\ItemPickup.cpp" />
     <ClCompile Include="Components\Inventory.cpp" />
     <ClCompile Include="Components\ItemCounter.cpp" />
+    <ClCompile Include="Components\Health.cpp" />
+    <ClCompile Include="Components\HealthHUD.cpp" />
     <ClCompile Include="Scenes\MainMenuScene.cpp" />
     <ClCompile Include="Managers\BlockManager.cpp" />
     <ClCompile Include="Components\Rendering\BlockRenderer.cpp" />
@@ -143,6 +145,8 @@
     <ClInclude Include="Components\ItemPickup.h" />
     <ClInclude Include="Components\Inventory.h" />
     <ClInclude Include="Components\ItemCounter.h" />
+    <ClInclude Include="Components\Health.h" />
+    <ClInclude Include="Components\HealthHUD.h" />
     <ClInclude Include="Scenes\MainMenuScene.h" />
     <ClInclude Include="Managers\BlockManager.h" />
     <ClInclude Include="Components\Rendering\BlockRenderer.h" />

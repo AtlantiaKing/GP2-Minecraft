@@ -29,6 +29,8 @@
     <ClCompile Include="Components\ToolbarHUD.cpp" />
     <ClCompile Include="Components\ItemCounter.cpp" />
     <ClCompile Include="Scenes\MainMenuScene.cpp" />
+    <ClCompile Include="Components\Health.cpp" />
+    <ClCompile Include="Components\HealthHUD.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -60,5 +62,7 @@
     <ClInclude Include="Components\ToolbarHUD.h" />
     <ClInclude Include="Components\ItemCounter.h" />
     <ClInclude Include="Scenes\MainMenuScene.h" />
+    <ClInclude Include="Components\Health.h" />
+    <ClInclude Include="Components\HealthHUD.h" />
   </ItemGroup>
 </Project>
