@@ -231,9 +231,9 @@ void GameScene::RootDraw()
 		//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
 		if (pPrevRt != pInitRt)
 		{
-			m_pGame->SetRenderTarget(pInitRt);
+			m_pGame->SetRenderTarget(nullptr);
+			SpriteRenderer::Get()->DrawImmediate(m_SceneContext.d3dContext, pPrevRt->GetColorShaderResourceView(), {});
 		}
-		SpriteRenderer::Get()->DrawImmediate(m_SceneContext.d3dContext, pPrevRt->GetColorShaderResourceView(), {});
 
 		//Done!
 	}
