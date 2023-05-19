@@ -31,6 +31,8 @@
     <ClCompile Include="Scenes\MainMenuScene.cpp" />
     <ClCompile Include="Components\Health.cpp" />
     <ClCompile Include="Components\HealthHUD.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -64,5 +66,7 @@
     <ClInclude Include="Scenes\MainMenuScene.h" />
     <ClInclude Include="Components\Health.h" />
     <ClInclude Include="Components\HealthHUD.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
   </ItemGroup>
 </Project>

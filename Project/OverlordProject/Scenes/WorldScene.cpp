@@ -12,6 +12,8 @@
 #include <Components/Health.h>
 #include <Components/HealthHUD.h>
 
+#include "Materials/Shadow/DiffuseMaterial_Shadow.h"
+
 void WorldScene::Initialize()
 {
 	m_SceneContext.pInput->ForceMouseToCenter(true);
@@ -82,6 +84,15 @@ void WorldScene::Initialize()
 	}
 
 	pHealth->Damage(1);
+
+
+	GameObject* pSheep{ AddChild(new GameObject{}) };
+	pSheep->GetTransform()->Translate(0.0f, 75.5f, 0.0f);
+	pSheep->GetTransform()->Scale(0.02f);
+
+	DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
+	pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
+	pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", false })->SetMaterial(pSheepMaterial);
 }
 
 void WorldScene::CreateWorld()
