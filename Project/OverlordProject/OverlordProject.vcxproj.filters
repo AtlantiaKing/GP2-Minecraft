@@ -33,6 +33,8 @@
     <ClCompile Include="Components\HealthHUD.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
+    <ClCompile Include="Components\LivingEntities\LivingEntity.cpp" />
+    <ClCompile Include="Components\LivingEntities\Sheep.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -68,5 +70,7 @@
     <ClInclude Include="Components\HealthHUD.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
+    <ClInclude Include="Components\LivingEntities\LivingEntity.h" />
+    <ClInclude Include="Components\LivingEntities\Sheep.h" />
   </ItemGroup>
 </Project>

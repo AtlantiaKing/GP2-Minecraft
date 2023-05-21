@@ -1,0 +1,54 @@
+#pragma once
+class LivingEntity : public BaseComponent
+{
+public:
+	LivingEntity(const XMFLOAT3& hitboxDimensions);
+	virtual ~LivingEntity() = default;
+
+	LivingEntity(const LivingEntity& other) = delete;
+	LivingEntity(LivingEntity&& other) noexcept = delete;
+	LivingEntity& operator=(const LivingEntity& other) = delete;
+	LivingEntity& operator=(LivingEntity&& other) noexcept = delete;
+
+	virtual void OnHit() = 0;
+
+protected:
+	virtual void Initialize(const SceneContext& sceneContext) override;
+	virtual void Update(const SceneContext& sceneContext) override;
+
+	virtual void UpdateState() = 0;
+	virtual void UpdateMovement(float elapsedSec) = 0;
+
+	unsigned int m_State{ 0 };
+
+	XMFLOAT3 m_HitboxHalfDimensions{};
+
+	inline float GetRayDistance() const { return m_RayTestDistance; }
+	inline float GetJumpForce() const { return m_JumpForce; }
+private:
+	void UpdateRotation();
+	void RootUpdateState();
+
+	void SetNewRotationTimer();
+	void SetNewStateTimer();
+
+	void Rotate(float elapsedSec);
+
+	float m_StateTime{};
+	float m_RotationTime{};
+
+	float m_MinTimeBetweenStates{ 1.0f};
+	float m_MaxTimeBetweenStates{ 7.0f };
+	float m_TimeUntilStateChange{};
+	float m_TimeUntilRest{ 5.0f };
+
+	float m_MinTimeBetweenRotation{ 1.0f };
+	float m_MaxTimeBetweenRotation{ 15.0f };
+	float m_TimeUntilRotation{};
+	float m_GoToRotation{};
+	float m_CurRotation{};
+
+	const float m_RayTestDistance{ 0.1f };
+	const float m_JumpForce{ 1.5f };
+};
+

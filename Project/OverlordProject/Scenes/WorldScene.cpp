@@ -11,6 +11,7 @@
 #include "Components/ItemCounter.h"
 #include <Components/Health.h>
 #include <Components/HealthHUD.h>
+#include "Components/LivingEntities/Sheep.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 
@@ -87,12 +88,22 @@ void WorldScene::Initialize()
 
 
 	GameObject* pSheep{ AddChild(new GameObject{}) };
-	pSheep->GetTransform()->Translate(0.0f, 75.5f, 0.0f);
+	pSheep->GetTransform()->Translate(2.0f, 75.5f, 0.0f);
 	pSheep->GetTransform()->Scale(0.02f);
 
 	DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
 	pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
 	pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", false })->SetMaterial(pSheepMaterial);
+
+	const XMFLOAT3 hitboxHalfDimensions{ 0.25f,0.15f,0.25f };
+	pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
+
+	auto& physX{ PxGetPhysics() };
+	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
+	RigidBodyComponent* pSheepRb{ pSheep->AddComponent(new RigidBodyComponent{}) };
+	pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
+	pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
+	pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
 }
 
 void WorldScene::CreateWorld()

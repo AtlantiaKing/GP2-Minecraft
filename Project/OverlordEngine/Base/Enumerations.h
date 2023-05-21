@@ -68,7 +68,7 @@ enum class CollisionGroup : UINT32
 	None = 0,
 	DefaultCollision = (1 << 0),
 	World = (1 << 1),
-	Group2 = (1 << 2),
+	LivingEntity = (1 << 2),
 	Group3 = (1 << 3),
 	Group4 = (1 << 4),
 	Group5 = (1 << 5),
