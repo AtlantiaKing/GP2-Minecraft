@@ -1,15 +1,31 @@
 #include "stdafx.h"
 #include "LivingEntity.h"
+#include <Components/Health.h>
 
 LivingEntity::LivingEntity(const XMFLOAT3& hitboxDimensions)
 	: m_HitboxHalfDimensions{ hitboxDimensions }
 {
 }
 
+void LivingEntity::Notify(const int& health)
+{
+	m_IsAttacked = true;
+
+	// Notify rotation and state updates
+	m_StateTime = m_TimeUntilStateChange;
+	m_RotationTime = m_TimeUntilRotation;
+
+	m_AttackTime = 0.0f;
+
+	OnHit(health);
+}
+
 void LivingEntity::Initialize(const SceneContext&)
 {
 	SetNewRotationTimer();
 	SetNewStateTimer();
+
+	GetGameObject()->GetComponent<Health>()->OnHealthChange.AddListener(this);
 }
 
 void LivingEntity::Update(const SceneContext& sceneContext)
@@ -17,6 +33,12 @@ void LivingEntity::Update(const SceneContext& sceneContext)
 	const float elapsedSec{ sceneContext.pGameTime->GetElapsed() };
 	m_StateTime += elapsedSec;
 	m_RotationTime += elapsedSec;
+
+	if (m_IsAttacked)
+	{
+		m_AttackTime += elapsedSec;
+		if (m_AttackTime > m_TimeUntilRest) m_IsAttacked = false;
+	}
 
 	UpdateRotation();
 
@@ -49,12 +71,16 @@ void LivingEntity::SetNewRotationTimer()
 {
 	m_RotationTime = 0.0f;
 	m_TimeUntilRotation = rand() / static_cast<float>(RAND_MAX) * (m_MaxTimeBetweenRotation - m_MinTimeBetweenRotation) + m_MinTimeBetweenRotation;
+
+	if (m_IsAttacked) m_TimeUntilRotation /= 5;
 }
 
 void LivingEntity::SetNewStateTimer()
 {
 	m_StateTime = 0.0f;
 	m_TimeUntilStateChange = rand() / static_cast<float>(RAND_MAX) * (m_MaxTimeBetweenStates - m_MinTimeBetweenStates) + m_MinTimeBetweenStates;
+
+	if (m_IsAttacked) m_TimeUntilStateChange /= 5;
 }
 
 void LivingEntity::Rotate(float elapsedSec)

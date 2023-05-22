@@ -98,6 +98,7 @@
     <ClCompile Include="Components\ItemCounter.cpp" />
     <ClCompile Include="Components\Health.cpp" />
     <ClCompile Include="Components\HealthHUD.cpp" />
+    <ClCompile Include="Components\EntityInteractionComponent.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Components\ItemCounter.h" />
     <ClInclude Include="Components\Health.h" />
     <ClInclude Include="Components\HealthHUD.h" />
+    <ClInclude Include="Components\EntityInteractionComponent.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
     <ClInclude Include="Materials\Post\PostGrayscale.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />

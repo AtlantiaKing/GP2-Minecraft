@@ -7,6 +7,7 @@ class Health final : public BaseComponent
 {
 public:
 	Health() = default;
+	Health(int health);
 	virtual ~Health() = default;
 
 	Health(const Health& other) = delete;

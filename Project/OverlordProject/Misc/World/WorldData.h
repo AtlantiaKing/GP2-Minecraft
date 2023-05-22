@@ -26,7 +26,8 @@ enum class FaceType : BYTE
 	OAK_LOG_SIDE,
 	OAK_LOG_TOP,
 	OAK_LEAVES,
-	GRASS
+	GRASS,
+	WOOD
 };
 
 enum class BlockType : BYTE
@@ -41,7 +42,8 @@ enum class BlockType : BYTE
 	SANDSTONE = 8,
 	OAK_LOG = 11,
 	OAK_LEAVES = 13,
-	GRASS = 14
+	GRASS = 14,
+	WOOD
 };
 
 enum class BlockMesh : BYTE

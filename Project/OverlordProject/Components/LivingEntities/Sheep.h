@@ -13,7 +13,7 @@ public:
 	Sheep& operator=(const Sheep& other) = delete;
 	Sheep& operator=(Sheep&& other) noexcept = delete;
 
-	virtual void OnHit() override;
+	virtual void OnHit(int health) override;
 
 protected:
 	virtual void UpdateState() override;
@@ -23,8 +23,7 @@ private:
 	enum class SheepState
 	{
 		Idle,
-		Walking,
-		Attacked
+		Walking
 	};
 };
 

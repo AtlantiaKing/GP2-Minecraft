@@ -1,61 +1,86 @@
 #include "stdafx.h"
 #include "Sheep.h"
 
+#include "Scenegraph/GameScene.h"
+#include "Prefabs/ItemEntity.h"
+
 Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 	: LivingEntity{ hitboxDimensions }
 {
 }
 
-void Sheep::OnHit()
+void Sheep::OnHit(int health)
 {
-	m_State = static_cast<unsigned int>(SheepState::Attacked);
+	if (health > 0) return;
+
+	XMFLOAT3 blockPos{};
+	XMStoreFloat3(&blockPos, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + XMVECTOR{ 0.0f, m_HitboxHalfDimensions.y, 0.0f});
+
+	GetScene()->AddChild(new ItemEntity{ BlockType::WOOD, blockPos });
 }
 
 void Sheep::UpdateState()
 {
+	if (m_IsAttacked)
+	{
+		m_State = static_cast<unsigned int>(SheepState::Walking);
+		return;
+	}
+
 	m_State = rand() % (static_cast<unsigned int>(SheepState::Walking) + 1);
 }
 
 void Sheep::UpdateMovement(float)
 {
-	SheepState sheepState{ static_cast<SheepState>(m_State) };
-
 	TransformComponent* pTransform{ GetTransform() };
 	const auto& forward{ pTransform->GetForward() };
 	const auto& worldPos{ pTransform->GetWorldPosition() };
 
+	PxRaycastBuffer hit;
+	PxQueryFilterData filter{};
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+	const PxVec3 raycastOriginCenter{ worldPos.x, worldPos.y + m_HitboxHalfDimensions.y, worldPos.z };
+
+	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
+
+	if (!GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginCenter, PxVec3{ 0.0f,-1.0f,0.0f }, FLT_MAX, hit, PxHitFlag::eDEFAULT, filter))
+	{
+		rb->SetKinematic(true);
+		return;
+	}
+
+	rb->SetKinematic(false);
+
+	SheepState sheepState{ static_cast<SheepState>(m_State) };
+
 	if (sheepState == SheepState::Walking)
 	{
-		auto rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
 
-		const XMFLOAT3 direction{ -forward.x, rb->GetVelocity().y, -forward.z};
+		const XMFLOAT3 direction{ -forward.x * m_RunSpeed, rb->GetVelocity().y, -forward.z * m_RunSpeed };
 
 		rb->SetVelocity(direction);
 	}
 	else
 	{
-		auto rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
 		rb->SetVelocity({0.0f, rb->GetVelocity().y, 0.0f});
 	}
 
-	PxRaycastBuffer hit;
-	PxQueryFilterData filter{};
-	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
-	const PxVec3 raycastOriginBottom{ worldPos.x, worldPos.y, worldPos.z};
-	const PxVec3 raycastOriginForward
-	{
-		worldPos.x - forward.x * m_HitboxHalfDimensions.x,
-		worldPos.y,
-		worldPos.z - forward.z * m_HitboxHalfDimensions.z
-	};
+	const PxVec3 raycastOriginBottom{ worldPos.x, worldPos.y, worldPos.z };
 	if (GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginBottom, PxVec3{ 0.0f,-1.0f,0.0f }, GetRayDistance(), hit, PxHitFlag::eDEFAULT, filter))
 	{
 		if (!hit.hasBlock) return;
+
+		const PxVec3 raycastOriginForward
+		{
+			worldPos.x - forward.x * m_HitboxHalfDimensions.x,
+			worldPos.y,
+			worldPos.z - forward.z * m_HitboxHalfDimensions.z
+		};
+
 		if (GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginForward, PxVec3{ -forward.x, -forward.y, -forward.z }, GetRayDistance(), hit, PxHitFlag::eDEFAULT, filter))
 		{
 			if (!hit.hasBlock) return;
 
-			RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
 			rb->AddForce({ 0.0f, GetJumpForce(), 0.0f}, PxForceMode::eIMPULSE);
 		}
 	}

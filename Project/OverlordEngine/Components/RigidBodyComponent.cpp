@@ -146,6 +146,8 @@ void RigidBodyComponent::SetKinematic(bool isKinematic)
 		return;
 	}
 
+	if (m_IsKinematic == isKinematic) return;
+
 	m_IsKinematic = isKinematic;
 
 	if (m_pActor != nullptr && !m_IsStatic)

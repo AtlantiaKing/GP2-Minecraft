@@ -6,6 +6,7 @@
 #include "Components/Rendering/WireframeRenderer.h"
 #include "Components/Rendering/BlockBreakRenderer.h"
 #include "Components/BlockInteractionComponent.h"
+#include "Components/EntityInteractionComponent.h"
 #include "Components/Inventory.h"
 #include "Components/ToolbarHUD.h"
 #include "Components/ItemCounter.h"
@@ -86,24 +87,28 @@ void WorldScene::Initialize()
 
 	pHealth->Damage(1);
 
+	for (int i{}; i < 10; ++i)
+	{
+		GameObject* pSheep{ AddChild(new GameObject{}) };
+		pSheep->GetTransform()->Translate(static_cast<float>(rand() % 16), 120.0f, static_cast<float>(rand() % 16));
+		pSheep->GetTransform()->Scale(0.02f);
 
-	GameObject* pSheep{ AddChild(new GameObject{}) };
-	pSheep->GetTransform()->Translate(2.0f, 75.5f, 0.0f);
-	pSheep->GetTransform()->Scale(0.02f);
+		DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
+		pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
+		pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", false })->SetMaterial(pSheepMaterial);
 
-	DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
-	pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
-	pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", false })->SetMaterial(pSheepMaterial);
+		pSheep->AddComponent(new Health{ 4 });
 
-	const XMFLOAT3 hitboxHalfDimensions{ 0.25f,0.15f,0.25f };
-	pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
+		const XMFLOAT3 hitboxHalfDimensions{ 0.25f,0.5f,0.25f };
+		pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
 
-	auto& physX{ PxGetPhysics() };
-	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
-	RigidBodyComponent* pSheepRb{ pSheep->AddComponent(new RigidBodyComponent{}) };
-	pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
-	pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
-	pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
+		auto& physX{ PxGetPhysics() };
+		auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
+		RigidBodyComponent* pSheepRb{ pSheep->AddComponent(new RigidBodyComponent{}) };
+		pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
+		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
+		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
+	}
 }
 
 void WorldScene::CreateWorld()
@@ -150,13 +155,15 @@ void WorldScene::CreatePlayer()
 	}
 
 	// INTERACTION
+	PxScene* pxScene{ pPlayerRb->GetPxRigidActor()->getScene() };
 	m_pPlayer->AddComponent(new BlockInteractionComponent
 		{
-			pPlayerRb->GetPxRigidActor()->getScene(), 
+			pxScene,
 			m_pWorld, 
 			m_pSelection->GetComponent<WireframeRenderer>(),
 			m_pSelection->GetComponent<BlockBreakRenderer>()
 		});
+	m_pPlayer->AddComponent(new EntityInteractionComponent{ pxScene });
 
 
 	// Create camera

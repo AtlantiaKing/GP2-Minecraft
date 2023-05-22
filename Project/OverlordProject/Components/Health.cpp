@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "Health.h"
 
+Health::Health(int health) : m_MaxHealth{ health }
+{
+}
+
 void Health::Heal(int amount)
 {
 	m_Health = (m_Health + amount) % m_MaxHealth;
@@ -11,7 +15,12 @@ void Health::Heal(int amount)
 void Health::Damage(int amount)
 {
 	m_Health -= amount;
-	if (m_Health <= 0) OnDeath.Notify(*GetGameObject());
 
 	OnHealthChange.Notify(m_Health);
+
+	if (m_Health <= 0)
+	{
+		OnDeath.Notify(*GetGameObject());
+		GetScene()->RemoveChild(GetGameObject(), true);
+	}
 }
