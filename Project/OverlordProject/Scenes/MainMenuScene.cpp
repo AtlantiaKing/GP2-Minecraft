@@ -2,6 +2,7 @@
 #include "MainMenuScene.h"
 
 #include "Components/WorldComponent.h"
+#include <Materials/Post/PostBlur.h>
 
 void MainMenuScene::Initialize()
 {
@@ -13,7 +14,8 @@ void MainMenuScene::Initialize()
 	m_SceneContext.settings.drawPhysXDebug = false;
 
 	WorldComponent* pWorld{ new WorldComponent{ m_SceneContext } };
-	pWorld->SetRenderDistance(5);
+	//pWorld->SetRenderDistance(5);
+	pWorld->SetRenderDistance(1);
 	AddChild(new GameObject{})->AddComponent(pWorld);
 
 
@@ -31,6 +33,13 @@ void MainMenuScene::Initialize()
 	TransformComponent* pCamTransform{ pCameraGO->GetTransform() };
 	pCamTransform->Translate(0.0f, 80.0f, 0.0f);
 	pCamTransform->Rotate(m_CameraPitch, 0.0f, 0.0f);
+
+
+
+	// Post Processing Stack
+	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
+
+	AddPostProcessingEffect(m_pPostBlur);
 }
 
 void MainMenuScene::Update()

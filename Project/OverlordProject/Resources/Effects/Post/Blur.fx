@@ -17,6 +17,11 @@ DepthStencilState EnableDepth
 	DepthWriteMask = ALL;
 };
 
+BlendState DisableBlending
+{
+    BlendEnable[0] = FALSE;
+};
+
 /// Create Rasterizer State (Backface culling) 
 RasterizerState BackCulling
 {
@@ -89,7 +94,8 @@ technique11 Blur
     pass P0
     {
 		SetRasterizerState(BackCulling);
-		SetDepthStencilState(EnableDepth, 0);
+        SetDepthStencilState(EnableDepth, 0);
+        SetBlendState(DisableBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
         SetVertexShader( CompileShader( vs_4_0, VS() ) );
         SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_4_0, PS() ) );

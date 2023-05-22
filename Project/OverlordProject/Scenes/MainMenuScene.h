@@ -1,5 +1,7 @@
 #pragma once
 
+class PostBlur;
+
 class MainMenuScene final : public GameScene
 {
 public:
@@ -18,5 +20,7 @@ protected:
 private:
 	float m_CameraPitch{ 40.0f };
 	float m_CameraRotation{};
+
+	PostBlur* m_pPostBlur{};
 };
 
