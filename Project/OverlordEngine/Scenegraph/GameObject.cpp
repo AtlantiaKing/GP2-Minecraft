@@ -314,6 +314,18 @@ void GameObject::OnTrigger(GameObject* pTriggerObject, GameObject* pOtherObject,
 		m_OnTriggerCallback(pTriggerObject, pOtherObject, action);
 }
 
+void GameObject::OnCollisionEnter(GameObject* pObject, GameObject* pOtherObject) const
+{
+	if (m_OnCollisionEnterCallback)
+		m_OnCollisionEnterCallback(pObject, pOtherObject);
+}
+
+void GameObject::OnCollisionExit(GameObject* pObject, GameObject* pOtherObject) const
+{
+	if (m_OnCollisionExitCallback)
+		m_OnCollisionExitCallback(pObject, pOtherObject);
+}
+
 GameScene* GameObject::GetScene() const
 {
 	if(!m_pParentScene && m_pParentObject)
@@ -324,7 +336,17 @@ GameScene* GameObject::GetScene() const
 	return m_pParentScene;
 }
 
-void GameObject::SetOnTriggerCallBack(PhysicsCallback callback)
+void GameObject::SetOnTriggerCallBack(PhysicsTriggerCallback callback)
 {
 	m_OnTriggerCallback = callback;
+}
+
+void GameObject::SetOnCollisionEnterCallBack(PhysicsCollisionEnterCallback callback)
+{
+	m_OnCollisionEnterCallback = callback;
+}
+
+void GameObject::SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callback)
+{
+	m_OnCollisionExitCallback = callback;
 }

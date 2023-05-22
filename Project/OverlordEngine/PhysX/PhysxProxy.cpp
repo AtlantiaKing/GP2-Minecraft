@@ -80,6 +80,33 @@ void PhysxProxy::Draw(const SceneContext& sceneContext) const
 		DebugRenderer::DrawPhysX(m_pPhysxScene);
 }
 
+void PhysxProxy::onContact(const PxContactPairHeader&, const PxContactPair* pairs, PxU32 count)
+{
+	for (PxU32 i = 0; i < count; i++)
+	{
+		const PxContactPair& cp = pairs[i];
+
+		// ignore pairs when shapes have been deleted
+		if (cp.flags & (PxContactPairFlag::eREMOVED_SHAPE_0 | PxContactPairFlag::eREMOVED_SHAPE_1))
+			continue;
+
+		const auto contactComponent = reinterpret_cast<BaseComponent*>(((pairs[i].shapes[0])->getActor())->userData);
+		const auto otherComponent = reinterpret_cast<BaseComponent*>(((pairs[i].shapes[1])->getActor())->userData);
+
+
+		if (contactComponent != nullptr && otherComponent != nullptr)
+		{
+			GameObject* trigger = contactComponent->GetGameObject();
+			GameObject* other = otherComponent->GetGameObject();
+
+			if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
+				trigger->OnCollisionEnter(trigger, other);
+			else if (pairs[i].events & PxPairFlag::eNOTIFY_TOUCH_LOST)
+				trigger->OnCollisionExit(trigger, other);
+		}
+	}
+}
+
 void PhysxProxy::onTrigger(PxTriggerPair* pairs, PxU32 count)
 {
 	for (PxU32 i = 0; i < count; i++)
