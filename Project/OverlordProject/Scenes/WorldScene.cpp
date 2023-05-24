@@ -95,7 +95,7 @@ void WorldScene::Initialize()
 
 		DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
 		pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
-		pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", false })->SetMaterial(pSheepMaterial);
+		pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", true })->SetMaterial(pSheepMaterial);
 
 		pSheep->AddComponent(new Health{ 4 });
 
