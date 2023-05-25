@@ -16,7 +16,7 @@ void Sheep::OnHit(int health)
 	XMFLOAT3 blockPos{};
 	XMStoreFloat3(&blockPos, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + XMVECTOR{ 0.0f, m_HitboxHalfDimensions.y, 0.0f});
 
-	GetScene()->AddChild(new ItemEntity{ BlockType::WOOD, blockPos });
+	GetScene()->AddChild(new ItemEntity{ BlockType::WOOL, blockPos });
 }
 
 void Sheep::UpdateState()

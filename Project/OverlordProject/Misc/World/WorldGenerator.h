@@ -33,8 +33,8 @@ public:
 	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
 	int GetChunkSize() const { return m_ChunkSize; }
 private:
-	Block** GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
-	Block* const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
+	BlockType* GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
+	BlockType const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 	Chunk* GetChunkAt(int x, int z, std::vector<Chunk>& chunks) const;
 
 	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);

@@ -12,6 +12,7 @@ enum class FaceDirection : BYTE
 
 enum class FaceType : BYTE
 {
+	AIR,
 	DIRT,
 	GRASS_BLOCK,
 	GRASS_SIDE,
@@ -27,24 +28,24 @@ enum class FaceType : BYTE
 	OAK_LOG_TOP,
 	OAK_LEAVES,
 	GRASS,
-	WOOD
+	WOOL
 };
 
 enum class BlockType : BYTE
 {
-	AIR = UINT8_MAX,
-	DIRT = 0,
-	GRASS_BLOCK = 1,
-	SAND = 3,
-	WATER = 4,
-	BEDROCK = 5,
-	STONE = 6,
-	COBBLESTONE = 7,
-	SANDSTONE = 8,
-	OAK_LOG = 11,
-	OAK_LEAVES = 13,
-	GRASS = 14,
-	WOOD = 15
+	AIR = 0,
+	DIRT = 1,
+	GRASS_BLOCK = 2,
+	SAND = 4,
+	WATER = 5,
+	BEDROCK = 6,
+	STONE = 7,
+	COBBLESTONE = 8,
+	SANDSTONE = 9,
+	OAK_LOG = 12,
+	OAK_LEAVES = 14,
+	GRASS = 15,
+	WOOL = 16
 };
 
 enum class BlockMesh : BYTE

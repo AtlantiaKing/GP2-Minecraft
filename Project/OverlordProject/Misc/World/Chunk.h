@@ -15,7 +15,7 @@ struct Chunk
 	}
 
 	std::vector<VertexPosNormTexTransparency> vertices{};
-	std::vector<Block*> pBlocks{};
+	std::vector<BlockType> pBlocks{};
 
 	XMINT2 position;
 
