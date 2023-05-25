@@ -32,6 +32,7 @@ enum class FaceType : BYTE
 
 enum class BlockType : BYTE
 {
+	AIR = UINT8_MAX,
 	DIRT = 0,
 	GRASS_BLOCK = 1,
 	SAND = 3,
@@ -43,7 +44,7 @@ enum class BlockType : BYTE
 	OAK_LOG = 11,
 	OAK_LEAVES = 13,
 	GRASS = 14,
-	WOOD
+	WOOD = 15
 };
 
 enum class BlockMesh : BYTE
