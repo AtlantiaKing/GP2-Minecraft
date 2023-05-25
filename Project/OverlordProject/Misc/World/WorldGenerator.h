@@ -57,7 +57,11 @@ private:
 	Perlin m_VegitationPerlin{};
 	TileAtlas m_TileMap{};
 
-	int m_RenderDistance{ 5 };
+#ifdef _DEBUG
+	int m_RenderDistance{ 1 };
+#else
+	int m_RenderDistance{ 8 };
+#endif
 	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };
 	int m_TerrainHeight{ 128 };
