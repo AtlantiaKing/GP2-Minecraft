@@ -4,6 +4,7 @@
 #include <Misc/World/WorldRenderer.h>
 
 #include "Misc/World/Chunk.h"
+#include <queue>
 
 class RigidBodyComponent;
 
@@ -18,8 +19,8 @@ public:
 	WorldComponent& operator=(const WorldComponent& other) = delete;
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
-	void PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
-	void DestroyBlock(const XMFLOAT3& position);
+	bool PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
+	bool DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 	void SetRenderDistance(int renderDistance);
 
@@ -32,6 +33,13 @@ protected:
 	virtual void PostDraw(const SceneContext& sceneContext) override;
 	virtual void ShadowMapDraw(const SceneContext& sceneContext) override;
 private:
+	struct WorldEvent
+	{
+		bool placeBlock{};
+		XMFLOAT3 position{};
+		BlockType type{};
+	};
+
 	void StartWorldThread(const SceneContext& sceneContext);
 	void StartEnvironmentalChanges(const SceneContext& sceneContext);
 	void LoadColliders(bool reloadAll = false);
@@ -45,7 +53,15 @@ private:
 	std::thread m_EnvironmentThread{};
 	bool m_IsMultithreaded{ true };
 
+	bool m_NeedsWorldReload{};
+
+	bool m_PlaceBlock{};
+	bool m_DestroyBlock{};
+	XMFLOAT3 m_EditBlock{};
+	BlockType m_EditBlockType{};
+
 	std::vector<Chunk> m_Chunks{};
+	std::vector<Chunk> m_WaterChunks{};
 
 	WorldGenerator m_Generator{};
 	WorldRenderer m_Renderer{};
@@ -54,15 +70,6 @@ private:
 	PxCooking* m_pColliderCooking{};
 
 	XMINT2 m_ChunkCenter{};
-	bool m_ShouldRemoveBlock{};
-	bool m_ShouldPlaceBlock{};
-	XMFLOAT3 m_EditBlockPosition{};
-	BlockType m_EditBlockType{};
-
-	bool m_ShouldReload{};
-	bool m_ShouldReloadWater{};
-	bool m_ShouldSwapWorld{};
-	bool m_ShouldSwapWater{};
 
 	bool m_CanChangeEnvironment{};
 };

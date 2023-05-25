@@ -15,11 +15,6 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
     // Create the cooking interface
     auto& physX{ PxGetPhysics() };
     m_pColliderCooking = PxCreateCooking(PX_PHYSICS_VERSION, physX.getFoundation(), PxCookingParams{ PxTolerancesScale{} });
-
-    // Start a new thread that removes blocks
-    m_WorldThread = std::thread{ [this,sceneContext]() { StartWorldThread(sceneContext); } };
-    // Start a new thread that has environmental logic
-    m_EnvironmentThread = std::thread{ [this,sceneContext]() { StartEnvironmentalChanges(sceneContext); } };
 }
 
 WorldComponent::~WorldComponent()
@@ -40,40 +35,116 @@ void WorldComponent::StartWorldThread(const SceneContext& sceneContext)
     // While the thread is alive
     while (m_IsMultithreaded)
     {
-        if (m_ShouldRemoveBlock)
+        if (m_DestroyBlock)
         {
             // Remove the block from the right chunk
-            m_Generator.RemoveBlock(m_Chunks, m_EditBlockPosition);
+            m_Generator.RemoveBlock(m_EditBlock, sceneContext, &m_Renderer);
 
-            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
-            m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext, false);
+            m_NeedsWorldReload = true;
 
-            // Reset ShouldRemoveBlock State
-            m_ShouldRemoveBlock = false;
-
-            // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldSwapWorld = true;
-            m_ShouldSwapWater = true;
+            m_DestroyBlock = false;
         }
-        else if (m_ShouldPlaceBlock)
+        else if (m_PlaceBlock)
         {
-            m_ShouldPlaceBlock = false;
-
             // Remove the block from the right chunk
-            m_Generator.PlaceBlock(m_Chunks, m_EditBlockPosition, m_EditBlockType);
-
-            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+            m_Generator.PlaceBlock(m_EditBlock, m_EditBlockType, sceneContext, &m_Renderer);
 
             // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldSwapWorld = true;
+            m_NeedsWorldReload = true;
+
+            m_PlaceBlock = false;
         }
-        
+        else if (!m_NeedsWorldReload)
+        {
+            m_NeedsWorldReload = m_Generator.LoadChunk(m_ChunkCenter, sceneContext, &m_Renderer);
+        }
+        //else
+        //{
+        //    //if (m_CanChangeEnvironment && m_Chunks.size() <= 1)
+        //    //{
+        //    //    {
+        //    //        const std::lock_guard worldLock{m_ChunkMutex};
+        //    //        const auto newChunks{ m_Generator.LoadChunk(0, 1) };
+        //    //        m_Chunks.emplace_back(newChunks.first);
+        //    //        m_Generator.GetWater().emplace_back(newChunks.second);
+        //    //    }
+
+        //    //    m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+
+        //    //    // Let the main thread know that it should reload vertex buffers and colliders
+        //    //    m_ShouldSwapWorld = true;
+        //    //}
+        //}
+
+        //if (m_CanChangeEnvironment && m_Chunks.size() <= 1)
+        //{
+        //    {
+        //        const std::lock_guard worldLock{m_ChunkMutex};
+        //        const auto newChunks{ m_Generator.LoadChunk(0, 1) };
+        //        m_Chunks.emplace_back(newChunks.first);
+        //        m_Generator.GetWater().emplace_back(newChunks.second);
+        //    }
+
+        //    m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+
+        //    // Let the main thread know that it should reload vertex buffers and colliders
+        //    m_ShouldSwapWorld = true;
+        //}
+
+        /*if (m_CanChangeEnvironment)
+        {
+            const Chunk chunk{ m_Generator.LoadChunk(m_Chunks, m_ChunkCenter) };
+
+            {
+                const std::lock_guard worldLock{m_ChunkMutex}; 
+                m_Chunks.emplace_back(std::move(chunk));
+            }
+
+            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+            m_ShouldSwapWorld = true;
+        }*/
+
+        //if (m_RequestVertexReload)
+        //{      
+        //    m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+        //    m_Renderer.SetBuffers(m_WaterChunks, sceneContext, false);
+        //    
+        //    // Let the main thread know that it should reload vertex buffers and colliders
+        //    m_ShouldSwapWorld = true;
+        //    m_ShouldSwapWater = true;
+
+        //    m_RequestVertexReload = false;
+        //}
+        //else if (!m_WorldEvents.empty())
+        //{
+        //    WorldEvent e{};
+
+        //    {
+        //        std::lock_guard lock{ m_WorldMutex };
+        //        e = m_WorldEvents.back();
+        //        m_WorldEvents.pop();
+        //    }
+
+        //    if (e.placeBlock)
+        //    {
+
+        //    }
+        //    else
+        //    {
+
+        //    }
+        //}
+       /* else
+        {*/
+            
+        //}
+
         // Don't overdo the CPU with this infinite while loop by sleeping the thread
         std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
     }
 }
 
-void WorldComponent::StartEnvironmentalChanges(const SceneContext& sceneContext)
+void WorldComponent::StartEnvironmentalChanges(const SceneContext&)
 {
     // Milliseconds per environmental tick
     constexpr int tickTime{ 100 };
@@ -83,16 +154,16 @@ void WorldComponent::StartEnvironmentalChanges(const SceneContext& sceneContext)
     {
         const auto tickStart{ std::chrono::high_resolution_clock::now() };
 
-        // If the world is loaded, try changing the environment in the generator
-        if (m_CanChangeEnvironment && m_Generator.ChangeEnvironment(m_Chunks, m_ChunkCenter))
-        {
-            m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
-            m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext, false);
+        //// If the world is loaded, try changing the environment in the generator
+        //if (m_CanChangeEnvironment && m_Generator.ChangeEnvironment(m_Chunks, m_ChunkCenter))
+        //{
+        //    m_Renderer.SetBuffers(m_Chunks, sceneContext, false);
+        //    m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext, false);
 
-            // Let the main thread know that it should reload vertex buffers and colliders
-            m_ShouldSwapWorld = true;
-            m_ShouldSwapWater = true;
-        }
+        //    // Let the main thread know that it should reload vertex buffers and colliders
+        //    m_ShouldSwapWorld = true;
+        //    m_ShouldSwapWater = true;
+        //}
 
         // Wait until the tick has been completed
         const auto elapsedTickTime{ std::chrono::high_resolution_clock::now() - tickStart };
@@ -101,8 +172,10 @@ void WorldComponent::StartEnvironmentalChanges(const SceneContext& sceneContext)
     }
 }
 
-void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
+bool WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
 {
+    if (m_NeedsWorldReload || m_PlaceBlock) return false;
+
     const XMFLOAT3 localHitPos{ hitPos.x - hitBlockPosition.x, hitPos.y - hitBlockPosition.y, hitPos.z - hitBlockPosition.z };
 
     constexpr float blockFaceDistance{ 0.49f };
@@ -113,27 +186,31 @@ void WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPositio
     else if (localHitPos.z >= blockFaceDistance) hitBlockPosition.z += 1.0f;
     else if (localHitPos.z <= -blockFaceDistance) hitBlockPosition.z -= 1.0f;
 
-    m_EditBlockPosition = hitBlockPosition;
+    m_EditBlock = hitBlockPosition;
     m_EditBlockType = block;
-    m_ShouldPlaceBlock = true;
+    m_PlaceBlock = true;
+
+    return true;
 }
 
-void WorldComponent::DestroyBlock(const XMFLOAT3& position)
+bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
 {
-    if (m_ShouldRemoveBlock) return;
+    if (m_NeedsWorldReload || m_DestroyBlock) return false;
 
-    m_EditBlockPosition = position;
-    m_ShouldRemoveBlock = true;
+    m_EditBlock = position;
+    m_DestroyBlock = true;
 
     // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
     Block* pDropBlock{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock };
     if(pDropBlock) GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position});
+
+    return true;
 }
 
 Block* WorldComponent::GetBlockAt(int x, int y, int z) const
 {
-    return m_Generator.GetBlockAt(x, y, z, m_Chunks);
+    return m_Generator.GetBlockAt(x, y, z);
 }
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
@@ -165,20 +242,121 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
     m_pRb = GetGameObject()->AddComponent(new RigidBodyComponent{true});
     m_pRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::World);
 
-    // Load the chunks
-    m_Generator.LoadWorld(m_Chunks);
+    //// Load the chunks
+    //m_Generator.LoadWorld(m_Chunks);
 
-    // Reload buffers and colliders
-    ReloadWorld(sceneContext);
-    // Reload water buffers
-    ReloadWater(sceneContext);
+    //// Reload buffers and colliders
+    //ReloadWorld(sceneContext);
+    //// Reload water buffers
+    //ReloadWater(sceneContext);
 
     m_CanChangeEnvironment = true;
+
+    // Start a new thread that removes blocks
+    m_WorldThread = std::thread{ [this,sceneContext]() { StartWorldThread(sceneContext); } };
+    // Start a new thread that has environmental logic
+    m_EnvironmentThread = std::thread{ [this,sceneContext]() { StartEnvironmentalChanges(sceneContext); } };
 }
 
-void WorldComponent::Update(const SceneContext& sceneContext)
+void WorldComponent::Update(const SceneContext&)
 {
-    if (m_ShouldReload)
+    if (m_NeedsWorldReload)
+    {
+        auto& genChunks{ m_Generator.GetChunks() };
+        auto& genWaterChunks{ m_Generator.GetWater() };
+
+        for (int i{}; i < genChunks.size(); ++i)
+        {
+            if (m_Chunks.size() > i)
+            {
+                auto& chunk{ m_Chunks[i] };
+                auto& genChunk{ genChunks[i] };
+                chunk.position = genChunk.position;
+                chunk.vertices = genChunk.vertices;
+                chunk.pBlocks = genChunk.pBlocks;
+                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                {
+                    //if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
+                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
+                }
+                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                {
+                    //if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+                }
+            }
+            else
+            {
+                Chunk chunk{};
+                auto& genChunk{ genChunks[i] };
+                chunk.position = genChunk.position;
+                chunk.vertices = genChunk.vertices;
+                chunk.pBlocks = genChunk.pBlocks;
+                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                {
+                    //if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
+                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
+                }
+                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                {
+                    //if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+                }
+                m_Chunks.push_back(chunk);
+            }
+        }
+
+        for (int i{}; i < genWaterChunks.size(); ++i)
+        {
+            if (m_WaterChunks.size() > i)
+            {
+                auto& chunk{ m_WaterChunks[i] };
+                auto& genChunk{ genWaterChunks[i] };
+                chunk.position = genChunk.position;
+                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                {
+                    if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
+                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
+                }
+                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                {
+                    if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+                }
+            }
+            else
+            {
+                Chunk chunk{};
+                auto& genChunk{ genWaterChunks[i] };
+                chunk.position = genChunk.position;
+                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                {
+                    if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
+                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
+                }
+                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                {
+                    if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+                }
+                m_WaterChunks.push_back(chunk);
+            }
+        }
+
+        LoadColliders(true);
+
+        m_NeedsWorldReload = false;
+    }
+    
+    /*if (m_ShouldReload)
     {
         ReloadWorld(sceneContext);
         m_ShouldReload = false;
@@ -190,6 +368,19 @@ void WorldComponent::Update(const SceneContext& sceneContext)
     }
     if (m_ShouldSwapWorld) SwapWorld();
     if (m_ShouldSwapWater) SwapWater();
+
+    if (!m_MainEvents.empty())
+    {
+        std::pair<Chunk, Chunk> newChunks;
+        {
+            std::lock_guard lock{ m_MainMutex };
+            newChunks = std::move(m_MainEvents.back());
+            m_MainEvents.pop();
+        }
+        m_Chunks.emplace_back(newChunks.first);
+        m_WaterChunks.emplace_back(newChunks.second);
+        m_RequestVertexReload = true;
+    }*/
 }
 
 void WorldComponent::LoadColliders(bool reloadAll)
@@ -294,38 +485,38 @@ void WorldComponent::ReloadWorld(const SceneContext& sceneContext)
 void WorldComponent::ReloadWater(const SceneContext& sceneContext)
 {
     // Set up the vertex buffer
-    m_Renderer.SetBuffers(m_Generator.GetWater(), sceneContext);
+    m_Renderer.SetBuffers(m_WaterChunks, sceneContext);
 }
 
 void WorldComponent::SwapWorld()
 {
-    for(Chunk& chunk : m_Chunks)
-    {
-        if (chunk.pBackVertexBuffer && chunk.pBackVertexBuffer != chunk.pVertexBuffer)
-        {
-            SafeRelease(chunk.pVertexBuffer);
+    //for(Chunk& chunk : m_Chunks)
+    //{
+    //    if (chunk.pBackVertexBuffer && chunk.pBackVertexBuffer != chunk.pVertexBuffer)
+    //    {
+    //        SafeRelease(chunk.pVertexBuffer);
 
-            chunk.vertexBufferSize = chunk.backVertexBufferSize;
-            chunk.pVertexBuffer = chunk.pBackVertexBuffer;
-        }
-        if (chunk.pBackVertexTransparentBuffer && chunk.pBackVertexTransparentBuffer != chunk.pVertexTransparentBuffer)
-        {
-            SafeRelease(chunk.pVertexTransparentBuffer);
+    //        chunk.vertexBufferSize = chunk.backVertexBufferSize;
+    //        chunk.pVertexBuffer = chunk.pBackVertexBuffer;
+    //    }
+    //    if (chunk.pBackVertexTransparentBuffer && chunk.pBackVertexTransparentBuffer != chunk.pVertexTransparentBuffer)
+    //    {
+    //        SafeRelease(chunk.pVertexTransparentBuffer);
 
-            chunk.vertexTransparentBufferSize = chunk.backVertexTransparentBufferSize;
-            chunk.pVertexTransparentBuffer = chunk.pBackVertexTransparentBuffer;
-        }
-    }
+    //        chunk.vertexTransparentBufferSize = chunk.backVertexTransparentBufferSize;
+    //        chunk.pVertexTransparentBuffer = chunk.pBackVertexTransparentBuffer;
+    //    }
+    //}
 
-    m_ShouldSwapWorld = false;
+    //m_ShouldSwapWorld = false;
 
-    // Create a collider for the world
-    LoadColliders();
+    //// Create a collider for the world
+    //LoadColliders();
 }
 
 void WorldComponent::SwapWater()
 {
-    for (Chunk& chunk : m_Generator.GetWater())
+    /*for (Chunk& chunk : m_WaterChunks)
     {
         if (chunk.pBackVertexBuffer && chunk.pBackVertexBuffer != chunk.pVertexBuffer)
         {
@@ -339,7 +530,7 @@ void WorldComponent::SwapWater()
         }
     }
 
-    m_ShouldSwapWater = false;
+    m_ShouldSwapWater = false;*/
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)
@@ -349,7 +540,7 @@ void WorldComponent::Draw(const SceneContext& sceneContext)
 
 void WorldComponent::PostDraw(const SceneContext& sceneContext)
 {
-    m_Renderer.Draw(m_Generator.GetWater(), sceneContext);
+    m_Renderer.Draw(m_WaterChunks, sceneContext);
 }
 
 void WorldComponent::ShadowMapDraw(const SceneContext& sceneContext)

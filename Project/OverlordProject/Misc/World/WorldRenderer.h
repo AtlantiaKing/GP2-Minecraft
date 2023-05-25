@@ -7,8 +7,8 @@ public:
 	~WorldRenderer();
 
 	void LoadEffect(const SceneContext& sceneContext);
-	void SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext, bool instantApply = true);
-	void SetBuffer(Chunk& chunk, const SceneContext& sceneContext, bool instantApply = true);
+	void SetBuffers(std::vector<Chunk>& chunks, const SceneContext& sceneContext);
+	void SetBuffer(Chunk& chunk, const SceneContext& sceneContext);
 
 	void Draw(std::vector<Chunk>& chunks, const SceneContext& sceneContext);
 	void DrawShadowMap(const Chunk& chunk, const SceneContext& sceneContext);

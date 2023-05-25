@@ -12,6 +12,28 @@ void PlayerMovement::Initialize(const SceneContext& /*sceneContext*/)
 
 void PlayerMovement::Update(const SceneContext& sceneContext)
 {
+	PxRaycastBuffer hit;
+	PxQueryFilterData filter{};
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+	const XMFLOAT3& position{ GetTransform()->GetWorldPosition() };
+	const PxVec3 raycastOriginCenter{ position.x, 255.0f, position.z };
+
+	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
+
+	if (!GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginCenter, PxVec3{ 0.0f,-1.0f,0.0f }, FLT_MAX, hit, PxHitFlag::eDEFAULT, filter))
+	{
+		rb->SetKinematic(true);
+		return;
+	}
+
+	if (!m_Spawned)
+	{
+		GetTransform()->Translate(hit.block.position.x, hit.block.position.y + 20.0f, hit.block.position.z);
+		m_Spawned = true;
+	}
+
+	rb->SetKinematic(false);
+
 	UpdateRotation(sceneContext);
 
 	UpdateVelocity(sceneContext);

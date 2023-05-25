@@ -8,6 +8,8 @@
 
 struct Block;
 
+class WorldRenderer;
+
 class WorldGenerator final
 {
 public:
@@ -19,27 +21,29 @@ public:
 	WorldGenerator& operator=(const WorldGenerator& other) = delete;
 	WorldGenerator& operator=(WorldGenerator&& other) noexcept = delete;
 
-	void LoadWorld(std::vector<Chunk>& chunks);
-	void RemoveBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position);
-	void PlaceBlock(std::vector<Chunk>& chunks, const XMFLOAT3& position, BlockType block);
-	Block* GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
-	bool ChangeEnvironment(std::vector<Chunk>& chunks, const XMINT2& chunkCenter);
+	bool LoadChunk(const XMINT2& chunkCenter, const SceneContext& sceneContext, WorldRenderer* pRenderer);
+	void RemoveBlock(const XMFLOAT3& position, const SceneContext& sceneContext, WorldRenderer* pRenderer);
+	void PlaceBlock(const XMFLOAT3& position, BlockType block, const SceneContext& sceneContext, WorldRenderer* pRenderer);
+	Block* GetBlockAt(int x, int y, int z) const;
+	bool ChangeEnvironment(const XMINT2& chunkCenter);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
 	void SetTerrainHeight(int terrainHeight) { m_TerrainHeight = terrainHeight; }
 
 	std::vector<XMFLOAT3> GetPositions(const Chunk& chunk) const;
-	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
 	int GetChunkSize() const { return m_ChunkSize; }
+
+	std::vector<Chunk>& GetChunks() { return m_Chunks; }
+	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
 private:
 	BlockType* GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
 	BlockType const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 	Chunk* GetChunkAt(int x, int z, std::vector<Chunk>& chunks) const;
 
-	void LoadChunk(std::vector<Chunk>& chunks, int x, int y);
-	void ReloadChunks(std::vector<Chunk>& chunks, int changedX, int changedY, int changedZ);
-	void SpawnStructure(std::vector<Chunk>& chunks, const Structure* structure, const XMINT3& position);
+	void LoadChunk(int x, int y);
+	void ReloadChunks(int changedX, int changedY, int changedZ);
+	void SpawnStructure(const Structure* structure, const XMINT3& position);
 	void CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
 
 	void CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
@@ -57,8 +61,11 @@ private:
 	Perlin m_VegitationPerlin{};
 	TileAtlas m_TileMap{};
 
+	std::vector<Chunk> m_Chunks{};
+	std::vector<Chunk> m_WaterChunks{};
+
 #ifdef _DEBUG
-	int m_RenderDistance{ 1 };
+	int m_RenderDistance{ 2 };
 #else
 	int m_RenderDistance{ 8 };
 #endif
@@ -69,7 +76,6 @@ private:
 	const int m_ChunkSize{ 16 };
 
 	std::unique_ptr<Block> m_pWaterBlock{};
-	std::vector<Chunk> m_WaterChunks{};
 	std::vector<std::pair<const Structure*, XMINT3>> m_StructuresToSpawn{};
 	int m_WorldWidth{};
 };

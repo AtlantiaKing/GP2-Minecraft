@@ -83,12 +83,13 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			BlockType selectedBlock{ pInventory->GetEquipedItem() };
 
 			// Place a block
-			m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, selectedBlock);
+			if (m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, selectedBlock))
+			{
+				// Reset block breaking
+				m_IsBreakingBlock = false;
 
-			// Reset block breaking
-			m_IsBreakingBlock = false;
-
-			pInventory->Remove(selectedBlock);
+				pInventory->Remove(selectedBlock);
+			}
 		}
 	}
 

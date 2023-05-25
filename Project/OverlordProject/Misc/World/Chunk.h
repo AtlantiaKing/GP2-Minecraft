@@ -8,7 +8,7 @@
 
 struct Chunk
 {
-	~Chunk() 
+	void DeleteChunk() 
 	{
 		SafeRelease(pVertexBuffer);
 		SafeRelease(pVertexTransparentBuffer);
@@ -20,14 +20,10 @@ struct Chunk
 	XMINT2 position;
 
 	ID3D11Buffer* pVertexBuffer{};
-	ID3D11Buffer* pBackVertexBuffer{};
 	ID3D11Buffer* pVertexTransparentBuffer{};
-	ID3D11Buffer* pBackVertexTransparentBuffer{};
 	
 	int vertexBufferSize{};
-	int backVertexBufferSize{};
 	int vertexTransparentBufferSize{};
-	int backVertexTransparentBufferSize{};
 
 	int colliderIdx{ -1 };
 	bool verticesChanged{ true };
