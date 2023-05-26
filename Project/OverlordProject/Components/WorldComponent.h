@@ -44,10 +44,6 @@ private:
 	void StartEnvironmentalChanges(const SceneContext& sceneContext);
 	void LoadColliders(bool reloadAll = false);
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
-	void ReloadWorld(const SceneContext& sceneContext);
-	void ReloadWater(const SceneContext& sceneContext);
-	void SwapWorld();
-	void SwapWater();
 
 	std::thread m_WorldThread{};
 	std::thread m_EnvironmentThread{};

@@ -144,7 +144,7 @@ void WorldGenerator::ReloadChunks(int changedX, int changedY, int changedZ)
 		if (neighbourIt != m_Chunks.end())
 			CreateVertices(*neighbourIt, predicateChunks);
 		if (neighbourWaterIt != m_WaterChunks.end())
-			CreateVertices(*neighbourIt, predicateWaterChunks);
+			CreateVertices(*neighbourWaterIt, predicateWaterChunks);
 	}
 
 	if (lookUpPos.z == 0 || lookUpPos.z == m_ChunkSize - 1)
@@ -163,7 +163,51 @@ void WorldGenerator::ReloadChunks(int changedX, int changedY, int changedZ)
 		if (neighbourIt != m_Chunks.end())
 			CreateVertices(*neighbourIt, predicateChunks);
 		if (neighbourWaterIt != m_WaterChunks.end())
-			CreateVertices(*neighbourIt, predicateWaterChunks);
+			CreateVertices(*neighbourWaterIt, predicateWaterChunks);
+	}
+}
+
+void WorldGenerator::ReloadChunks(int chunkX, int chunkY)
+{
+	auto pChunk{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
+		{
+			return chunk.position.x == chunkX && chunk.position.y == chunkY;
+		}) };
+	auto pWaterChunk{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+		{
+			return chunk.position.x == chunkX && chunk.position.y == chunkY;
+		}) };
+
+	std::vector<std::vector<Chunk>*> predicateChunks{};
+	predicateChunks.push_back(&m_Chunks);
+
+	std::vector<std::vector<Chunk>*> predicateWaterChunks{};
+	predicateWaterChunks.push_back(&m_Chunks);
+	predicateWaterChunks.push_back(&m_WaterChunks);
+
+	CreateVertices(*pChunk, predicateChunks);
+	CreateVertices(*pWaterChunk, predicateWaterChunks);
+
+	for (int x{ -1 }; x <= 1; ++x)
+	{
+		for (int y{ -1 }; y <= 1; ++y)
+		{
+			if (abs(x) && abs(y)) continue;
+
+			auto neighbourIt{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk)
+				{
+					return chunk.position.x == chunkX + x && chunk.position.y == chunkY + y;
+				}) };
+			auto neighbourWaterIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+				{
+					return chunk.position.x == chunkX + x && chunk.position.y == chunkY + y;
+				}) };
+
+			if (neighbourIt != m_Chunks.end())
+				CreateVertices(*neighbourIt, predicateChunks);
+			if (neighbourWaterIt != m_WaterChunks.end())
+				CreateVertices(*neighbourWaterIt, predicateWaterChunks);
+		}
 	}
 }
 
@@ -282,6 +326,8 @@ bool WorldGenerator::ChangeEnvironment(const XMINT2& chunkCenter)
 
 void WorldGenerator::CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks)
 {
+	if (chunk.pBlocks.empty()) return;
+
 	chunk.verticesChanged = true;
 	chunk.needColliderChange = true;
 
@@ -414,42 +460,6 @@ std::vector<XMFLOAT3> WorldGenerator::GetPositions(const Chunk& chunk) const
 	return vertices;
 }
 
-//void WorldGenerator::LoadWorld(std::vector<Chunk>& chunks, std::vector<Chunk>& waterChunks)
-//{
-//	const int renderRadius{ m_RenderDistance - 1 };
-//
-//	m_WorldWidth = m_ChunkSize * (renderRadius * 2 + 1);
-//
-//	for (int x{ -renderRadius }; x <= renderRadius; ++x)
-//	{
-//		for (int y{ -renderRadius }; y <= renderRadius; ++y)
-//		{
-//			LoadChunk(chunks, waterChunks, x, y);
-//		}
-//	}
-//
-//	for (const auto& structure : m_StructuresToSpawn)
-//	{
-//		SpawnStructure(chunks, structure.first, structure.second);
-//	}
-//	m_StructuresToSpawn.clear();
-//
-//	std::vector<std::vector<Chunk>*> predicateChunks{};
-//	predicateChunks.push_back(&chunks);
-//
-//	for (Chunk& chunk : chunks)
-//	{
-//		CreateVertices(chunk, waterChunks, predicateChunks);
-//	}
-//
-//	predicateChunks.push_back(&waterChunks);
-//
-//	for (Chunk& chunk : waterChunks)
-//	{
-//		CreateVertices(chunk, waterChunks, predicateChunks);
-//	}
-//}
-
 bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sceneContext, WorldRenderer* pRenderer)
 {
 	const int renderRadius{ m_RenderDistance - 1 };
@@ -462,7 +472,6 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 				chunk.position.y < chunkCenter.y - renderRadius || chunk.position.y > chunkCenter.y + renderRadius);
 		}), end(m_Chunks));
 
-	bool loadedChunk{};
 	for (int x{ chunkCenter.x - renderRadius }; x <= chunkCenter.x + renderRadius; ++x)
 	{
 		for (int y{ chunkCenter.y - renderRadius }; y <= chunkCenter.y + renderRadius; ++y)
@@ -480,40 +489,23 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 			if (alreadyFound) continue;
 
 			LoadChunk(x, y);
-			loadedChunk = true;
+
+			for (const auto& structure : m_StructuresToSpawn)
+			{
+				SpawnStructure(structure.first, structure.second);
+			}
+			m_StructuresToSpawn.clear();
+
+			ReloadChunks(x, y);
+
+			pRenderer->SetBuffers(m_Chunks, sceneContext);
+			pRenderer->SetBuffers(m_WaterChunks, sceneContext);
+
+			return true;
 		}
 	}
 
-	if (loadedChunk)
-	{
-		for (const auto& structure : m_StructuresToSpawn)
-		{
-			SpawnStructure(structure.first, structure.second);
-		}
-		m_StructuresToSpawn.clear();
-
-		std::vector<std::vector<Chunk>*> predicateChunks{};
-		predicateChunks.push_back(&m_Chunks);
-
-		for (Chunk& chunk : m_Chunks)
-		{
-			CreateVertices(chunk, predicateChunks);
-		}
-
-		predicateChunks.push_back(&m_WaterChunks);
-
-		for (Chunk& chunk : m_WaterChunks)
-		{
-			CreateVertices(chunk, predicateChunks);
-		}
-
-		pRenderer->SetBuffers(m_Chunks, sceneContext);
-		pRenderer->SetBuffers(m_WaterChunks, sceneContext);
-
-		OutputDebugStringW((L"World update" + std::to_wstring(chunkCenter.x) + L" " + std::to_wstring(chunkCenter.y) + L"\n").c_str());
-	}
-
-	return loadedChunk;
+	return false;
 }
 
 void WorldGenerator::LoadChunk(int chunkX, int chunkY)

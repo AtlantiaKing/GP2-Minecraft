@@ -43,6 +43,7 @@ private:
 
 	void LoadChunk(int x, int y);
 	void ReloadChunks(int changedX, int changedY, int changedZ);
+	void ReloadChunks(int chunkX, int chunkY);
 	void SpawnStructure(const Structure* structure, const XMINT3& position);
 	void CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
 
