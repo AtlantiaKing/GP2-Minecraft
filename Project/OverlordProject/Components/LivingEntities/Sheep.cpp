@@ -24,10 +24,15 @@ void Sheep::UpdateState()
 	if (m_IsAttacked)
 	{
 		m_State = static_cast<unsigned int>(SheepState::Walking);
+		m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
+		m_pAnimator->Play();
 		return;
 	}
 
 	m_State = rand() % (static_cast<unsigned int>(SheepState::Walking) + 1);
+
+	m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
+	m_pAnimator->Play();
 }
 
 void Sheep::UpdateMovement(float)
@@ -55,7 +60,6 @@ void Sheep::UpdateMovement(float)
 
 	if (sheepState == SheepState::Walking)
 	{
-
 		const XMFLOAT3 direction{ -forward.x * m_RunSpeed, rb->GetVelocity().y, -forward.z * m_RunSpeed };
 
 		rb->SetVelocity(direction);

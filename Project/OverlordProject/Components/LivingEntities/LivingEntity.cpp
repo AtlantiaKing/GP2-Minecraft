@@ -22,6 +22,8 @@ void LivingEntity::Notify(const int& health)
 
 void LivingEntity::Initialize(const SceneContext&)
 {
+	m_pAnimator = GetGameObject()->GetComponent<ModelComponent>()->GetAnimator();
+
 	SetNewRotationTimer();
 	SetNewStateTimer();
 

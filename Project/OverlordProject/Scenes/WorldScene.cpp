@@ -14,7 +14,7 @@
 #include <Components/HealthHUD.h>
 #include "Components/LivingEntities/Sheep.h"
 
-#include "Materials/Shadow/DiffuseMaterial_Shadow.h"
+#include <Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h>
 
 void WorldScene::Initialize()
 {
@@ -93,7 +93,7 @@ void WorldScene::Initialize()
 		pSheep->GetTransform()->Translate(static_cast<float>(rand() % 16), 120.0f, static_cast<float>(rand() % 16));
 		pSheep->GetTransform()->Scale(0.02f);
 
-		DiffuseMaterial_Shadow* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>() };
+		DiffuseMaterial_Shadow_Skinned* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>() };
 		pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
 		pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", true })->SetMaterial(pSheepMaterial);
 

@@ -30,6 +30,8 @@ protected:
 
 	XMFLOAT3 m_HitboxHalfDimensions{};
 
+	ModelAnimator* m_pAnimator{};
+
 	inline float GetRayDistance() const { return m_RayTestDistance; }
 	inline float GetJumpForce() const { return m_JumpForce; }
 private:
@@ -59,5 +61,6 @@ private:
 
 	const float m_RayTestDistance{ 0.1f };
 	const float m_JumpForce{ 2.0f };
+
 };
 

@@ -1,6 +1,6 @@
 //Maya ASCII 2022 scene
-//Name: sheep.ma
-//Last modified: Fri, May 26, 2023 09:47:28 PM
+//Name: sheep_idle.ma
+//Last modified: Fri, May 26, 2023 09:47:56 PM
 //Codeset: 1252
 requires maya "2022";
 requires "mtoa" "5.0.0.1";
@@ -10,7 +10,7 @@ fileInfo "product" "Maya 2022";
 fileInfo "version" "2022";
 fileInfo "cutIdentifier" "202110272215-ad32f8f1e6";
 fileInfo "osv" "Windows 10 Home v2009 (Build: 22621)";
-fileInfo "UUID" "C7B34CA2-496A-772C-6BC6-B9A942F6AEEA";
+fileInfo "UUID" "935210F0-4296-1935-C83B-D4844F11A54C";
 createNode transform -s -n "persp";
 	rename -uid "7DB44293-4650-65DA-AE64-EBB59DAB207C";
 	setAttr ".v" no;
@@ -1093,7 +1093,7 @@ createNode animCurveTA -n "joint9_rotateZ";
 	rename -uid "FEFB6609-42AF-2131-63A8-D5BA374D497E";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 5 ".ktv[0:4]"  0 0 125 -20 250 0 375 20 500 0;
+	setAttr -s 3 ".ktv[0:2]"  0 0 250 0 500 0;
 createNode animCurveTU -n "joint9_scaleX";
 	rename -uid "CC708166-4278-89E0-1183-2D8E7939DEDD";
 	setAttr ".tan" 18;
@@ -1129,7 +1129,7 @@ createNode animCurveTA -n "joint10_rotateZ";
 	rename -uid "5F69F527-4F8F-9C8E-C273-049C778C0E8A";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 5 ".ktv[0:4]"  0 0 125 20 250 0 375 -20 500 0;
+	setAttr -s 3 ".ktv[0:2]"  0 0 250 0 500 0;
 createNode animCurveTU -n "joint10_scaleX";
 	rename -uid "03D7A304-4BE1-6462-2AA0-CB8AF2316D52";
 	setAttr ".tan" 18;
@@ -1160,7 +1160,7 @@ createNode animCurveTA -n "joint3_rotateY";
 	rename -uid "BBA88EF4-401F-C764-F8F0-92A7A66B097F";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 5 ".ktv[0:4]"  0 0 125 20 250 0 375 -20 500 0;
+	setAttr -s 3 ".ktv[0:2]"  0 0 250 0 500 0;
 createNode animCurveTA -n "joint3_rotateZ";
 	rename -uid "AC411320-455A-14C5-5AB7-FFBDFAC92FE2";
 	setAttr ".tan" 18;
@@ -1196,7 +1196,7 @@ createNode animCurveTA -n "joint4_rotateY";
 	rename -uid "FACD8BB8-4124-5EEA-BF71-B697AE8D7198";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 5 ".ktv[0:4]"  0 0 125 -20 250 0 375 20 500 0;
+	setAttr -s 3 ".ktv[0:2]"  0 0 250 0 500 0;
 createNode animCurveTA -n "joint4_rotateZ";
 	rename -uid "3967B847-4AD7-E000-9806-598CB5DE2226";
 	setAttr ".tan" 18;
@@ -1491,4 +1491,4 @@ connectAttr "file1.ot" ":lambert1.it";
 connectAttr "polySurface10Shape.iog.og[0]" ":initialShadingGroup.dsm" -na;
 connectAttr "groupId1.msg" ":initialShadingGroup.gn" -na;
 connectAttr "file1.msg" ":initialMaterialInfo.t" -na;
-// End of sheep.ma
+// End of sheep_idle.ma
