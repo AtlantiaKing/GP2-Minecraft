@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
     <ClCompile Include="Components\ItemPickup.cpp" />
     <ClCompile Include="Components\Inventory.cpp" />
     <ClCompile Include="Components\ItemCounter.cpp" />
@@ -149,6 +150,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
     <ClInclude Include="Components\ItemPickup.h" />
     <ClInclude Include="Components\Inventory.h" />
     <ClInclude Include="Components\ItemCounter.h" />

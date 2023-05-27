@@ -15,8 +15,16 @@ struct ParticleEmitterSettings
 	float minScale{ 1.f }; //The percentual minimum change in size/scale during the particle's lifetime
 	float maxScale{ 1.f }; //The percentual maximum change in size/scale during the particle's lifetime
 
-	XMFLOAT3 velocity{}; //The initial speed & (relative) direction of particles along X, Y and Z
+	XMFLOAT3 minVelocity{}; //The initial speed & (relative) direction of particles along X, Y and Z
+	XMFLOAT3 maxVelocity{}; //The initial speed & (relative) direction of particles along X, Y and Z
 	XMFLOAT4 color{ XMFLOAT4{Colors::White } }; //The color of a particle
+
+	float gravity{}; // Whether or not the particles are affected by gravity
+
+	bool burst{}; // Whether or not all particles should be spawned at the same time
+
+	XMFLOAT2 spriteSize{ 1.0f, 1.0f }; // The size of the sprite used in UV coordinates
+	XMFLOAT2 spritePivot{ 0.0f, 0.0f }; // The pivot of the sprite used in UV coordinates
 };
 
 struct Particle
@@ -30,6 +38,8 @@ struct Particle
 
 	float initialSize{};
 	float sizeChange{};
+
+	XMFLOAT3 velocity{};
 };
 
 class ParticleEmitterComponent : public BaseComponent
@@ -43,7 +53,6 @@ public:
 	ParticleEmitterComponent& operator=(ParticleEmitterComponent&& other) noexcept = delete;
 
 	ParticleEmitterSettings& GetSettings() { return m_EmitterSettings; }; //EmitterSettings Getter (by reference) > allows settings changes
-	void DrawImGui();
 
 protected:
 	void Initialize(const SceneContext&) override;
@@ -67,7 +76,5 @@ private:
 	UINT m_ActiveParticles{}; //The active particles for the current frame
 	float m_LastParticleSpawn{}; //Total seconds since the last created particle
 	std::wstring m_AssetFile{};
-
-	bool m_DrawImGui{ false };
 };
 

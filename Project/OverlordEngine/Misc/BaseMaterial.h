@@ -29,6 +29,7 @@ public:
 	void SetVariable_Matrix(const std::wstring& varName, const float* pData) const;
 	void SetVariable_MatrixArray(const std::wstring& varName, const float* pData, UINT count) const;
 	void SetVariable_Vector(const std::wstring& varName, const float* pData) const;
+	void SetVariable_Vector(const std::wstring& varName, XMFLOAT2 vector) const;
 	void SetVariable_Vector(const std::wstring& varName, XMFLOAT3 vector) const;
 	void SetVariable_Vector(const std::wstring& varName, XMFLOAT4 vector) const;
 	void SetVariable_VectorArray(const std::wstring& varName, const float* pData, UINT count) const;

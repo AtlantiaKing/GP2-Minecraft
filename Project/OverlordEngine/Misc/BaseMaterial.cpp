@@ -186,6 +186,11 @@ void BaseMaterial::SetVariable_Vector(const std::wstring& varName, const float* 
 	Logger::LogWarning(L"Shader variable \'{}\' not found for \'{}\'", varName, GetEffectName());
 }
 
+void BaseMaterial::SetVariable_Vector(const std::wstring& varName, XMFLOAT2 vector) const
+{
+	SetVariable_Vector(varName, &vector.x);
+}
+
 void BaseMaterial::SetVariable_VectorArray(const std::wstring& varName, const float* pData, UINT count) const
 {
 	if (const auto pShaderVariable = GetVariable(varName))

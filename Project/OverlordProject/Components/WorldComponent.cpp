@@ -3,6 +3,7 @@
 
 #include "Prefabs/ItemEntity.h"
 #include "Prefabs/CubePrefab.h"
+#include "Prefabs/Particles/BlockBreakParticle.h"
 
 #include <chrono>
 
@@ -110,7 +111,15 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
     // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
     Block* pDropBlock{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock };
-    if(pDropBlock) GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position});
+    if (pDropBlock)
+    {
+        GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position });
+        GetScene()->AddChild(new BlockBreakParticle{ pDropBlock->type })->GetTransform()->Translate(position);
+    }
+
+    Block* pBlockUp{ GetBlockAt(blockPos.x,blockPos.y+1,blockPos.z) };
+    if (pBlockUp && pBlockUp->mesh == BlockMesh::CROSS)
+        GetScene()->AddChild(new BlockBreakParticle{ pBlockUp->type })->GetTransform()->Translate(position.x, position.y + 1.0f, position.z);
 
     return true;
 }

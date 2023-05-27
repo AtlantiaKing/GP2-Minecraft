@@ -80,7 +80,7 @@ void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 
 		// If the particle is NOT Active (do not use ‘else if’), and the value of m_LastParticleInit is
 		//	bigger than or equal to particleInterval > Call SpawnParticle.
-		if (!particle.isActive && m_LastParticleSpawn >= particleInterval)
+		if (!particle.isActive && (m_LastParticleSpawn >= particleInterval || m_EmitterSettings.burst))
 		{
 			SpawnParticle(particle);
 			m_LastParticleSpawn -= particleInterval;
@@ -113,9 +113,11 @@ void ParticleEmitterComponent::UpdateParticle(Particle& p, float elapsedTime) co
 		return;
 	}
 
+	p.velocity.y += m_EmitterSettings.gravity * elapsedTime;
+
 	// Add the velocity (m_EmitterSettings) multiplied by the elapsedTime, this way our
 	//		particle moves in the direction of the velocity defined by the emitter settings.
-	XMStoreFloat3(&p.vertexInfo.Position, XMLoadFloat3(&p.vertexInfo.Position) + XMLoadFloat3(&m_EmitterSettings.velocity) * elapsedTime);
+	XMStoreFloat3(&p.vertexInfo.Position, XMLoadFloat3(&p.vertexInfo.Position) + XMLoadFloat3(&p.velocity) * elapsedTime);
 
 	// Create a local variable, called ‘lifePercent of type float, this is the percentual particle lifetime
 	const float lifePercent{ p.currentEnergy / p.totalEnergy };
@@ -170,6 +172,13 @@ void ParticleEmitterComponent::SpawnParticle(Particle& p)
 
 	// The particle’s color (vertexInfo.Color) is equal to the color from the emitter settings
 	p.vertexInfo.Color = m_EmitterSettings.color;
+
+	p.velocity =
+	{
+		MathHelper::randF(m_EmitterSettings.minVelocity.x, m_EmitterSettings.maxVelocity.x),
+		MathHelper::randF(m_EmitterSettings.minVelocity.y, m_EmitterSettings.maxVelocity.y),
+		MathHelper::randF(m_EmitterSettings.minVelocity.z, m_EmitterSettings.maxVelocity.z)
+	};
 }
 
 void ParticleEmitterComponent::PostDraw(const SceneContext& sceneContext)
@@ -178,6 +187,8 @@ void ParticleEmitterComponent::PostDraw(const SceneContext& sceneContext)
 	m_pParticleMaterial->SetVariable_Matrix(L"gWorldViewProj", sceneContext.pCamera->GetViewProjection());
 	m_pParticleMaterial->SetVariable_Matrix(L"gViewInverse", sceneContext.pCamera->GetViewInverse());
 	m_pParticleMaterial->SetVariable_Texture(L"gParticleTexture", m_pParticleTexture->GetShaderResourceView());
+	m_pParticleMaterial->SetVariable_Vector(L"gSpriteSize", m_EmitterSettings.spriteSize);
+	m_pParticleMaterial->SetVariable_Vector(L"gSpritePivot", m_EmitterSettings.spritePivot);
 
 	// Retrieve the TechniqueContext from the material, this structure contains relevant information to
 	//		setup the pipeline(BaseMaterial::GetTechniqueContext)
@@ -204,19 +215,5 @@ void ParticleEmitterComponent::PostDraw(const SceneContext& sceneContext)
 		techContext.pTechnique->GetPassByIndex(p)->Apply(0, deviceContext);
 		// Draw the vertices! (The number of vertices we want to draw is equal to m_ActiveParticles
 		deviceContext->Draw(m_ActiveParticles, 0);
-	}
-}
-
-void ParticleEmitterComponent::DrawImGui()
-{
-	if(ImGui::CollapsingHeader("Particle System"))
-	{
-		ImGui::SliderUInt("Count", &m_ParticleCount, 0, m_MaxParticles);
-		ImGui::InputFloatRange("Energy Bounds", &m_EmitterSettings.minEnergy, &m_EmitterSettings.maxEnergy);
-		ImGui::InputFloatRange("Size Bounds", &m_EmitterSettings.minSize, &m_EmitterSettings.maxSize);
-		ImGui::InputFloatRange("Scale Bounds", &m_EmitterSettings.minScale, &m_EmitterSettings.maxScale);
-		ImGui::InputFloatRange("Radius Bounds", &m_EmitterSettings.minEmitterRadius, &m_EmitterSettings.maxEmitterRadius);
-		ImGui::InputFloat3("Velocity", &m_EmitterSettings.velocity.x);
-		ImGui::ColorEdit4("Color", &m_EmitterSettings.color.x, ImGuiColorEditFlags_NoInputs);
 	}
 }

@@ -14,6 +14,8 @@
 #include <Components/HealthHUD.h>
 #include "Components/LivingEntities/Sheep.h"
 
+#include "Prefabs/Particles/BlockBreakParticle.h"
+
 #include <Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h>
 
 void WorldScene::Initialize()
@@ -109,6 +111,8 @@ void WorldScene::Initialize()
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
 	}
+
+	AddChild(new BlockBreakParticle{ BlockType::DIRT })->GetTransform()->Translate(0.0f, 75.0f, 0.0f);
 }
 
 void WorldScene::CreateWorld()

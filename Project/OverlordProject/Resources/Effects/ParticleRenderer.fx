@@ -2,6 +2,9 @@ float4x4 gWorldViewProj : WorldViewProjection;
 float4x4 gViewInverse : ViewInverse;
 Texture2D gParticleTexture;
 
+float2 gSpriteSize;
+float2 gSpritePivot;
+
 SamplerState samPoint
 {
     Filter = MIN_MAG_MIP_POINT;
@@ -85,7 +88,7 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	float3 origin = vertex[0].Position;
 
 	//Vertices (Keep in mind that 'origin' contains the center of the quad
-	topLeft = float3(-size / 2.0f, size / 2.0f, 0.0f);
+    topLeft = float3(-size / 2.0f, size / 2.0f, 0.0f);
 	topRight = float3(size / 2.0f, size / 2.0f, 0.0f);
 	bottomLeft = float3(-size / 2.0f, -size / 2.0f, 0.0f);
 	bottomRight = float3(size / 2.0f, -size / 2.0f, 0.0f);
@@ -104,10 +107,10 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 	bottomRight = origin + mul(float4(bottomRight, 0.0f), gViewInverse).xyz;
 	
 	//Create Geometry (Trianglestrip)
-	CreateVertex(triStream,bottomLeft, float2(0,1), vertex[0].Color);
-	CreateVertex(triStream,topLeft, float2(0,0), vertex[0].Color);
-	CreateVertex(triStream,bottomRight, float2(1,1), vertex[0].Color);
-	CreateVertex(triStream,topRight, float2(1,0), vertex[0].Color);
+    CreateVertex(triStream, bottomLeft, float2(gSpritePivot.x, gSpritePivot.y + gSpriteSize.y), vertex[0].Color);
+    CreateVertex(triStream, topLeft, gSpritePivot, vertex[0].Color);
+    CreateVertex(triStream, bottomRight, gSpritePivot + gSpriteSize, vertex[0].Color);
+    CreateVertex(triStream, topRight, float2(gSpritePivot.x + gSpriteSize.x, gSpritePivot.y), vertex[0].Color);
 }
 
 //PIXEL SHADER
