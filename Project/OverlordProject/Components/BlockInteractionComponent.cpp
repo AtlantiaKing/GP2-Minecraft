@@ -56,7 +56,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	m_pSelection->SetVisibility(true);
 
 	// Get the position of the block that we are looking at
-	const PxVec3 hitPos{ hit.block.position + raycastDirection * 0.01f };
+	const PxVec3 hitPos{ hit.block.position - hit.block.normal * 0.001f };
 	const XMFLOAT3 blockPos
 	{
 		(hitPos.x + 0.5f) > 0.0f ? floor(hitPos.x + 0.5f) : -(floor(abs(hitPos.x + 0.5f)) + 1),
@@ -83,7 +83,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			BlockType selectedBlock{ pInventory->GetEquipedItem() };
 
 			// Place a block
-			if (m_pWorld->PlaceBlock(XMFLOAT3{ hitPos.x, hitPos.y, hitPos.z }, blockPos, selectedBlock))
+			if (m_pWorld->PlaceBlock(XMFLOAT3{ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }, blockPos, selectedBlock))
 			{
 				// Reset block breaking
 				m_IsBreakingBlock = false;

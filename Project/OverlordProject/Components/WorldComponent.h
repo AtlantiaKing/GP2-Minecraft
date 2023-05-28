@@ -19,7 +19,7 @@ public:
 	WorldComponent& operator=(const WorldComponent& other) = delete;
 	WorldComponent& operator=(WorldComponent&& other) noexcept = delete;
 
-	bool PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block);
+	bool PlaceBlock(const XMFLOAT3& hitNormal, XMFLOAT3 hitBlockPosition, BlockType block);
 	bool DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 	void SetRenderDistance(int renderDistance);

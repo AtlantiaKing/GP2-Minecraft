@@ -80,19 +80,13 @@ void WorldComponent::StartEnvironmentalChanges(const SceneContext&)
     }
 }
 
-bool WorldComponent::PlaceBlock(const XMFLOAT3& hitPos, XMFLOAT3 hitBlockPosition, BlockType block)
+bool WorldComponent::PlaceBlock(const XMFLOAT3& hitNormal, XMFLOAT3 hitBlockPosition, BlockType block)
 {
     if (m_NeedsWorldReload || m_PlaceBlock) return false;
 
-    const XMFLOAT3 localHitPos{ hitPos.x - hitBlockPosition.x, hitPos.y - hitBlockPosition.y, hitPos.z - hitBlockPosition.z };
-
-    constexpr float blockFaceDistance{ 0.49f };
-    if (localHitPos.x >= blockFaceDistance) hitBlockPosition.x += 1.0f;
-    else if (localHitPos.x <= -blockFaceDistance) hitBlockPosition.x -= 1.0f;
-    else if (localHitPos.y >= blockFaceDistance) hitBlockPosition.y += 1.0f;
-    else if (localHitPos.y <= -blockFaceDistance) hitBlockPosition.y -= 1.0f;
-    else if (localHitPos.z >= blockFaceDistance) hitBlockPosition.z += 1.0f;
-    else if (localHitPos.z <= -blockFaceDistance) hitBlockPosition.z -= 1.0f;
+    hitBlockPosition.x += hitNormal.x;
+    hitBlockPosition.y += hitNormal.y;
+    hitBlockPosition.z += hitNormal.z;
 
     m_EditBlock = hitBlockPosition;
     m_EditBlockType = block;
