@@ -5,14 +5,17 @@
 #include "Rendering/WireframeRenderer.h"
 #include "Rendering/BlockBreakRenderer.h"
 
+#include "Prefabs/Particles/BlockBreakParticle.h"
+
 #include "Managers/InputManager.h"
 #include "Inventory.h"
 
-BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer)
+BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer, BlockBreakParticle* pBlockBreakParticle)
 	: m_pWorld{ pWorld }
 	, m_pSelection{ pSelection }
 	, m_PxScene{ pxScene }
 	, m_pBreakRenderer{ pBreakRenderer }
+	, m_pBlockBreakParticle{ pBlockBreakParticle }
 {
 }
 
@@ -37,6 +40,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		m_pSelection->SetVisibility(false);
 		m_pBreakRenderer->SetVisibility(false);
 
+		// Disable the block break particle
+		m_pBlockBreakParticle->SetActive(false);
+
 		// Reset block breaking
 		m_IsBreakingBlock = false;
 
@@ -49,6 +55,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		// Disable both the break renderer and the selection renderer
 		m_pSelection->SetVisibility(false);
 		m_pBreakRenderer->SetVisibility(false);
+
+		// Disable the block break particle
+		m_pBlockBreakParticle->SetActive(false);
 		return;
 	}
 
@@ -102,6 +111,18 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			// Increment breaking time
 			m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
 
+			// Enable the block break particle
+			m_pBlockBreakParticle->SetActive(true);
+			TransformComponent* pParticleTransform{ m_pBlockBreakParticle->GetTransform() };
+			pParticleTransform->Translate(blockPos);
+
+			XMFLOAT4 lookAtQuaternion{ MathHelper::GetLookAtQuaternion({ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }) };
+			pParticleTransform->Rotate(XMLoadFloat4(&lookAtQuaternion));
+
+			OutputDebugStringW((std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().x) + L" " + std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().y) + L" " + std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().z) + L"\n").c_str());
+
+			m_pBlockBreakParticle->SetBlock(pBlock->dropBlock ? pBlock->dropBlock->type : pBlock->type);
+
 			// Destroy the block if the progress has reached 100%
 			if (m_BlockBreakProgress > pBlock->breakTime)
 			{
@@ -127,6 +148,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	{
 		// Disable block breaking
 		m_IsBreakingBlock = false;
+
+		// Disable the block break particle
+		m_pBlockBreakParticle->SetActive(false);
 	}
 
 	// Enable/Disable the breaking block renderer

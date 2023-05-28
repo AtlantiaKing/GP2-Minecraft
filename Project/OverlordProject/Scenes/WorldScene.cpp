@@ -111,8 +111,6 @@ void WorldScene::Initialize()
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
 	}
-
-	AddChild(new BlockBreakParticle{ BlockType::DIRT })->GetTransform()->Translate(0.0f, 75.0f, 0.0f);
 }
 
 void WorldScene::CreateWorld()
@@ -159,13 +157,16 @@ void WorldScene::CreatePlayer()
 	}
 
 	// INTERACTION
+	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };
+
 	PxScene* pxScene{ pPlayerRb->GetPxRigidActor()->getScene() };
 	m_pPlayer->AddComponent(new BlockInteractionComponent
 		{
 			pxScene,
 			m_pWorld, 
 			m_pSelection->GetComponent<WireframeRenderer>(),
-			m_pSelection->GetComponent<BlockBreakRenderer>()
+			m_pSelection->GetComponent<BlockBreakRenderer>(),
+			pBlockBreakParticle
 		});
 	m_pPlayer->AddComponent(new EntityInteractionComponent{ pxScene });
 

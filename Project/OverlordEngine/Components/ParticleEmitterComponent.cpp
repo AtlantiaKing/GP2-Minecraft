@@ -59,8 +59,11 @@ void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 	const float averageEnergy{ (m_EmitterSettings.maxEnergy + m_EmitterSettings.minEnergy) / 2.0f };
 	const float particleInterval{ averageEnergy / m_ParticleCount };
 
-	// Increase m_LastParticleInit by the elapsed GameTime
-	m_LastParticleSpawn += elapsedSec;
+	if (m_EmitterSettings.active)
+	{
+		// Increase m_LastParticleInit by the elapsed GameTime
+		m_LastParticleSpawn += elapsedSec;
+	}
 
 	// Map our vertexbuffer
 	D3D11_MAPPED_SUBRESOURCE subResource;

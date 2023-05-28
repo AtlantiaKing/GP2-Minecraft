@@ -38,6 +38,7 @@
     <ClCompile Include="Components\LivingEntities\LivingEntity.cpp" />
     <ClCompile Include="Components\LivingEntities\Sheep.cpp" />
     <ClCompile Include="Components\EntityInteractionComponent.cpp" />
+    <ClCompile Include="Prefabs\Particles\BlockDestroyParticle.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +80,7 @@
     <ClInclude Include="Components\LivingEntities\LivingEntity.h" />
     <ClInclude Include="Components\LivingEntities\Sheep.h" />
     <ClInclude Include="Components\EntityInteractionComponent.h" />
+    <ClInclude Include="Prefabs\Particles\BlockDestroyParticle.h" />
     <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
   </ItemGroup>
 </Project>

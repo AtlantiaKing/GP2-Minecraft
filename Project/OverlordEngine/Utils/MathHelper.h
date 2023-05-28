@@ -28,6 +28,11 @@ namespace MathHelper
 		return a.x == b.x && a.y == b.y;
 	}
 
+	inline bool FloatEquals(float a, float b)
+	{
+		return abs(a - b) < FLT_EPSILON;
+	}
+
 	inline float randF(float min, float max)
 	{
 		const float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -51,5 +56,27 @@ namespace MathHelper
 
 		if (value < lo)
 			value = lo;
+	}
+
+	inline XMFLOAT4 GetLookAtQuaternion(const XMFLOAT3& lookDirection)
+	{
+		const XMVECTOR forward{ XMVector3Normalize(XMLoadFloat3(&lookDirection)) };
+		const XMVECTOR defaultForward{ 0.0f, 0.0f, 1.0f, 0.0f };
+
+		XMVECTOR rotationAxis = XMVector3Normalize(XMVector3Cross(defaultForward, forward));
+
+		const float dotProduct = XMVectorGetX(XMVector3Dot(defaultForward, forward));
+
+		if (MathHelper::FloatEquals(dotProduct, -1.0f)) rotationAxis = { 0.0f, 1.0f, 0.0f };
+
+		const float rotationAngle = acosf(dotProduct);
+		XMVECTOR quaternionAxis = XMVectorScale(rotationAxis, sinf(rotationAngle / 2.0f));
+
+		XMFLOAT4 quaternion;
+		XMStoreFloat4(&quaternion, quaternionAxis);
+
+		quaternion.w = cosf(rotationAngle / 2.0f);
+
+		return quaternion;
 	}
 }

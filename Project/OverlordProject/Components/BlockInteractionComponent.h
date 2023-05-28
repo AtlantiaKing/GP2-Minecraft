@@ -5,11 +5,12 @@
 class WorldComponent;
 class WireframeRenderer;
 class BlockBreakRenderer;
+class BlockBreakParticle;
 
 class BlockInteractionComponent : public BaseComponent
 {
 public:
-	BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer);
+	BlockInteractionComponent(PxScene* pxScene, WorldComponent* pWorld, WireframeRenderer* pSelection, BlockBreakRenderer* pBreakRenderer, BlockBreakParticle* pBlockBreakParticle);
 	virtual ~BlockInteractionComponent() = default;
 
 	BlockInteractionComponent(const BlockInteractionComponent& other) = delete;
@@ -27,6 +28,8 @@ private:
 	WorldComponent* m_pWorld{};
 	WireframeRenderer* m_pSelection{};
 	BlockBreakRenderer* m_pBreakRenderer{};
+	BlockBreakParticle* m_pBlockBreakParticle{};
+
 	PxScene* m_PxScene{};
 
 	XMFLOAT3 m_PrevPosition{};

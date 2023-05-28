@@ -23,6 +23,8 @@ struct ParticleEmitterSettings
 
 	bool burst{}; // Whether or not all particles should be spawned at the same time
 
+	bool active{}; // Whether or not the emitter is active
+
 	XMFLOAT2 spriteSize{ 1.0f, 1.0f }; // The size of the sprite used in UV coordinates
 	XMFLOAT2 spritePivot{ 0.0f, 0.0f }; // The pivot of the sprite used in UV coordinates
 };

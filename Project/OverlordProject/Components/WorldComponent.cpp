@@ -3,7 +3,7 @@
 
 #include "Prefabs/ItemEntity.h"
 #include "Prefabs/CubePrefab.h"
-#include "Prefabs/Particles/BlockBreakParticle.h"
+#include "Prefabs/Particles/BlockDestroyParticle.h"
 
 #include <chrono>
 
@@ -108,12 +108,12 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
     if (pDropBlock)
     {
         GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position });
-        GetScene()->AddChild(new BlockBreakParticle{ pDropBlock->type })->GetTransform()->Translate(position);
+        GetScene()->AddChild(new BlockDestroyParticle{ pDropBlock->type })->GetTransform()->Translate(position);
     }
 
     Block* pBlockUp{ GetBlockAt(blockPos.x,blockPos.y+1,blockPos.z) };
     if (pBlockUp && pBlockUp->mesh == BlockMesh::CROSS)
-        GetScene()->AddChild(new BlockBreakParticle{ pBlockUp->type })->GetTransform()->Translate(position.x, position.y + 1.0f, position.z);
+        GetScene()->AddChild(new BlockDestroyParticle{ pBlockUp->type })->GetTransform()->Translate(position.x, position.y + 1.0f, position.z);
 
     return true;
 }
