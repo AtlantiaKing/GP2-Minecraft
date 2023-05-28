@@ -40,6 +40,7 @@
     <ClCompile Include="Components\EntityInteractionComponent.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockDestroyParticle.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
+    <ClCompile Include="Prefabs\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -82,5 +83,6 @@
     <ClInclude Include="Components\EntityInteractionComponent.h" />
     <ClInclude Include="Prefabs\Particles\BlockDestroyParticle.h" />
     <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
+    <ClInclude Include="Prefabs\Player.h" />
   </ItemGroup>
 </Project>

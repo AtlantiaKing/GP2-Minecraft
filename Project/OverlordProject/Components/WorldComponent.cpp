@@ -99,9 +99,6 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
 {
     if (m_NeedsWorldReload || m_DestroyBlock) return false;
 
-    m_EditBlock = position;
-    m_DestroyBlock = true;
-
     // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
     Block* pDropBlock{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock };
@@ -114,6 +111,9 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
     Block* pBlockUp{ GetBlockAt(blockPos.x,blockPos.y+1,blockPos.z) };
     if (pBlockUp && pBlockUp->mesh == BlockMesh::CROSS)
         GetScene()->AddChild(new BlockDestroyParticle{ pBlockUp->type })->GetTransform()->Translate(position.x, position.y + 1.0f, position.z);
+
+    m_EditBlock = position;
+    m_DestroyBlock = true;
 
     return true;
 }

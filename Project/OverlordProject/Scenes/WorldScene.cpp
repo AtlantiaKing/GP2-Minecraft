@@ -2,11 +2,8 @@
 #include "WorldScene.h"
 
 #include "Components/WorldComponent.h"
-#include "Components/PlayerMovement.h"
 #include "Components/Rendering/WireframeRenderer.h"
 #include "Components/Rendering/BlockBreakRenderer.h"
-#include "Components/BlockInteractionComponent.h"
-#include "Components/EntityInteractionComponent.h"
 #include "Components/Inventory.h"
 #include "Components/ToolbarHUD.h"
 #include "Components/ItemCounter.h"
@@ -15,6 +12,7 @@
 #include "Components/LivingEntities/Sheep.h"
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
+#include "Prefabs/Player.h"
 
 #include <Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h>
 
@@ -25,13 +23,16 @@ void WorldScene::Initialize()
 
 	CreateWorld();
 
+	// INTERACTION
+	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };
+
 	m_pSelection = AddChild(new GameObject{});
 	m_pSelection->AddComponent(new WireframeRenderer{ m_SceneContext });
 	BlockBreakRenderer* pBreakRenderer{ m_pSelection->AddComponent(new BlockBreakRenderer{ m_SceneContext }) };
 	pBreakRenderer->SetVisibility(false);
 	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 
-	CreatePlayer();
+	m_pPlayer = AddChild(new Player{ m_pWorld, m_pSelection, pBlockBreakParticle });
 
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
@@ -67,8 +68,7 @@ void WorldScene::Initialize()
 
 	pToolbarHud->SetSelection(pHotbarSelection);
 
-	Health* pHealth{ m_pPlayer->AddComponent(new Health{}) };
-
+	Health* pHealth{ m_pPlayer->GetComponent<Health>() };
 	GameObject* pHealthHUD{ AddChild(new GameObject{}) };
 	pHealthHUD->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f - hotbarSize.x / 2.0f, m_SceneContext.windowHeight - hotbarSize.y - pixelSize, 0.0f);
 	pHealthHUD->AddComponent(new HealthHUD{ pHealth });
@@ -86,8 +86,6 @@ void WorldScene::Initialize()
 		curHealthPosOffset += pHeartSprite->GetSize().x;
 		if (i % 2 == 1) curHealthPosOffset -= pixelSize;
 	}
-
-	pHealth->Damage(1);
 
 	for (int i{}; i < 10; ++i)
 	{
@@ -119,75 +117,8 @@ void WorldScene::CreateWorld()
 	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
 }
 
-void WorldScene::CreatePlayer()
-{
-	auto& physX{ PxGetPhysics() };
-	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
-	
-	// Create player
-	m_pPlayer = AddChild(new GameObject{});
-
-	// RIGIDBODY
-	RigidBodyComponent* pPlayerRb{ m_pPlayer->AddComponent(new RigidBodyComponent{}) };
-	// Add collider
-	const PxBoxGeometry playerGeometry{ 0.3f, 1.0f, 0.25f };
-	pPlayerRb->AddCollider(playerGeometry, *pPhysMat);
-	// Lock all rotations
-	pPlayerRb->SetConstraint(RigidBodyConstraint::RotX | RigidBodyConstraint::RotY | RigidBodyConstraint::RotZ, false);
-	// Double gravity
-	m_PxScene = pPlayerRb->GetPxRigidActor()->getScene();
-	m_PxScene->setGravity(m_PxScene->getGravity() * 2);
-
-	// MOVEMENT
-	m_pPlayer->AddComponent(new PlayerMovement{ pPlayerRb });
-
-	m_pPlayer->AddComponent(new Inventory{});
-
-	// POSITION
-	PxQueryFilterData filter{};
-	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
-	PxRaycastBuffer hit;
-	if (m_PxScene->raycast(PxVec3{ 0.0f,256.0f,0.0f }, PxVec3{ 0.0f,-1.0f,0.0f }, 1000.0f, hit, PxHitFlag::eDEFAULT, filter))
-	{
-		if (hit.hasBlock)
-		{
-			const XMFLOAT3 spawnPosition{ hit.block.position.x, hit.block.position.y + playerGeometry.halfExtents.y, hit.block.position.z };
-			m_pPlayer->GetTransform()->Translate(spawnPosition);
-		}
-	}
-
-	// INTERACTION
-	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };
-
-	PxScene* pxScene{ pPlayerRb->GetPxRigidActor()->getScene() };
-	m_pPlayer->AddComponent(new BlockInteractionComponent
-		{
-			pxScene,
-			m_pWorld, 
-			m_pSelection->GetComponent<WireframeRenderer>(),
-			m_pSelection->GetComponent<BlockBreakRenderer>(),
-			pBlockBreakParticle
-		});
-	m_pPlayer->AddComponent(new EntityInteractionComponent{ pxScene });
-
-
-	// Create camera
-	GameObject* pCameraGO{ m_pPlayer->AddChild(new GameObject{}) };
-
-	// CAMERA
-	CameraComponent* pCamera{ pCameraGO->AddComponent(new CameraComponent{}) };
-	pCamera->SetFieldOfView(XMConvertToRadians(80.0f));
-	pCamera->SetFarClippingPlane(150.0f);
-	SetActiveCamera(pCamera); //Also sets pCamera in SceneContext
-
-	// POSITION
-	pCameraGO->GetTransform()->Translate(0.0f, 0.5f, 0.0f);
-}
-
 void WorldScene::Update()
 {
-	m_pWorld->UpdateColliders(m_pPlayer->GetTransform()->GetWorldPosition());
-
 	const auto& lightDir{m_SceneContext.pLights->GetDirectionalLight().direction};
 	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
 

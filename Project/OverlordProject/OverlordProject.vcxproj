@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Player.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockDestroyParticle.cpp" />
     <ClCompile Include="Components\ItemPickup.cpp" />
@@ -151,6 +152,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Player.h" />
     <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
     <ClInclude Include="Prefabs\Particles\BlockDestroyParticle.h" />
     <ClInclude Include="Components\ItemPickup.h" />

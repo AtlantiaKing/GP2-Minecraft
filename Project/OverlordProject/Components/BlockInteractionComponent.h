@@ -18,6 +18,8 @@ public:
 	BlockInteractionComponent& operator=(const BlockInteractionComponent& other) = delete;
 	BlockInteractionComponent& operator=(BlockInteractionComponent&& other) noexcept = delete;
 
+	bool ShouldPlayAnimation();
+
 protected:
 	virtual void Initialize(const SceneContext& /*sceneContext*/) override {};
 	virtual void Update(const SceneContext& sceneContext) override;
@@ -36,5 +38,7 @@ private:
 
 	bool m_IsBreakingBlock{};
 	float m_BlockBreakProgress{};
+
+	bool m_ShouldPlayAnimation{};
 };
 

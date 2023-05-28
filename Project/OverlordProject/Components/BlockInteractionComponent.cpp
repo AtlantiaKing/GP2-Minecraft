@@ -19,8 +19,16 @@ BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComp
 {
 }
 
+bool BlockInteractionComponent::ShouldPlayAnimation()
+{
+	return m_ShouldPlayAnimation;
+}
+
 void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 {
+	// Disable the arm animation
+	m_ShouldPlayAnimation = false;
+
 	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
 	constexpr float playerBlockRadius{ 5.0f };
 
@@ -98,6 +106,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 				m_IsBreakingBlock = false;
 
 				pInventory->Remove(selectedBlock);
+
+				// Play the arm animation
+				m_ShouldPlayAnimation = true;
 			}
 		}
 	}
@@ -108,6 +119,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		// If we are breaking a block
 		if (m_IsBreakingBlock && pBlock)
 		{
+			// Play the arm animation
+			m_ShouldPlayAnimation = true;
+
 			// Increment breaking time
 			m_BlockBreakProgress += sceneContext.pGameTime->GetElapsed();
 
@@ -135,6 +149,9 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			if (pBlock && pBlock->breakTime <= 0.0f)
 			{
 				m_pWorld->DestroyBlock(blockPos);
+
+				// Play the arm animation
+				m_ShouldPlayAnimation = true;
 			}
 			else
 			{

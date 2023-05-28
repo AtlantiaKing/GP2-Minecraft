@@ -20,6 +20,7 @@ public:
 	void SetAnimationSpeed(float speedPercentage) { m_AnimationSpeed = speedPercentage; }
 
 	bool IsPlaying() const { return m_IsPlaying; }
+	bool DonePlaying() const { return m_TickCount < 1.0f; }
 	bool IsReversed() const { return m_Reversed; }
 	float GetAnimationSpeed() const { return m_AnimationSpeed; }
 	const AnimationClip& GetClip(int clipId) { ASSERT_IF_(clipId >= m_pMeshFilter->m_AnimationClips.size())return m_pMeshFilter->m_AnimationClips[clipId]; }

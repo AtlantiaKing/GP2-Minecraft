@@ -16,7 +16,6 @@ public:
 protected:
 	void Initialize() override;
 	void CreateWorld();
-	void CreatePlayer();
 	void Update() override;
 	void Draw() override;
 	void OnGUI() override;
@@ -25,8 +24,6 @@ private:
 	GameObject* m_pPlayer{};
 	GameObject* m_pSelection{};
 	WorldComponent* m_pWorld{};
-
-	PxScene* m_PxScene{};
 };
 
 
