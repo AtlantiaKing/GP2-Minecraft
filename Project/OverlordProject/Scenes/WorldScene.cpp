@@ -14,7 +14,8 @@
 #include "Prefabs/Particles/BlockBreakParticle.h"
 #include "Prefabs/Player.h"
 
-#include <Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h>
+#include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
+#include "Materials/SkyBoxMaterial.h"
 
 void WorldScene::Initialize()
 {
@@ -109,6 +110,13 @@ void WorldScene::Initialize()
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
 	}
+
+
+	GameObject* pSkybox{ AddChild(new GameObject{}) };
+	SkyBoxMaterial* pSkyboxMaterial{ MaterialManager::Get()->CreateMaterial<SkyBoxMaterial>() };
+	pSkyboxMaterial->SetTexture(L"Textures/SkyBox.dds");
+	pSkybox->AddComponent(new ModelComponent{ L"Meshes/Box.ovm", false })->SetMaterial(pSkyboxMaterial);
+	pSkybox->GetTransform()->Scale(100.0f);
 }
 
 void WorldScene::CreateWorld()

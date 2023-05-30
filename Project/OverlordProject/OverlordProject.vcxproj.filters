@@ -41,6 +41,7 @@
     <ClCompile Include="Prefabs\Particles\BlockDestroyParticle.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
     <ClCompile Include="Prefabs\Player.cpp" />
+    <ClCompile Include="Materials\SkyBoxMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -84,5 +85,6 @@
     <ClInclude Include="Prefabs\Particles\BlockDestroyParticle.h" />
     <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
     <ClInclude Include="Prefabs\Player.h" />
+    <ClInclude Include="Materials\SkyBoxMaterial.h" />
   </ItemGroup>
 </Project>
