@@ -33,6 +33,7 @@ public:
 
 	std::vector<XMFLOAT3> GetPositions(const Chunk& chunk) const;
 	int GetChunkSize() const { return m_ChunkSize; }
+	int GetWorldHeight() const { return m_WorldHeight; }
 
 	std::vector<Chunk>& GetChunks() { return m_Chunks; }
 	std::vector<Chunk>& GetWater() { return m_WaterChunks; }

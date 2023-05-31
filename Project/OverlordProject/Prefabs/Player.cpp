@@ -10,6 +10,7 @@
 #include "Components/WorldComponent.h"
 #include "Components/Health.h"
 #include "Components/ControllerComponent.h"
+#include "Components/PlayerMovement.h"
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
 
@@ -36,7 +37,7 @@ void Player::Initialize(const SceneContext&)
 	pController->SetStepHeight(0.0f);
 
 	//// MOVEMENT
-	AddComponent(new PlayerMovement{});
+	m_pMovement = AddComponent(new PlayerMovement{});
 
 	AddComponent(new Inventory{});
 
@@ -105,4 +106,12 @@ void Player::Update(const SceneContext& sceneContext)
 	}
 
 	if (m_pInteraction->ShouldPlayAnimation() || sceneContext.pInput->IsMouseButton(InputState::pressed, 1)) m_pArmAnimation->Play();
+
+	bool isUnderWater{};
+
+	const XMFLOAT3& curPosition{ GetTransform()->GetWorldPosition() };
+	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y - 1.0f, curPosition.z);
+	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y, curPosition.z);
+
+	m_pMovement->SetUnderWater(isUnderWater);
 }

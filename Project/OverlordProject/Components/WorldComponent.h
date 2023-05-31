@@ -25,6 +25,7 @@ public:
 	void SetRenderDistance(int renderDistance);
 
 	Block* GetBlockAt(int x, int y, int z) const;
+	bool IsPositionWater(float worldX, float worldY, float worldZ) const;
 
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
@@ -32,6 +33,7 @@ protected:
 	virtual void Draw(const SceneContext& sceneContext) override;
 	virtual void PostDraw(const SceneContext& sceneContext) override;
 	virtual void ShadowMapDraw(const SceneContext& sceneContext) override;
+
 private:
 	struct WorldEvent
 	{
@@ -44,6 +46,8 @@ private:
 	void StartEnvironmentalChanges(const SceneContext& sceneContext);
 	void LoadColliders(bool reloadAll = false);
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
+
+	BlockType GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 
 	std::thread m_WorldThread{};
 	std::thread m_EnvironmentThread{};

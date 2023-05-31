@@ -3,6 +3,7 @@
 class WorldComponent;
 class BlockInteractionComponent;
 class BlockBreakParticle;
+class PlayerMovement;
 
 class Player final : public GameObject
 {
@@ -25,4 +26,5 @@ private:
 	GameObject* m_pSelection{};
 	BlockBreakParticle* m_pBlockBreakParticle{};
 	ModelAnimator* m_pArmAnimation{};
+	PlayerMovement* m_pMovement{};
 };

@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "PlayerMovement.h"
 
+void PlayerMovement::SetUnderWater(bool isUnderWater)
+{
+	m_IsUnderWater = isUnderWater;
+}
+
 void PlayerMovement::Initialize(const SceneContext&)
 {
 	m_pController = GetGameObject()->GetComponent<ControllerComponent>();
@@ -117,41 +122,58 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 
 	TransformComponent* pPlayerTransform{ GetTransform() };
 
-	constexpr float gravity{ -9.81f * 3.0f };
+	constexpr float defaultGravity{ -9.81f * 3.0f };
+	constexpr float underWaterGravity{ -9.81f / 2.0f };
+	const float gravity{ m_IsUnderWater ? underWaterGravity : defaultGravity };
 	m_Velocity = XMFLOAT3{ 0.0f, m_Velocity.y, 0.0f };
 
 	const XMFLOAT3 position{ pPlayerTransform->GetWorldPosition() };
 	const PxVec3 raycastOrigin{ position.x, position.y - 0.9f, position.z };
 
-	PxRaycastBuffer hit;
-	PxQueryFilterData filter{};
-	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
-	if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.1f, hit, PxHitFlag::eDEFAULT, filter))
+	if (!m_IsUnderWater)
 	{
-		if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
+		PxRaycastBuffer hit;
+		PxQueryFilterData filter{};
+		filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+		if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.1f, hit, PxHitFlag::eDEFAULT, filter))
 		{
-			m_Velocity.y = m_JumpForce;
+			if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
+			{
+				m_Velocity.y = m_JumpForce;
+			}
+			else
+			{
+				m_Velocity.y = gravity * 1.0f;
+			}
+			m_IsGrounded = true;
 		}
 		else
 		{
-			m_Velocity.y = gravity * 1.0f;
+			if (m_IsGrounded)
+			{
+				m_IsGrounded = false;
+				if (m_Velocity.y < FLT_EPSILON) m_Velocity.y = 0.0f;
+			}
+			m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
 		}
-		m_IsGrounded = true;
 	}
-	else
+	else 
 	{
-		if (m_IsGrounded)
+		if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
 		{
-			m_IsGrounded = false;
-			if(m_Velocity.y < FLT_EPSILON) m_Velocity.y = 0.0f;
+			m_Velocity.y = m_SwimForce;
 		}
-		m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
+		else
+		{
+			m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
+			if (m_IsUnderWater) m_Velocity.y = std::max(m_Velocity.y, m_MaxUnderWaterVelocity);
+		}
 	}
 
 	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
 
 	XMVECTOR velocityVec{ XMLoadFloat3(&m_Velocity) };
-	const float verticalSpeed{ (verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed };
+	const float verticalSpeed{ m_IsUnderWater ? m_SwimSpeed : ((verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed) };
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetRight()) * horizontalInput * m_MoveSpeed;
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetForward()) * verticalInput * verticalSpeed;
 

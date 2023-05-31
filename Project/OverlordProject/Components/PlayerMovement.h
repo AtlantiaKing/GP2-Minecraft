@@ -10,6 +10,8 @@ public:
 	PlayerMovement& operator=(const PlayerMovement& other) = delete;
 	PlayerMovement& operator=(PlayerMovement&& other) noexcept = delete;
 
+	void SetUnderWater(bool isUnderWater);
+
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
 	virtual void Update(const SceneContext& sceneContext) override;
@@ -26,9 +28,13 @@ private:
 	float m_RotateSpeed{ 0.005f };
 	float m_MoveSpeed{ 4.317f };
 	float m_SprintSpeed{ 5.612f };
+	float m_SwimSpeed{ 3.0f };
 	float m_JumpForce{ 7.0f };
+	float m_SwimForce{ 2.0f };
+	float m_MaxUnderWaterVelocity{ -2.0f };
 
 	bool m_IsGrounded{};
+	bool m_IsUnderWater{};
 
 	XMFLOAT3 m_Velocity{};
 };

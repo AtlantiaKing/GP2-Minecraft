@@ -123,6 +123,11 @@ Block* WorldComponent::GetBlockAt(int x, int y, int z) const
     return m_Generator.GetBlockAt(x, y, z);
 }
 
+bool WorldComponent::IsPositionWater(float worldX, float worldY, float worldZ) const
+{
+    return GetBlockAt(static_cast<int>(worldX), static_cast<int>(worldY), static_cast<int>(worldZ), m_WaterChunks) == BlockType::WATER;
+}
+
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
 {
     const int chunkSize{ m_Generator.GetChunkSize() };
@@ -178,7 +183,6 @@ void WorldComponent::Update(const SceneContext&)
                 auto& chunk{ *chunkIt };
 
                 chunk.position = genChunk.position;
-                //chunk.pBlocks = genChunk.pBlocks;
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
                     chunk.vertices = genChunk.vertices;
@@ -199,7 +203,6 @@ void WorldComponent::Update(const SceneContext&)
                 Chunk chunk{};
 
                 chunk.position = genChunk.position;
-                //chunk.pBlocks = genChunk.pBlocks;
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
                     chunk.vertices = genChunk.vertices;
@@ -225,15 +228,14 @@ void WorldComponent::Update(const SceneContext&)
                 auto& chunk{ m_WaterChunks[i] };
                 auto& genChunk{ genWaterChunks[i] };
                 chunk.position = genChunk.position;
+                chunk.blocks = genChunk.blocks;
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
-                    //if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
                 }
                 if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
-                    //if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
                 }
@@ -243,15 +245,14 @@ void WorldComponent::Update(const SceneContext&)
                 Chunk chunk{};
                 auto& genChunk{ genWaterChunks[i] };
                 chunk.position = genChunk.position;
+                chunk.blocks = genChunk.blocks;
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
-                    //if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
                 }
                 if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
-                    //if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
                 }
@@ -353,6 +354,36 @@ void WorldComponent::LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, 
     chunk.colliderIdx = m_pRb->AddCollider(geometry, *pPhysMat);
 
     chunk.verticesChanged = false;
+}
+
+BlockType WorldComponent::GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const
+{
+    const int chunkSize{ m_Generator.GetChunkSize() };
+
+    const XMINT2 chunkPos
+    {
+        x < 0 ? (static_cast<int>(x) + 1) / chunkSize - 1 : static_cast<int>(x) / chunkSize,
+        z < 0 ? (static_cast<int>(z) + 1) / chunkSize - 1 : static_cast<int>(z) / chunkSize
+    };
+
+    auto it{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
+        {
+            return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
+        }) };
+    if (it == chunks.end()) return BlockType::AIR;
+
+    if (it->blocks.empty()) return BlockType::AIR;
+
+    const XMINT3 lookUpPos{ static_cast<int>(x) - chunkPos.x * chunkSize, static_cast<int>(y), static_cast<int>(z) - chunkPos.y * chunkSize };
+
+    if (lookUpPos.x < 0 || lookUpPos.x >= chunkSize
+        || lookUpPos.z < 0 || lookUpPos.z >= chunkSize
+        || lookUpPos.y < 0 || lookUpPos.y >= m_Generator.GetWorldHeight()) return BlockType::AIR;
+
+    const int blockIdx{ lookUpPos.x + lookUpPos.z * chunkSize + lookUpPos.y * chunkSize * chunkSize };
+
+    OutputDebugStringW((std::to_wstring(static_cast<int>(*(it->blocks.data() + blockIdx))) + L"\n").c_str());
+    return *(it->blocks.data() + blockIdx);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)
