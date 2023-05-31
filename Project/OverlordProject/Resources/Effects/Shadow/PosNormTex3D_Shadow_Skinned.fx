@@ -121,11 +121,8 @@ float EvaluateShadowMap(float4 lpos)
 	}
 
 	float shadowMapDepth = sum / 16.0;
-
-	// If clip space z value greater than shadow map value then pixel is in shadow
-	if (shadowMapDepth < lpos.z) return 0.5f;
-
-	return 1.0f;
+	
+    return shadowMapDepth;
 }
 
 //--------------------------------------------------------------------------------------
