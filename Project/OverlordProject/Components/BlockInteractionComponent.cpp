@@ -133,8 +133,6 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 			XMFLOAT4 lookAtQuaternion{ MathHelper::GetLookAtQuaternion({ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }) };
 			pParticleTransform->Rotate(XMLoadFloat4(&lookAtQuaternion));
 
-			OutputDebugStringW((std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().x) + L" " + std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().y) + L" " + std::to_wstring(pParticleTransform->GetTransform()->GetWorldRotation().z) + L"\n").c_str());
-
 			m_pBlockBreakParticle->SetBlock(pBlock->dropBlock ? pBlock->dropBlock->type : pBlock->type);
 
 			// Destroy the block if the progress has reached 100%

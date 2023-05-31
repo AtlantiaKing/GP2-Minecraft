@@ -128,7 +128,6 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
 	if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.1f, hit, PxHitFlag::eDEFAULT, filter))
 	{
-		OutputDebugStringW((std::to_wstring(hit.block.distance) + L"\n").c_str());
 		if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
 		{
 			m_Velocity.y = m_JumpForce;

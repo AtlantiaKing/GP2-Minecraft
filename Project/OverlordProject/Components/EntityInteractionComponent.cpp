@@ -50,8 +50,6 @@ void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 
 	XMStoreFloat3(&knockbackDir, XMVector3Normalize(XMLoadFloat3(&knockbackDir)));
 
-	OutputDebugStringW((std::to_wstring(knockbackDir.x) + L" " + std::to_wstring(knockbackDir.z)).c_str());
-
 	pRb->AddForce({ knockbackDir.x * 2.0f, 0.0f, knockbackDir.z * 2.0f }, PxForceMode::eIMPULSE);
 
 	pEntity->Damage(1);
