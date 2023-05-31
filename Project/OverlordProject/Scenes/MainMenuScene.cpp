@@ -14,8 +14,7 @@ void MainMenuScene::Initialize()
 	m_SceneContext.settings.drawPhysXDebug = false;
 
 	WorldComponent* pWorld{ new WorldComponent{ m_SceneContext } };
-	//pWorld->SetRenderDistance(5);
-	pWorld->SetRenderDistance(1);
+	pWorld->SetRenderDistance(5);
 	AddChild(new GameObject{})->AddComponent(pWorld);
 
 
