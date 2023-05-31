@@ -16,6 +16,7 @@ public:
 
 	void SetCollisionGroup(CollisionGroup groups);
 	void SetCollisionIgnoreGroup(CollisionGroup ignoreGroups);
+	void SetStepHeight(float stepHeight);
 
 	XMFLOAT3 GetPosition() const;
 	XMFLOAT3 GetFootPosition() const;

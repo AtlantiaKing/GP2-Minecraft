@@ -2,7 +2,7 @@
 class PlayerMovement final : public BaseComponent
 {
 public:
-	PlayerMovement(RigidBodyComponent* pPlayer);
+	PlayerMovement() = default;
 	virtual ~PlayerMovement() = default;
 
 	PlayerMovement(const PlayerMovement& other) = delete;
@@ -16,9 +16,9 @@ protected:
 
 private:
 	void UpdateRotation(const SceneContext& sceneContext) const;
-	void UpdateVelocity(const SceneContext& sceneContext) const;
+	void UpdateVelocity(const SceneContext& sceneContext);
 
-	RigidBodyComponent* m_pPlayer{};
+	ControllerComponent* m_pController{};
 
 	bool m_Spawned{};
 	float m_SprintFOV{ 95.0f };
@@ -27,5 +27,9 @@ private:
 	float m_MoveSpeed{ 4.317f };
 	float m_SprintSpeed{ 5.612f };
 	float m_JumpForce{ 7.0f };
+
+	bool m_IsGrounded{};
+
+	XMFLOAT3 m_Velocity{};
 };
 

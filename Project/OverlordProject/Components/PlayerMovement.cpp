@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "PlayerMovement.h"
 
-PlayerMovement::PlayerMovement(RigidBodyComponent* pPlayer)
-	: m_pPlayer{ pPlayer }
+void PlayerMovement::Initialize(const SceneContext&)
 {
-}
-
-void PlayerMovement::Initialize(const SceneContext& /*sceneContext*/)
-{
+	m_pController = GetGameObject()->GetComponent<ControllerComponent>();
 }
 
 void PlayerMovement::Update(const SceneContext& sceneContext)
@@ -18,21 +14,16 @@ void PlayerMovement::Update(const SceneContext& sceneContext)
 	const XMFLOAT3& position{ GetTransform()->GetWorldPosition() };
 	const PxVec3 raycastOriginCenter{ position.x, 255.0f, position.z };
 
-	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
-
 	if (!GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginCenter, PxVec3{ 0.0f,-1.0f,0.0f }, FLT_MAX, hit, PxHitFlag::eDEFAULT, filter))
 	{
-		rb->SetKinematic(true);
 		return;
 	}
 
 	if (!m_Spawned)
 	{
-		GetTransform()->Translate(hit.block.position.x, hit.block.position.y + 20.0f, hit.block.position.z);
+		GetTransform()->Translate(hit.block.position.x, hit.block.position.y + 0.5f, hit.block.position.z);
 		m_Spawned = true;
 	}
-
-	rb->SetKinematic(false);
 
 	UpdateRotation(sceneContext);
 
@@ -76,24 +67,25 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 	// Rotate the player around the global Y axis
 	if (abs(horizontalInput))
 	{
-		const XMFLOAT4 playerRotationQuat{ m_pPlayer->GetRotation() };
-		PxQuat playerQuaternion{ playerRotationQuat.x, playerRotationQuat.y, playerRotationQuat.z, playerRotationQuat.w };
-		
-		const PxVec3 rotationAxis{ 0.0f,1.0f,0.0f }; // Save as member variable?
-		const PxQuat mouseRotation{ m_RotateSpeed * horizontalInput, rotationAxis };
+		const XMFLOAT4& playerRotationQuat{ GetTransform()->GetRotation()};
 
-		playerQuaternion = playerQuaternion * mouseRotation;
-		const XMFLOAT4 newRotation{ playerQuaternion.x, playerQuaternion.y, playerQuaternion.z, playerQuaternion.w };
+		XMVECTOR curAxis;
+		float curAngle;
+		XMQuaternionToAxisAngle(&curAxis, &curAngle, XMLoadFloat4(&playerRotationQuat));
 
-		m_pPlayer->Rotate(newRotation);
+		curAngle += m_RotateSpeed * horizontalInput;
+
+		if (curAngle < 0) curAngle += XM_2PI;
+		if (curAngle > XM_2PI) curAngle -= XM_2PI;
+
+		GetTransform()->Rotate(XMQuaternionRotationAxis({0.0f,1.0f,0.0f}, curAngle));
 	}
 }
 
-void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
+void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 {
-	const XMFLOAT3& prevVelocity{ m_pPlayer->GetVelocity() };
 	float forwardSpeed;
-	XMStoreFloat(&forwardSpeed, XMVector3Dot(XMLoadFloat3(&prevVelocity), XMLoadFloat3(&m_pPlayer->GetTransform()->GetForward())));
+	XMStoreFloat(&forwardSpeed, XMVector3Dot(XMLoadFloat3(&m_Velocity), XMLoadFloat3(&GetTransform()->GetForward())));
 	forwardSpeed = std::max(forwardSpeed, 0.0f);
 
 	const float fovChangeOnSprint{ m_SprintFOV - m_FOV };
@@ -111,7 +103,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 		sceneContext.pCamera->SetFieldOfView(gotoFOV);
 	}
 
-	PxScene* physScene{ m_pPlayer->GetPxRigidActor()->getScene() };
+	PxScene* physScene{ GetScene()->GetPhysxProxy()->GetPhysxScene() };
 
 	const bool hasForwardInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'Z') || sceneContext.pInput->IsKeyboardKey(InputState::down, 'W') };
 	const bool hasBackInput{ sceneContext.pInput->IsKeyboardKey(InputState::down, 'S') };
@@ -123,32 +115,53 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext) const
 	const float verticalInput{ static_cast<float>(hasForwardInput - hasBackInput) + joyStickInput.y };
 	const float horizontalInput{ static_cast<float>(hasRightInput - hasLeftInput) + joyStickInput.x };
 
-	TransformComponent* pPlayerTransform{ m_pPlayer->GetTransform() };
+	TransformComponent* pPlayerTransform{ GetTransform() };
 
-	XMFLOAT3 velocity{ 0.0f, m_pPlayer->GetVelocity().y, 0.0f };
+	constexpr float gravity{ -9.81f * 3.0f };
+	m_Velocity = XMFLOAT3{ 0.0f, m_Velocity.y, 0.0f };
 
 	const XMFLOAT3 position{ pPlayerTransform->GetWorldPosition() };
-	const PxVec3 raycastOrigin{ position.x, position.y - pPlayerTransform->GetWorldScale().y, position.z};
+	const PxVec3 raycastOrigin{ position.x, position.y - 0.9f, position.z };
 
 	PxRaycastBuffer hit;
-	if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
+	PxQueryFilterData filter{};
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+	if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.1f, hit, PxHitFlag::eDEFAULT, filter))
 	{
-		PxQueryFilterData filter{};
-		filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
-		if (physScene->raycast(raycastOrigin, PxVec3{ 0.0f,-1.0f,0.0f }, 0.05f, hit, PxHitFlag::eDEFAULT, filter))
+		OutputDebugStringW((std::to_wstring(hit.block.distance) + L"\n").c_str());
+		if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
 		{
-			velocity.y = m_JumpForce;
+			m_Velocity.y = m_JumpForce;
 		}
+		else
+		{
+			m_Velocity.y = gravity * 1.0f;
+		}
+		m_IsGrounded = true;
+	}
+	else
+	{
+		if (m_IsGrounded)
+		{
+			m_IsGrounded = false;
+			if(m_Velocity.y < FLT_EPSILON) m_Velocity.y = 0.0f;
+		}
+		m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
 	}
 
 	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
 
-	XMVECTOR velocityVec{ XMLoadFloat3(&velocity) };
+	XMVECTOR velocityVec{ XMLoadFloat3(&m_Velocity) };
 	const float verticalSpeed{ (verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed };
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetRight()) * horizontalInput * m_MoveSpeed;
 	velocityVec += XMLoadFloat3(&pPlayerTransform->GetForward()) * verticalInput * verticalSpeed;
 
-	XMStoreFloat3(&velocity, velocityVec);
+	XMStoreFloat3(&m_Velocity, velocityVec);
 
-	m_pPlayer->SetVelocity(velocity);
+
+	XMVECTOR displacementVec{ velocityVec * sceneContext.pGameTime->GetElapsed() };
+	XMFLOAT3 displacement;
+	XMStoreFloat3(&displacement, displacementVec);
+	
+	m_pController->Move(displacement);
 }

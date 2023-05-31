@@ -9,6 +9,7 @@
 #include "Components/EntityInteractionComponent.h"
 #include "Components/WorldComponent.h"
 #include "Components/Health.h"
+#include "Components/ControllerComponent.h"
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
 
@@ -26,19 +27,16 @@ void Player::Initialize(const SceneContext&)
 	auto& physX{ PxGetPhysics() };
 	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
-	// RIGIDBODY
-	RigidBodyComponent* pPlayerRb{ AddComponent(new RigidBodyComponent{}) };
-	// Add collider
-	const PxBoxGeometry playerGeometry{ 0.3f, 1.0f, 0.25f };
-	pPlayerRb->AddCollider(playerGeometry, *pPhysMat);
-	// Lock all rotations
-	pPlayerRb->SetConstraint(RigidBodyConstraint::RotX | RigidBodyConstraint::RotY | RigidBodyConstraint::RotZ, false);
-	// Double gravity
-	PxScene* pxScene{ pPlayerRb->GetPxRigidActor()->getScene() };
-	pxScene->setGravity(pxScene->getGravity() * 2);
+	PxCapsuleControllerDesc controller{};
+	controller.radius = 0.4f;
+	controller.height = 1.0f;
+	controller.material = pPhysMat;
 
-	// MOVEMENT
-	AddComponent(new PlayerMovement{ pPlayerRb });
+	ControllerComponent* pController{ AddComponent(new ControllerComponent(controller)) };
+	pController->SetStepHeight(0.0f);
+
+	//// MOVEMENT
+	AddComponent(new PlayerMovement{});
 
 	AddComponent(new Inventory{});
 
@@ -46,11 +44,12 @@ void Player::Initialize(const SceneContext&)
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
 	PxRaycastBuffer hit;
+	PxScene* pxScene{ GetScene()->GetPhysxProxy()->GetPhysxScene() };
 	if (pxScene->raycast(PxVec3{ 0.0f, 256.0f, 0.0f }, PxVec3{ 0.0f, -1.0f, 0.0f }, 1000.0f, hit, PxHitFlag::eDEFAULT, filter))
 	{
 		if (hit.hasBlock)
 		{
-			const XMFLOAT3 spawnPosition{ hit.block.position.x, hit.block.position.y + playerGeometry.halfExtents.y, hit.block.position.z };
+			const XMFLOAT3 spawnPosition{ hit.block.position.x, hit.block.position.y + controller.height / 2.0f, hit.block.position.z };
 			GetTransform()->Translate(spawnPosition);
 		}
 	}

@@ -114,3 +114,8 @@ void ControllerComponent::SetCollisionIgnoreGroup(CollisionGroup ignoreGroups)
 	m_CollisionGroups.word1 = PxU32(ignoreGroups);
 	ApplyFilterData();
 }
+
+void ControllerComponent::SetStepHeight(float stepHeight)
+{
+	m_pController->setStepOffset(stepHeight);
+}
