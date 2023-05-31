@@ -125,8 +125,11 @@ Block* WorldComponent::GetBlockAt(int x, int y, int z) const
 
 bool WorldComponent::IsPositionWater(float worldX, float worldY, float worldZ) const
 {
-    return GetBlockAt(static_cast<int>(worldX), static_cast<int>(worldY), static_cast<int>(worldZ), m_WaterChunks) == BlockType::WATER;
-}
+    const int x{ worldX > 0.0f ? static_cast<int>(worldX + 0.5f) : static_cast<int>(worldX + 0.5f) - 1 };
+    const int y{ worldY > 0.0f ? static_cast<int>(worldY + 0.5f) : static_cast<int>(worldY + 0.5f) - 1 };
+    const int z{ worldZ > 0.0f ? static_cast<int>(worldZ + 0.5f) : static_cast<int>(worldZ + 0.5f) - 1 };
+    return GetBlockAt(x,y,z, m_WaterChunks) == BlockType::WATER;
+}   
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
 {
@@ -382,7 +385,6 @@ BlockType WorldComponent::GetBlockAt(int x, int y, int z, const std::vector<Chun
 
     const int blockIdx{ lookUpPos.x + lookUpPos.z * chunkSize + lookUpPos.y * chunkSize * chunkSize };
 
-    OutputDebugStringW((std::to_wstring(static_cast<int>(*(it->blocks.data() + blockIdx))) + L"\n").c_str());
     return *(it->blocks.data() + blockIdx);
 }
 

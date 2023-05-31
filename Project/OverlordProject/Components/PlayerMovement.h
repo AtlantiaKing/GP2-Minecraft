@@ -11,6 +11,9 @@ public:
 	PlayerMovement& operator=(PlayerMovement&& other) noexcept = delete;
 
 	void SetUnderWater(bool isUnderWater);
+	bool IsSwimming() const { return m_IsUnderWater; }
+
+	void AddVelocity(float x, float y, float z);
 
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;
@@ -22,6 +25,8 @@ private:
 
 	ControllerComponent* m_pController{};
 
+	XMFLOAT3 m_OneFrameVelocity{};
+
 	bool m_Spawned{};
 	float m_SprintFOV{ 95.0f };
 	float m_FOV{ 80.0f };
@@ -31,7 +36,7 @@ private:
 	float m_SwimSpeed{ 3.0f };
 	float m_JumpForce{ 7.0f };
 	float m_SwimForce{ 2.0f };
-	float m_MaxUnderWaterVelocity{ -2.0f };
+	float m_MaxUnderWaterVelocity{ -1.0f };
 
 	bool m_IsGrounded{};
 	bool m_IsUnderWater{};

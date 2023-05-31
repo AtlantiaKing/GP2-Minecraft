@@ -107,11 +107,18 @@ void Player::Update(const SceneContext& sceneContext)
 
 	if (m_pInteraction->ShouldPlayAnimation() || sceneContext.pInput->IsMouseButton(InputState::pressed, 1)) m_pArmAnimation->Play();
 
+	bool prevUnderwater{ m_pMovement->IsSwimming() };
 	bool isUnderWater{};
 
 	const XMFLOAT3& curPosition{ GetTransform()->GetWorldPosition() };
-	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y - 1.0f, curPosition.z);
 	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y, curPosition.z);
+	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y + 0.5f, curPosition.z);
 
+	if (prevUnderwater && !isUnderWater)
+	{
+		constexpr float jumpOutOfWaterForce{ 4.0f };
+		m_pMovement->AddVelocity(0.0f, jumpOutOfWaterForce, 0.0f);
+	}
+	
 	m_pMovement->SetUnderWater(isUnderWater);
 }

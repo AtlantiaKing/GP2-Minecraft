@@ -6,6 +6,13 @@ void PlayerMovement::SetUnderWater(bool isUnderWater)
 	m_IsUnderWater = isUnderWater;
 }
 
+void PlayerMovement::AddVelocity(float x, float y, float z)
+{
+	m_OneFrameVelocity.x += x;
+	m_OneFrameVelocity.y += y;
+	m_OneFrameVelocity.z += z;
+}
+
 void PlayerMovement::Initialize(const SceneContext&)
 {
 	m_pController = GetGameObject()->GetComponent<ControllerComponent>();
@@ -13,6 +20,11 @@ void PlayerMovement::Initialize(const SceneContext&)
 
 void PlayerMovement::Update(const SceneContext& sceneContext)
 {
+	m_Velocity.x += m_OneFrameVelocity.x;
+	m_Velocity.y += m_OneFrameVelocity.y;
+	m_Velocity.z += m_OneFrameVelocity.z;
+	m_OneFrameVelocity = {};
+
 	PxRaycastBuffer hit;
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
@@ -122,7 +134,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 
 	TransformComponent* pPlayerTransform{ GetTransform() };
 
-	constexpr float defaultGravity{ -9.81f * 3.0f };
+	constexpr float defaultGravity{ -9.81f * 2.5f };
 	constexpr float underWaterGravity{ -9.81f / 2.0f };
 	const float gravity{ m_IsUnderWater ? underWaterGravity : defaultGravity };
 	m_Velocity = XMFLOAT3{ 0.0f, m_Velocity.y, 0.0f };
@@ -166,7 +178,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 		else
 		{
 			m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
-			if (m_IsUnderWater) m_Velocity.y = std::max(m_Velocity.y, m_MaxUnderWaterVelocity);
+			m_Velocity.y = std::max(m_Velocity.y, m_MaxUnderWaterVelocity);
 		}
 	}
 
