@@ -495,12 +495,6 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 
 			LoadChunk(x, y);
 
-			for (const auto& structure : m_StructuresToSpawn)
-			{
-				SpawnStructure(structure.first, structure.second);
-			}
-			m_StructuresToSpawn.clear();
-
 			ReloadChunks(x, y);
 
 			pRenderer->SetBuffers(m_Chunks, sceneContext);
@@ -509,6 +503,45 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 			return true;
 		}
 	}
+
+	for (int x{ chunkCenter.x - renderRadius }; x <= chunkCenter.x + renderRadius; ++x)
+	{
+		for (int y{ chunkCenter.y - renderRadius }; y <= chunkCenter.y + renderRadius; ++y)
+		{
+			if (GetChunkAt((x - 1) * m_ChunkSize, y * m_ChunkSize, m_Chunks) && GetChunkAt((x + 1) * m_ChunkSize, y * m_ChunkSize, m_Chunks)
+				&& GetChunkAt(x * m_ChunkSize, (y - 1) * m_ChunkSize, m_Chunks) && GetChunkAt(x * m_ChunkSize, (y + 1) * m_ChunkSize, m_Chunks))
+			{
+				bool spawnedStructure{};
+
+				for (int i{ static_cast<int>(m_StructuresToSpawn.size()) - 1 }; i >= 0; --i)
+				{
+					const auto& structure{ m_StructuresToSpawn[i] };
+
+					const XMINT3 lookUpPos{ structure.second.x - x * m_ChunkSize, structure.second.y, structure.second.z - y * m_ChunkSize };
+
+					if (lookUpPos.x < 0 || lookUpPos.z < 0 || lookUpPos.x >= m_ChunkSize || lookUpPos.z >= m_ChunkSize) continue;
+
+					SpawnStructure(structure.first, structure.second);
+
+					m_StructuresToSpawn[i] = m_StructuresToSpawn[m_StructuresToSpawn.size() - 1];
+					m_StructuresToSpawn.pop_back();
+
+					spawnedStructure = true;
+				}
+
+				if (spawnedStructure)
+				{
+					ReloadChunks(x, y);
+
+					pRenderer->SetBuffers(m_Chunks, sceneContext);
+					pRenderer->SetBuffers(m_WaterChunks, sceneContext);
+
+					return true;
+				}
+			}
+		}
+	}
+
 
 	return false;
 }
