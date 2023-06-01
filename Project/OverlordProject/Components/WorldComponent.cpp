@@ -29,6 +29,9 @@ WorldComponent::~WorldComponent()
     // Wait for the other threads to finish
     m_WorldThread.join();
     m_EnvironmentThread.join();
+
+    for (Chunk& chunk : m_Chunks) chunk.DeleteChunk();
+    for (Chunk& chunk : m_WaterChunks) chunk.DeleteChunk();
 }
 
 void WorldComponent::StartWorldThread(const SceneContext& sceneContext)
@@ -172,31 +175,54 @@ void WorldComponent::Update(const SceneContext&)
 {
     if (m_NeedsWorldReload)
     {
-        auto& genChunks{ m_Generator.GetChunks() };
-        auto& genWaterChunks{ m_Generator.GetWater() };
+        const auto& genChunks{ m_Generator.GetChunks() };
+        const auto& genWaterChunks{ m_Generator.GetWater() };
 
-        for (int i{}; i < genChunks.size(); ++i)
+        for (int i{ static_cast<int>(m_Chunks.size() - 1) }; i >= 0; --i)
         {
-            auto& genChunk{ genChunks[i] };
+            auto& curChunk{ m_Chunks[i] };
+            auto chunkIt{ std::find_if(begin(genChunks), end(genChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
+            if (chunkIt != genChunks.end()) continue;
+            
+            curChunk.DeleteChunk();
+            m_Chunks[i] = m_Chunks[m_Chunks.size() - 1];
+            m_Chunks.pop_back();
+        }
+        for (int i{ static_cast<int>(m_WaterChunks.size() - 1) }; i >= 0; --i)
+        {
+            auto& curChunk{ m_WaterChunks[i] };
+            auto chunkIt{ std::find_if(begin(genWaterChunks), end(genWaterChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
+            if (chunkIt != genWaterChunks.end()) continue;
 
-            auto chunkIt{ std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
+            curChunk.DeleteChunk();
+            m_WaterChunks[i] = m_WaterChunks[m_WaterChunks.size() - 1];
+            m_WaterChunks.pop_back();
+        }
+
+        for (const auto& genChunk : genChunks)
+        {
+            const auto chunkIt{ std::find_if(begin(m_Chunks), end(m_Chunks), 
+                [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
 
             if(chunkIt != end(m_Chunks))
             {
                 auto& chunk{ *chunkIt };
 
                 chunk.position = genChunk.position;
+
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
+                    SafeRelease(chunk.pVertexBuffer);
+
                     chunk.vertices = genChunk.vertices;
-                    if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
                     chunk.needColliderChange = true;
                 }
                 if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
-                    if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
+                    SafeRelease(chunk.pVertexTransparentBuffer);
+
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
                 }
@@ -206,39 +232,43 @@ void WorldComponent::Update(const SceneContext&)
                 Chunk chunk{};
 
                 chunk.position = genChunk.position;
-                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
-                {
-                    chunk.vertices = genChunk.vertices;
-                    if (chunk.pVertexBuffer) SafeRelease(chunk.pVertexBuffer);
-                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
-                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
-                    chunk.needColliderChange = true;
-                }
-                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
-                {
-                    if (chunk.pVertexTransparentBuffer) SafeRelease(chunk.pVertexTransparentBuffer);
-                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
-                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
-                }
+
+                chunk.vertices = genChunk.vertices;
+                chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                chunk.vertexBufferSize = genChunk.vertexBufferSize;
+                chunk.needColliderChange = true;
+
+                chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
                 m_Chunks.push_back(chunk);
             }
         }
 
-        for (int i{}; i < genWaterChunks.size(); ++i)
+        for (const auto& genChunk : genWaterChunks)
         {
-            if (m_WaterChunks.size() > i)
+            const auto chunkIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), 
+                [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
+
+            if (chunkIt != end(m_WaterChunks))
             {
-                auto& chunk{ m_WaterChunks[i] };
-                auto& genChunk{ genWaterChunks[i] };
+                auto& chunk{ *chunkIt };
+
                 chunk.position = genChunk.position;
-                chunk.blocks = genChunk.blocks;
+
                 if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
+                    SafeRelease(chunk.pVertexBuffer);
+
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
                 }
+
                 if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
+                    SafeRelease(chunk.pVertexTransparentBuffer);
+
+                    chunk.blocks = genChunk.blocks;
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
                 }
@@ -246,19 +276,16 @@ void WorldComponent::Update(const SceneContext&)
             else
             {
                 Chunk chunk{};
-                auto& genChunk{ genWaterChunks[i] };
+
                 chunk.position = genChunk.position;
                 chunk.blocks = genChunk.blocks;
-                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
-                {
-                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
-                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
-                }
-                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
-                {
-                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
-                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
-                }
+
+                chunk.pVertexBuffer = genChunk.pVertexBuffer;
+                chunk.vertexBufferSize = genChunk.vertexBufferSize;
+
+                chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+                chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
                 m_WaterChunks.push_back(chunk);
             }
         }

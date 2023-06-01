@@ -471,6 +471,11 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 			return (chunk.position.x < chunkCenter.x - renderRadius || chunk.position.x > chunkCenter.x + renderRadius ||
 				chunk.position.y < chunkCenter.y - renderRadius || chunk.position.y > chunkCenter.y + renderRadius);
 		}), end(m_Chunks));
+	m_WaterChunks.erase(std::remove_if(begin(m_WaterChunks), end(m_WaterChunks), [&](const Chunk& chunk)
+		{
+			return (chunk.position.x < chunkCenter.x - renderRadius || chunk.position.x > chunkCenter.x + renderRadius ||
+				chunk.position.y < chunkCenter.y - renderRadius || chunk.position.y > chunkCenter.y + renderRadius);
+		}), end(m_WaterChunks));
 
 	for (int x{ chunkCenter.x - renderRadius }; x <= chunkCenter.x + renderRadius; ++x)
 	{
