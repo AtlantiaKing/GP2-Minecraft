@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Particles\EntityDeathParticle.cpp" />
     <ClCompile Include="Prefabs\UI\ButtonPrefab.cpp" />
     <ClCompile Include="Materials\Post\PostUnderWater.cpp" />
     <ClCompile Include="Prefabs\Player.cpp" />
@@ -155,6 +156,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Particles\EntityDeathParticle.h" />
     <ClInclude Include="Prefabs\UI\ButtonPrefab.h" />
     <ClInclude Include="Materials\Post\PostUnderWater.h" />
     <ClInclude Include="Prefabs\Player.h" />
