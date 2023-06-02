@@ -47,14 +47,12 @@ private:
 	};
 
 	void StartWorldThread(const SceneContext& sceneContext);
-	void StartEnvironmentalChanges(const SceneContext& sceneContext);
 	void LoadColliders(bool reloadAll = false);
 	void LoadChunkCollider(Chunk& chunk, physx::PxCooking* cooking, physx::PxPhysics& physX, physx::PxMaterial* pPhysMat);
 
 	BlockType GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 
 	std::thread m_WorldThread{};
-	std::thread m_EnvironmentThread{};
 	bool m_IsMultithreaded{ true };
 
 	bool m_NeedsWorldReload{};

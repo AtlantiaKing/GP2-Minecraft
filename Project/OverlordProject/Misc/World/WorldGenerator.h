@@ -14,7 +14,7 @@ class WorldGenerator final
 {
 public:
 	WorldGenerator();
-	~WorldGenerator() = default;
+	~WorldGenerator();
 
 	WorldGenerator(const WorldGenerator& other) = delete;
 	WorldGenerator(WorldGenerator&& other) noexcept = delete;

@@ -28,7 +28,6 @@ WorldComponent::~WorldComponent()
 
     // Wait for the other threads to finish
     m_WorldThread.join();
-    m_EnvironmentThread.join();
 
     for (Chunk& chunk : m_Chunks) chunk.DeleteChunk();
     for (Chunk& chunk : m_WaterChunks) chunk.DeleteChunk();
@@ -99,22 +98,6 @@ void WorldComponent::StartWorldThread(const SceneContext& sceneContext)
         // Increment environment timer
         const auto endOfFrameTime{ std::chrono::high_resolution_clock::now() - frameStart };
         curEnvironmentTick += static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(endOfFrameTime).count());
-    }
-}
-
-void WorldComponent::StartEnvironmentalChanges(const SceneContext&)
-{
-    // Milliseconds per environmental tick
-    constexpr int tickTime{ 100 };
-
-    // While the thread is alive
-    while (m_IsMultithreaded)
-    {
-        const auto tickStart{ std::chrono::high_resolution_clock::now() };
-
-        const auto elapsedTickTime{ std::chrono::high_resolution_clock::now() - tickStart };
-        const auto sleepTime{ std::chrono::milliseconds(static_cast<int>(tickTime)) - elapsedTickTime };
-        std::this_thread::sleep_for(sleepTime);
     }
 }
 
@@ -221,16 +204,14 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
 
     // Start a new thread that removes blocks
     m_WorldThread = std::thread{ [this,sceneContext]() { StartWorldThread(sceneContext); } };
-    // Start a new thread that has environmental logic
-    m_EnvironmentThread = std::thread{ [this,sceneContext]() { StartEnvironmentalChanges(sceneContext); } };
 }
 
 void WorldComponent::Update(const SceneContext&)
 {
     if (m_NeedsWorldReload)
     {
-        const auto& genChunks{ m_Generator.GetChunks() };
-        const auto& genWaterChunks{ m_Generator.GetWater() };
+        auto& genChunks{ m_Generator.GetChunks() };
+        auto& genWaterChunks{ m_Generator.GetWater() };
 
         for (int i{ static_cast<int>(m_Chunks.size() - 1) }; i >= 0; --i)
         {
@@ -253,7 +234,7 @@ void WorldComponent::Update(const SceneContext&)
             m_WaterChunks.pop_back();
         }
 
-        for (const auto& genChunk : genChunks)
+        for (auto& genChunk : genChunks)
         {
             const auto chunkIt{ std::find_if(begin(m_Chunks), end(m_Chunks), 
                 [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
@@ -264,21 +245,26 @@ void WorldComponent::Update(const SceneContext&)
 
                 chunk.position = genChunk.position;
 
-                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                if (genChunk.pVertexBuffer && chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
                     SafeRelease(chunk.pVertexBuffer);
 
                     chunk.vertices = genChunk.vertices;
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
+
+                    genChunk.pVertexBuffer = nullptr;
+
                     chunk.needColliderChange = true;
                 }
-                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                if (genChunk.pVertexTransparentBuffer && chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
                     SafeRelease(chunk.pVertexTransparentBuffer);
 
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
+                    genChunk.pVertexTransparentBuffer = nullptr;
                 }
             }
             else
@@ -295,11 +281,14 @@ void WorldComponent::Update(const SceneContext&)
                 chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                 chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
 
+                genChunk.pVertexBuffer = nullptr;
+                genChunk.pVertexTransparentBuffer = nullptr;
+
                 m_Chunks.push_back(chunk);
             }
         }
 
-        for (const auto& genChunk : genWaterChunks)
+        for (auto& genChunk : genWaterChunks)
         {
             const auto chunkIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), 
                 [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
@@ -310,21 +299,25 @@ void WorldComponent::Update(const SceneContext&)
 
                 chunk.position = genChunk.position;
 
-                if (chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                if (genChunk.pVertexBuffer && chunk.pVertexBuffer != genChunk.pVertexBuffer)
                 {
                     SafeRelease(chunk.pVertexBuffer);
 
                     chunk.pVertexBuffer = genChunk.pVertexBuffer;
                     chunk.vertexBufferSize = genChunk.vertexBufferSize;
+
+                    genChunk.pVertexBuffer = nullptr;
                 }
 
-                if (chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                if (genChunk.pVertexTransparentBuffer && chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
                 {
                     SafeRelease(chunk.pVertexTransparentBuffer);
 
                     chunk.blocks = genChunk.blocks;
                     chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                     chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
+                    genChunk.pVertexTransparentBuffer = nullptr;
                 }
             }
             else
@@ -339,6 +332,9 @@ void WorldComponent::Update(const SceneContext&)
 
                 chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                 chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
+                genChunk.pVertexBuffer = nullptr;
+                genChunk.pVertexTransparentBuffer = nullptr;
 
                 m_WaterChunks.push_back(chunk);
             }
