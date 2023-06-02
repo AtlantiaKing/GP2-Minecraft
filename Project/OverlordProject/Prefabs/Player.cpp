@@ -23,6 +23,11 @@ Player::Player(WorldComponent* pWorld, GameObject* pSelection, BlockBreakParticl
 {
 }
 
+bool Player::IsUnderWater() const
+{
+	return m_IsCamUnderWater;
+}
+
 void Player::Initialize(const SceneContext&)
 {
 	auto& physX{ PxGetPhysics() };
@@ -111,8 +116,11 @@ void Player::Update(const SceneContext& sceneContext)
 	bool isUnderWater{};
 
 	const XMFLOAT3& curPosition{ GetTransform()->GetWorldPosition() };
+
+	m_IsCamUnderWater = m_pWorld->IsPositionWater(curPosition.x, curPosition.y + 0.5f, curPosition.z);
+
 	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y, curPosition.z);
-	isUnderWater |= m_pWorld->IsPositionWater(curPosition.x, curPosition.y + 0.5f, curPosition.z);
+	isUnderWater |= m_IsCamUnderWater;
 
 	if (prevUnderwater && !isUnderWater)
 	{

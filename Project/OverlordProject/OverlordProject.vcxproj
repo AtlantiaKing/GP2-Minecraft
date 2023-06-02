@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Materials\Post\PostUnderWater.cpp" />
     <ClCompile Include="Prefabs\Player.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockBreakParticle.cpp" />
     <ClCompile Include="Prefabs\Particles\BlockDestroyParticle.cpp" />
@@ -153,6 +154,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Materials\Post\PostUnderWater.h" />
     <ClInclude Include="Prefabs\Player.h" />
     <ClInclude Include="Prefabs\Particles\BlockBreakParticle.h" />
     <ClInclude Include="Prefabs\Particles\BlockDestroyParticle.h" />

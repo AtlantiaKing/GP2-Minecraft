@@ -16,6 +16,7 @@
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Materials/SkyBoxMaterial.h"
+#include "Materials/Post/PostUnderWater.h"
 
 void WorldScene::Initialize()
 {
@@ -121,6 +122,11 @@ void WorldScene::Initialize()
 
 	PxScene* pPxScene{ GetPhysxProxy()->GetPhysxScene() };
 	pPxScene->setGravity(pPxScene->getGravity() * 2.0f);
+
+
+	// Post Processing Stack
+	m_pUnderwater = MaterialManager::Get()->CreateMaterial<PostUnderWater>();
+	AddPostProcessingEffect(m_pUnderwater);
 }
 
 void WorldScene::CreateWorld()
@@ -143,6 +149,8 @@ void WorldScene::Update()
 	XMStoreFloat3(&position, positionVec);
 
 	m_SceneContext.pLights->SetDirectionalLight(position, direction);
+
+	m_pUnderwater->SetIsEnabled(m_pPlayer->IsUnderWater());
 }
 
 void WorldScene::Draw()

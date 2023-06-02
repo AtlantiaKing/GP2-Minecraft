@@ -16,6 +16,8 @@ public:
 	Player& operator=(const Player& other) = delete;
 	Player& operator=(Player&& other) noexcept = delete;
 
+	bool IsUnderWater() const;
+
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
 	void Update(const SceneContext& sceneContext) override;
@@ -27,4 +29,6 @@ private:
 	BlockBreakParticle* m_pBlockBreakParticle{};
 	ModelAnimator* m_pArmAnimation{};
 	PlayerMovement* m_pMovement{};
+
+	bool m_IsCamUnderWater{};
 };

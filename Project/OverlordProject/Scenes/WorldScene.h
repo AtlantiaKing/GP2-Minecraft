@@ -1,6 +1,8 @@
 #pragma once
 
 class WorldComponent;
+class PostUnderWater;
+class Player;
 
 class WorldScene final : public GameScene
 {
@@ -21,9 +23,11 @@ protected:
 	void OnGUI() override;
 
 private:
-	GameObject* m_pPlayer{};
+	Player* m_pPlayer{};
 	GameObject* m_pSelection{};
 	WorldComponent* m_pWorld{};
+
+	PostUnderWater* m_pUnderwater{};
 };
 
 
