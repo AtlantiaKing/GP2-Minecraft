@@ -117,6 +117,10 @@ void WorldScene::Initialize()
 	pSkyboxMaterial->SetTexture(L"Textures/SkyBox.dds");
 	pSkybox->AddComponent(new ModelComponent{ L"Meshes/Box.ovm", false })->SetMaterial(pSkyboxMaterial);
 	pSkybox->GetTransform()->Scale(100.0f);
+
+
+	PxScene* pPxScene{ GetPhysxProxy()->GetPhysxScene() };
+	pPxScene->setGravity(pPxScene->getGravity() * 2.0f);
 }
 
 void WorldScene::CreateWorld()

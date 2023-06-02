@@ -134,9 +134,8 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 
 	TransformComponent* pPlayerTransform{ GetTransform() };
 
-	constexpr float defaultGravity{ -9.81f * 2.5f };
-	constexpr float underWaterGravity{ -9.81f / 2.0f };
-	const float gravity{ m_IsUnderWater ? underWaterGravity : defaultGravity };
+	const float defaultGravity{ physScene->getGravity().y };
+	const float gravity{ m_IsUnderWater ? m_UnderWaterGravity : defaultGravity };
 	m_Velocity = XMFLOAT3{ 0.0f, m_Velocity.y, 0.0f };
 
 	const XMFLOAT3 position{ pPlayerTransform->GetWorldPosition() };
@@ -173,13 +172,15 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 	{
 		if (sceneContext.pInput->IsKeyboardKey(InputState::down, ' ') || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_A))
 		{
-			m_Velocity.y = m_SwimForce;
+			m_Velocity.y += m_SwimForce * sceneContext.pGameTime->GetElapsed();
 		}
 		else
 		{
 			m_Velocity.y += gravity * sceneContext.pGameTime->GetElapsed();
-			m_Velocity.y = std::max(m_Velocity.y, m_MaxUnderWaterVelocity);
 		}
+
+		m_Velocity.y = std::min(m_Velocity.y, m_MaxUnderWaterVelocity);
+		m_Velocity.y = std::max(m_Velocity.y, m_MinUnderWaterVelocity);
 	}
 
 	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
