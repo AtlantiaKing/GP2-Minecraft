@@ -91,7 +91,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	if (HasChangedPosition(blockPos)) m_IsBreakingBlock = false;
 
 	// RIGHT MOUSE CLICK
-	if (InputManager::IsMouseButton(InputState::down, 2))
+	if (InputManager::IsMouseButton(InputState::pressed, 2))
 	{
 		// Get inventory
 		Inventory* pInventory{ GetGameObject()->GetComponent<Inventory>() };
