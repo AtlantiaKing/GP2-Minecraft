@@ -245,7 +245,7 @@ void WorldComponent::Update(const SceneContext&)
 
                 chunk.position = genChunk.position;
 
-                if (genChunk.pVertexBuffer && chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                if (genChunk.pVertexBuffer)
                 {
                     SafeRelease(chunk.pVertexBuffer);
 
@@ -257,7 +257,7 @@ void WorldComponent::Update(const SceneContext&)
 
                     chunk.needColliderChange = true;
                 }
-                if (genChunk.pVertexTransparentBuffer && chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                if (genChunk.pVertexTransparentBuffer)
                 {
                     SafeRelease(chunk.pVertexTransparentBuffer);
 
@@ -299,7 +299,7 @@ void WorldComponent::Update(const SceneContext&)
 
                 chunk.position = genChunk.position;
 
-                if (genChunk.pVertexBuffer && chunk.pVertexBuffer != genChunk.pVertexBuffer)
+                if (genChunk.pVertexBuffer)
                 {
                     SafeRelease(chunk.pVertexBuffer);
 
@@ -309,7 +309,7 @@ void WorldComponent::Update(const SceneContext&)
                     genChunk.pVertexBuffer = nullptr;
                 }
 
-                if (genChunk.pVertexTransparentBuffer && chunk.pVertexTransparentBuffer != genChunk.pVertexTransparentBuffer)
+                if (genChunk.pVertexTransparentBuffer)
                 {
                     SafeRelease(chunk.pVertexTransparentBuffer);
 
