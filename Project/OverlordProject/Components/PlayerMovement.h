@@ -39,7 +39,7 @@ private:
 	float m_SwimSpeed{ 3.0f };
 
 	float m_JumpForce{ 7.0f };
-	float m_SwimForce{ 2.0f };
+	float m_SwimForce{ 4.0f };
 
 	float m_MinUnderWaterVelocity{ -1.0f };
 	float m_MaxUnderWaterVelocity{ 2.0f };
