@@ -17,8 +17,8 @@ MainGame::~MainGame()
 void MainGame::OnGamePreparing(GameContext& gameContext)
 {
 	//Here you can change some game settings before engine initialize
-	gameContext.windowWidth = 1920;
-	gameContext.windowHeight = 1080;
+	gameContext.windowWidth = 1280;
+	gameContext.windowHeight = 720;
 
 	gameContext.windowTitle = L"GP2 - Exam Project (2023) | (2DAE15) De Keukelaere Sander";
 
@@ -36,7 +36,7 @@ void MainGame::Initialize()
 	//srand(static_cast<unsigned int>(time(nullptr)));
 	srand(8);
 
-	//SceneManager::Get()->AddGameScene(new MainMenuScene());
+	SceneManager::Get()->AddGameScene(new MainMenuScene());
 	SceneManager::Get()->AddGameScene(new WorldScene());
 }
 

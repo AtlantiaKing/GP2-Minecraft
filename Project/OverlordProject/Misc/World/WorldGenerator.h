@@ -37,6 +37,9 @@ public:
 
 	std::vector<Chunk>& GetChunks() { return m_Chunks; }
 	std::vector<Chunk>& GetWater() { return m_WaterChunks; }
+
+	void ShouldLoadAllAtOnce(bool loadAll) { m_LoadAll = loadAll; }
+
 private:
 	BlockType* GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
 	BlockType const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
@@ -76,6 +79,8 @@ private:
 	int m_TerrainHeight{ 128 };
 	int m_SeaLevel{ 64 };
 	const int m_ChunkSize{ 16 };
+
+	bool m_LoadAll{};
 
 	std::unique_ptr<Block> m_pWaterBlock{};
 	std::vector<std::pair<const Structure*, XMINT3>> m_StructuresToSpawn{};

@@ -20,8 +20,51 @@
 
 void WorldScene::Initialize()
 {
-	m_SceneContext.pInput->ForceMouseToCenter(true);
 	m_SceneContext.settings.drawPhysXDebug = false;
+
+	// Post Processing Stack
+	m_pUnderwater = MaterialManager::Get()->CreateMaterial<PostUnderWater>();
+	AddPostProcessingEffect(m_pUnderwater);
+}
+
+void WorldScene::CreateWorld()
+{
+	GameObject* pWorld{ AddChild(new GameObject{}) };
+	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
+}
+
+void WorldScene::Update()
+{
+	const auto& lightDir{m_SceneContext.pLights->GetDirectionalLight().direction};
+	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
+
+	const XMVECTOR directionVec{ XMLoadFloat3(&direction) };
+	XMVECTOR positionVec{ XMLoadFloat3(&m_pPlayer->GetTransform()->GetPosition()) };
+
+	positionVec -= directionVec * 150;
+
+	XMFLOAT3 position;
+	XMStoreFloat3(&position, positionVec);
+
+	m_SceneContext.pLights->SetDirectionalLight(position, direction);
+
+	m_pUnderwater->SetIsEnabled(m_pPlayer->IsUnderWater());
+}
+
+void WorldScene::Draw()
+{
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { 0.1f, 0.1f }, { 1.f,0.f });
+}
+
+void WorldScene::OnGUI()
+{
+}
+
+void WorldScene::OnSceneActivated()
+{
+	srand(static_cast<unsigned int>(time(nullptr)));
+
+	m_SceneContext.pInput->ForceMouseToCenter(true);
 
 	CreateWorld();
 
@@ -74,7 +117,7 @@ void WorldScene::Initialize()
 	GameObject* pHealthHUD{ AddChild(new GameObject{}) };
 	pHealthHUD->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f - hotbarSize.x / 2.0f, m_SceneContext.windowHeight - hotbarSize.y - pixelSize, 0.0f);
 	pHealthHUD->AddComponent(new HealthHUD{ pHealth });
-	
+
 	float curHealthPosOffset{};
 	for (int i{}; i < pHealth->GetMaxHealth(); ++i)
 	{
@@ -122,42 +165,4 @@ void WorldScene::Initialize()
 
 	PxScene* pPxScene{ GetPhysxProxy()->GetPhysxScene() };
 	pPxScene->setGravity(pPxScene->getGravity() * 2.0f);
-
-
-	// Post Processing Stack
-	m_pUnderwater = MaterialManager::Get()->CreateMaterial<PostUnderWater>();
-	AddPostProcessingEffect(m_pUnderwater);
-}
-
-void WorldScene::CreateWorld()
-{
-	GameObject* pWorld{ AddChild(new GameObject{}) };
-	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
-}
-
-void WorldScene::Update()
-{
-	const auto& lightDir{m_SceneContext.pLights->GetDirectionalLight().direction};
-	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
-
-	const XMVECTOR directionVec{ XMLoadFloat3(&direction) };
-	XMVECTOR positionVec{ XMLoadFloat3(&m_pPlayer->GetTransform()->GetPosition()) };
-
-	positionVec -= directionVec * 150;
-
-	XMFLOAT3 position;
-	XMStoreFloat3(&position, positionVec);
-
-	m_SceneContext.pLights->SetDirectionalLight(position, direction);
-
-	m_pUnderwater->SetIsEnabled(m_pPlayer->IsUnderWater());
-}
-
-void WorldScene::Draw()
-{
-	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { 0.1f, 0.1f }, { 1.f,0.f });
-}
-
-void WorldScene::OnGUI()
-{
 }

@@ -17,12 +17,14 @@ public:
 
 protected:
 	void Initialize() override;
-	void CreateWorld();
 	void Update() override;
 	void Draw() override;
 	void OnGUI() override;
+	virtual void OnSceneActivated() override;
 
 private:
+	void CreateWorld();
+
 	Player* m_pPlayer{};
 	GameObject* m_pSelection{};
 	WorldComponent* m_pWorld{};

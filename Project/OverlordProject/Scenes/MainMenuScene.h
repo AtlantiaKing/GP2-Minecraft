@@ -1,5 +1,6 @@
 #pragma once
 
+class WorldComponent;
 class PostBlur;
 
 class MainMenuScene final : public GameScene
@@ -20,6 +21,10 @@ protected:
 private:
 	float m_CameraPitch{ 40.0f };
 	float m_CameraRotation{};
+
+	GameObject* m_pLoadingBackground{};
+
+	WorldComponent* m_pWorld{};
 
 	PostBlur* m_pPostBlur{};
 };

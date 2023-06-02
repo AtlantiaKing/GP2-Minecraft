@@ -23,9 +23,12 @@ public:
 	bool DestroyBlock(const XMFLOAT3& position);
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 	void SetRenderDistance(int renderDistance);
+	void ShouldLoadAllAtOnce(bool loadAll) { m_Generator.ShouldLoadAllAtOnce(loadAll); }
 
 	Block* GetBlockAt(int x, int y, int z) const;
 	bool IsPositionWater(float worldX, float worldY, float worldZ) const;
+
+	bool IsLoaded() { return !m_Chunks.empty(); }
 
 protected:
 	virtual void Initialize(const SceneContext& sceneContext) override;

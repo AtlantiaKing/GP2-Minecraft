@@ -482,6 +482,8 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 				chunk.position.y < chunkCenter.y - renderRadius || chunk.position.y > chunkCenter.y + renderRadius);
 		}), end(m_WaterChunks));
 
+	bool loadedChunk{};
+
 	for (int x{ chunkCenter.x - renderRadius }; x <= chunkCenter.x + renderRadius; ++x)
 	{
 		for (int y{ chunkCenter.y - renderRadius }; y <= chunkCenter.y + renderRadius; ++y)
@@ -496,16 +498,21 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 				}
 			}
 
-			if (alreadyFound) continue;
+			if (std::find_if(begin(m_Chunks), end(m_Chunks), [&](const Chunk& chunk){ return chunk.position.x == x && chunk.position.y == y; }) != end(m_Chunks))
+				continue;
 
 			LoadChunk(x, y);
+			loadedChunk = true;
 
-			ReloadChunks(x, y);
+			if (!m_LoadAll)
+			{
+				ReloadChunks(x, y);
 
-			pRenderer->SetBuffers(m_Chunks, sceneContext);
-			pRenderer->SetBuffers(m_WaterChunks, sceneContext);
+				pRenderer->SetBuffers(m_Chunks, sceneContext);
+				pRenderer->SetBuffers(m_WaterChunks, sceneContext);
 
-			return true;
+				return true;
+			}
 		}
 	}
 
@@ -528,10 +535,13 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 
 					SpawnStructure(structure.first, structure.second);
 
-					m_StructuresToSpawn[i] = m_StructuresToSpawn[m_StructuresToSpawn.size() - 1];
-					m_StructuresToSpawn.pop_back();
+					if (!m_LoadAll)
+					{
+						m_StructuresToSpawn[i] = m_StructuresToSpawn[m_StructuresToSpawn.size() - 1];
+						m_StructuresToSpawn.pop_back();
 
-					spawnedStructure = true;
+						spawnedStructure = true;
+					}
 				}
 
 				if (spawnedStructure)
@@ -547,6 +557,29 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 		}
 	}
 
+	if (loadedChunk && m_LoadAll)
+	{
+		std::vector<std::vector<Chunk>*> predicateChunks{};
+		predicateChunks.push_back(&m_Chunks);
+
+		std::vector<std::vector<Chunk>*> predicateWaterChunks{};
+		predicateWaterChunks.push_back(&m_Chunks);
+		predicateWaterChunks.push_back(&m_WaterChunks);
+
+		for (Chunk& chunk : m_Chunks)
+		{
+			CreateVertices(chunk, predicateChunks);
+		}
+		for (Chunk& chunk : m_WaterChunks)
+		{
+			CreateVertices(chunk, predicateWaterChunks);
+		}
+
+		pRenderer->SetBuffers(m_Chunks, sceneContext);
+		pRenderer->SetBuffers(m_WaterChunks, sceneContext);
+
+		return true;
+	}
 
 	return false;
 }
