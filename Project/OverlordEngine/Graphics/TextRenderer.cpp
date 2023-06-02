@@ -9,8 +9,6 @@ TextRenderer::~TextRenderer()
 
 void TextRenderer::Initialize()
 {
-	TODO_W7(L"Complete TextRenderer.fx")
-
 	//Effect
 	m_pEffect = ContentManager::Load<ID3DX11Effect>(L"Effects/TextRenderer.fx");
 	m_pTechnique = m_pEffect->GetTechniqueByIndex(0);
@@ -33,7 +31,7 @@ void TextRenderer::Initialize()
 }
 
 void TextRenderer::DrawText(SpriteFont* pFont, const std::wstring& text, const XMFLOAT2& position,
-                            const XMFLOAT4& color)
+                            const XMFLOAT4& color, float rotation, float scale)
 {
 	//skip if alpha is near 0
 	if (color.w <= 0.0001f)
@@ -45,7 +43,7 @@ void TextRenderer::DrawText(SpriteFont* pFont, const std::wstring& text, const X
 	}
 
 	auto& renderGroup = m_TextRenderGroups.at(pFont);
-	renderGroup.m_TextCaches.emplace_back(text, position, color);
+	renderGroup.m_TextCaches.emplace_back(text, position, rotation, scale, color);
 
 	m_TotalCharacters += UINT(text.size());
 }
@@ -140,6 +138,10 @@ void TextRenderer::UpdateBuffer()
 
 void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCache, VertexText* pBuffer, int& bufferPosition)
 {
+	const float radians{ XMConvertToRadians(-textCache.rotation) };
+	const float cosAngle{ cosf(radians) };
+	const float sinAngle{ sinf(radians) };
+
 	int totalAdvanceX{ 0 };
 	for(const wchar_t& character: textCache.text)
 	{
@@ -158,13 +160,15 @@ void TextRenderer::CreateTextVertices(SpriteFont* pFont, const TextCache& textCa
 		}
 
 		VertexText vertex;
-		vertex.position.x = textCache.position.x + float(totalAdvanceX + metric.offsetX);
-		vertex.position.y = textCache.position.y + float(metric.offsetY);
+		vertex.position.x = textCache.position.x + float(totalAdvanceX * cosAngle + metric.offsetX) * textCache.scale;
+		vertex.position.y = textCache.position.y + float(totalAdvanceX * sinAngle + metric.offsetY) * textCache.scale;
 		vertex.position.z = .9f;
 		vertex.color = textCache.color;
 		vertex.texCoord = metric.texCoord;
 		vertex.characterDimension = { float(metric.width), float(metric.height) };
 		vertex.channelId = metric.channel;
+		vertex.rotation = radians;
+		vertex.scale = textCache.scale;
 
 		pBuffer[bufferPosition] = vertex;
 		++bufferPosition;

@@ -44,6 +44,12 @@ public:
 	short GetSize() const { return m_FontDesc.fontSize; }
 	bool HasMetric(const wchar_t& character) const { return m_FontDesc.metrics.contains(character); };
 	const FontMetric& GetMetric(const wchar_t& character) const { return m_FontDesc.metrics.at(character); };
+	const float GetTextSize(const std::wstring& text) const
+	{
+		float size{};
+		for (wchar_t character : text) size += GetMetric(character).width;
+		return size;
+	}
 
 private:
 	SpriteFontDesc m_FontDesc;

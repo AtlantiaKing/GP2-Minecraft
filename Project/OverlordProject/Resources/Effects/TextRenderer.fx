@@ -32,6 +32,8 @@ struct VS_DATA
 	float4 Color: COLOR; //Color of the vertex
 	float2 TexCoord: TEXCOORD0; //Left-Top Character Texture Coordinate on Texture
 	float2 CharSize: TEXCOORD1; //Size of the character (in screenspace)
+    float Rotation : ROTATION; // Rotation of the text
+    float Scale : SCALE; // Scale of the text
 };
 
 struct GS_DATA
@@ -39,7 +41,7 @@ struct GS_DATA
 	float4 Position : SV_POSITION; //HOMOGENEOUS clipping space position
 	float4 Color: COLOR; //Color of the vertex
 	float2 TexCoord: TEXCOORD0; //Texcoord of the vertex
-	int Channel : TEXCOORD1; //Channel of the vertex
+    int Channel : TEXCOORD1; //Channel of the vertex
 };
 
 //VERTEX SHADER
@@ -71,20 +73,22 @@ void MainGS(point VS_DATA vertex[1], inout TriangleStream<GS_DATA> triStream)
 {
 	//Create a Quad using the character information of the given vertex
 	//Note that the Vertex.CharSize is in screenspace, TextureCoordinates aren't ;) [Range 0 > 1]
-
 	VS_DATA v = vertex[0];
+	
+    float cosAngle = cos(v.Rotation);
+    float sinAngle = sin(v.Rotation);
 
 	//1. Vertex Left-Top
 	CreateVertex(triStream, v.Position, v.Color, v.TexCoord, v.Channel);
 
 	//2. Vertex Right-Top
-	CreateVertex(triStream, v.Position + float3(v.CharSize.x, 0.0f, 0.0f), v.Color, v.TexCoord + float2(v.CharSize.x, 0.0f) / gTextureSize, v.Channel);
+    CreateVertex(triStream, v.Position + float3(v.CharSize.x * cosAngle, v.CharSize.x * sinAngle, 0.0f) * v.Scale, v.Color, v.TexCoord + float2(v.CharSize.x, 0.0f) / gTextureSize, v.Channel);
 
 	//3. Vertex Left-Bottom
-	CreateVertex(triStream, v.Position + float3(0.0f, v.CharSize.y, 0.0f), v.Color, v.TexCoord + float2(0.0f, v.CharSize.y) / gTextureSize, v.Channel);
+    CreateVertex(triStream, v.Position + float3(-v.CharSize.y * sinAngle, v.CharSize.y * cosAngle, 0.0f) * v.Scale, v.Color, v.TexCoord + float2(0.0f, v.CharSize.y) / gTextureSize, v.Channel);
 
 	//4. Vertex Right-Bottom
-	CreateVertex(triStream, v.Position + float3(v.CharSize, 0.0f), v.Color, v.TexCoord + v.CharSize / gTextureSize, v.Channel);
+    CreateVertex(triStream, v.Position + float3(v.CharSize.x * cosAngle - v.CharSize.y * sinAngle, v.CharSize.x * sinAngle + v.CharSize.y * cosAngle, 0.0f) * v.Scale, v.Color, v.TexCoord + v.CharSize / gTextureSize, v.Channel);
 }
 
 //PIXEL SHADER
@@ -96,7 +100,7 @@ float4 MainPS(GS_DATA input) : SV_TARGET{
 
 	//You can iterate a float4 just like an array, using the index operator
 	//Also, don't forget to colorize ;) [Vertex.Color]
-	return textureColor[input.Channel] * input.Color;
+    return textureColor[input.Channel] * input.Color;
 }
 
 // Default Technique

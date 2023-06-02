@@ -68,7 +68,7 @@ void MainMenuScene::Initialize()
 
 
 	GameObject* pTitle{ AddChild(new GameObject{}) };
-	pTitle->AddComponent(new SpriteComponent{ L"Textures/Title.dds", { 0.5f, 0.5f } });
+	SpriteComponent* pTitleSprite{ pTitle->AddComponent(new SpriteComponent{ L"Textures/Title.dds", { 0.5f, 0.5f } }) };
 	pTitle->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, titleHeight, 0.0f);
 	pTitle->GetTransform()->Scale(screenScale);
 
@@ -76,6 +76,14 @@ void MainMenuScene::Initialize()
 	m_pLoadingBackground = AddChild(new GameObject{});
 	m_pLoadingBackground->AddComponent(new SpriteComponent{ L"Textures/GeneratingMainMenu.dds" });
 	m_pLoadingBackground->GetTransform()->Scale(screenScale);
+
+
+	m_pFont = ContentManager::Load<SpriteFont>(L"Fonts/Minecraft_32.fnt");
+	m_TextSize = m_pFont->GetTextSize(m_YellowText);
+
+	constexpr XMFLOAT2 yellowTextOffset{ -45.0f, -20.0f };
+	m_pYellowTextPosition.x = m_SceneContext.windowWidth / 2.0f + pTitleSprite->GetSize().x / 2.0f * screenScale - m_TextSize / 2.0f + yellowTextOffset.x;
+	m_pYellowTextPosition.y = titleHeight + pTitleSprite->GetSize().y / 2.0f * screenScale + yellowTextOffset.y;
 
 	// Post Processing Stack
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
@@ -88,7 +96,7 @@ void MainMenuScene::Update()
 	constexpr float rotationSpeed{ 5.0f };
 	m_CameraRotation += rotationSpeed * m_SceneContext.pGameTime->GetElapsed();
 	if (m_CameraRotation > 360.0f) m_CameraRotation -= 360.0f;
-	
+
 	TransformComponent* pCamTransform{ m_SceneContext.pCamera->GetTransform() };
 
 	pCamTransform->Rotate(m_CameraPitch, m_CameraRotation, 0.0f);
@@ -100,5 +108,17 @@ void MainMenuScene::Update()
 			RemoveChild(m_pLoadingBackground, true);
 			m_pLoadingBackground = nullptr;
 		}
+	}
+	else
+	{
+		constexpr float pixelOffset{ 2.0f };
+		constexpr float rotation{ 20.0f };
+		constexpr float sizeDiff{ 0.1f };
+		constexpr float scaleSpeed{ 10.0f };
+
+		const float scale{ sinf(m_SceneContext.pGameTime->GetTotal() * scaleSpeed) * sizeDiff + 1.0f };
+
+		TextRenderer::Get()->DrawText(m_pFont, m_YellowText, { m_pYellowTextPosition.x + pixelOffset - (scale - 1.0f) * m_TextSize / 2.0f, m_pYellowTextPosition.y + pixelOffset + (scale - 1.0f) * m_pFont->GetSize() / 2.0f }, { 0.7f, 0.7f, 0.0f, 1.0f }, rotation, scale);
+		TextRenderer::Get()->DrawText(m_pFont, m_YellowText, { m_pYellowTextPosition.x - (scale - 1.0f) * m_TextSize / 2.0f, m_pYellowTextPosition.y + (scale - 1.0f) * m_pFont->GetSize() / 2.0f }, { 1.0f, 1.0f, 0.0f, 1.0f }, rotation, scale);
 	}
 }

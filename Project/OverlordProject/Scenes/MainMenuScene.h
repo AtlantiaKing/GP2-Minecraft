@@ -22,7 +22,13 @@ private:
 	float m_CameraPitch{ 40.0f };
 	float m_CameraRotation{};
 
+	SpriteFont* m_pFont{};
+	float m_TextSize{};
+
 	GameObject* m_pLoadingBackground{};
+
+	XMFLOAT2 m_pYellowTextPosition{};
+	std::wstring m_YellowText{ L"Hello GitHub viewers" };
 
 	WorldComponent* m_pWorld{};
 

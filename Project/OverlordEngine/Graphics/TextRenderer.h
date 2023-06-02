@@ -3,6 +3,8 @@ struct TextCache
 {
 	const std::wstring text{};
 	XMFLOAT2 position{};
+	float rotation{};
+	float scale{};
 	XMFLOAT4 color{};
 };
 
@@ -22,7 +24,7 @@ public:
 	TextRenderer& operator=(TextRenderer&& other) noexcept = delete;
 
 #undef DrawText
-	void DrawText(SpriteFont* pFont, const std::wstring& text, const XMFLOAT2& position, const XMFLOAT4& color = XMFLOAT4{ Colors::White });
+	void DrawText(SpriteFont* pFont, const std::wstring& text, const XMFLOAT2& position, const XMFLOAT4& color = XMFLOAT4{ Colors::White }, float rotation = 0.0f, float scale = 1.0f);
 	void Draw(const SceneContext& sceneContext);
 
 protected:

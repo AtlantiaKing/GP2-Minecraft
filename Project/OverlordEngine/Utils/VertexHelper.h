@@ -144,6 +144,8 @@ struct VertexText
 	XMFLOAT4 color{};
 	XMFLOAT2 texCoord{};
 	XMFLOAT2 characterDimension{};
+	float rotation{};
+	float scale{};
 };
 
 //Particle Rendering
