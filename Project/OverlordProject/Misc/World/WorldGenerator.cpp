@@ -584,6 +584,16 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 	return false;
 }
 
+void WorldGenerator::LoadChunkMainThread(int x, int y, const SceneContext& sceneContext, WorldRenderer* pRenderer)
+{
+	LoadChunk(x, y);
+
+	ReloadChunks(x, y);
+
+	pRenderer->SetBuffers(m_Chunks, sceneContext);
+	pRenderer->SetBuffers(m_WaterChunks, sceneContext);
+}
+
 void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 {
 	Biome biome{ BlockManager::Get()->GetBiome("forest") };

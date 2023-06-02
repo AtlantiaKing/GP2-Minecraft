@@ -22,6 +22,7 @@ public:
 	WorldGenerator& operator=(WorldGenerator&& other) noexcept = delete;
 
 	bool LoadChunk(const XMINT2& chunkCenter, const SceneContext& sceneContext, WorldRenderer* pRenderer);
+	void LoadChunkMainThread(int x, int y, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 	void RemoveBlock(const XMFLOAT3& position, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 	void PlaceBlock(const XMFLOAT3& position, BlockType block, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 	Block* GetBlockAt(int x, int y, int z) const;

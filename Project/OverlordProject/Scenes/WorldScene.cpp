@@ -31,6 +31,7 @@ void WorldScene::CreateWorld()
 {
 	GameObject* pWorld{ AddChild(new GameObject{}) };
 	m_pWorld = pWorld->AddComponent(new WorldComponent{ m_SceneContext });
+	m_pWorld->LoadStartChunk(m_SceneContext);
 }
 
 void WorldScene::Update()

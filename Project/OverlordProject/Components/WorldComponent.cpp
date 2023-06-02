@@ -192,6 +192,25 @@ void WorldComponent::SetRenderDistance(int renderDistance)
     m_Generator.SetRenderDistance(renderDistance);
 }
 
+void WorldComponent::LoadStartChunk(const SceneContext& sceneContext)
+{
+    m_NeedsWorldReload = true;
+    m_Generator.LoadChunkMainThread(0, 0, sceneContext, &m_Renderer);
+
+#ifndef _DEBUG
+    for (int x{ -1 }; x <= 1; ++x)
+    {
+        for (int y{ -1 }; y <= 1; ++y)
+        {
+            if (x == 0 && y == 0) continue;
+
+            m_Generator.LoadChunkMainThread(x, y, sceneContext, &m_Renderer);
+        }
+    }
+#endif
+
+}
+
 void WorldComponent::Initialize(const SceneContext& sceneContext)
 {
     // Add a rigidbody component to the world gameobject

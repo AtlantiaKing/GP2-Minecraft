@@ -24,6 +24,7 @@ public:
 	void UpdateColliders(const XMFLOAT3& playerPosition);
 	void SetRenderDistance(int renderDistance);
 	void ShouldLoadAllAtOnce(bool loadAll) { m_Generator.ShouldLoadAllAtOnce(loadAll); }
+	void LoadStartChunk(const SceneContext& sceneContext);
 
 	Block* GetBlockAt(int x, int y, int z) const;
 	bool IsPositionWater(float worldX, float worldY, float worldZ) const;
