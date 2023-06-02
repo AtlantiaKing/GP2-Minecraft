@@ -50,8 +50,6 @@ void Inventory::Remove(BlockType block)
 
 	if (it->second <= 0) m_Hotbar.erase(it);
 
-	while (m_CurSlot > 0 && !HasEquipedItem()) --m_CurSlot;
-
 	OnInventoryChange().Notify(m_Hotbar);
 }
 
