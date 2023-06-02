@@ -52,8 +52,8 @@ private:
 	void SpawnStructure(const Structure* structure, const XMINT3& position);
 	void CreateVertices(Chunk& chunk, const std::vector<std::vector<Chunk>*>& predicateChunks);
 
-	void CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
-	void CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices);
+	void CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices, const std::vector<VertexPosNormTexTransparency>& cubeVertices);
+	void CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices, const std::vector<VertexPosNormTexTransparency>& crossVertices);
 
 	Block* GetBlock(const XMINT3& position, float worldHeight, int surfaceY, float beachHeight, const Biome& biome) const;
 

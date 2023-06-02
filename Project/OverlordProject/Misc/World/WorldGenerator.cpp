@@ -342,24 +342,31 @@ void WorldGenerator::CreateVertices(Chunk& chunk, const std::vector<std::vector<
 	chunk.verticesChanged = true;
 	chunk.needColliderChange = true;
 
+	BlockManager* pBlockManager{ BlockManager::Get() };
+
+	const auto& cubeVertices = pBlockManager->GetVertices("cube");
+	const auto& crossVertices = pBlockManager->GetVertices("cross");
+
 	std::vector<VertexPosNormTexTransparency> vertices{};
+	vertices.reserve(24);
+
 	for (int x{}; x < m_ChunkSize; ++x)
 	{
 		for (int z{}; z < m_ChunkSize; ++z)
 		{
 			for (int y{ m_WorldHeight - 1 }; y >= 0; --y)
 			{
-				Block* pBlock{ BlockManager::Get()->GetBlock(chunk.blocks[x + z * m_ChunkSize + y * m_ChunkSize * m_ChunkSize]) };
+				Block* pBlock{ pBlockManager->GetBlock(chunk.blocks[x + z * m_ChunkSize + y * m_ChunkSize * m_ChunkSize]) };
 
 				if (!pBlock) continue;
 
 				switch (pBlock->mesh)
 				{
 				case BlockMesh::CUBE:
-					CreateVerticesCube(chunk, x, y, z, predicateChunks, pBlock, vertices);
+					CreateVerticesCube(chunk, x, y, z, predicateChunks, pBlock, vertices, cubeVertices);
 					break;
 				case BlockMesh::CROSS:
-					CreateVerticesCross(chunk, x, y, z, pBlock, vertices);
+					CreateVerticesCross(chunk, x, y, z, pBlock, vertices, crossVertices);
 				}
 			}
 		}
@@ -369,20 +376,19 @@ void WorldGenerator::CreateVertices(Chunk& chunk, const std::vector<std::vector<
 	chunk.loadedWater = true;
 }
 
-void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices)
+void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const std::vector<std::vector<Chunk>*>& predicateChunks, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices, const std::vector<VertexPosNormTexTransparency>& cubeVertices)
 {
-	const auto& cubeVertices{ BlockManager::Get()->GetVertices("cube") };
-
 	const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
+	const XMVECTOR positionVector = XMLoadSInt3(&position);
 
 	for (unsigned int i{}; i <= static_cast<unsigned int>(FaceDirection::BOTTOM); ++i)
 	{
 		const XMINT3& neightbourDirection{ m_NeighbouringBlocks[i] };
 
-		const XMVECTOR positionVector = XMLoadSInt3(&position);
 		const XMVECTOR neighbourDirection = XMLoadSInt3(&neightbourDirection);
-		XMINT3 neighbourPosition{};
 		const XMVECTOR neighbourPosVector = XMVectorAdd(positionVector, neighbourDirection);
+
+		XMINT3 neighbourPosition;
 		XMStoreSInt3(&neighbourPosition, neighbourPosVector);
 
 		bool canRender{ true };
@@ -397,9 +403,11 @@ void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const
 		if (!canRender) continue;
 
 		constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
+
+		VertexPosNormTexTransparency v{};
 		for (int vIdx : faceIndices)
 		{
-			VertexPosNormTexTransparency v{ cubeVertices[i * 4 + vIdx] };
+			v = cubeVertices[i * 4 + vIdx];
 
 			if (pBlock->type == BlockType::WATER && !m_IsBlockPredicate(m_WaterChunks, { x,y + 1,z }))
 			{
@@ -409,7 +417,7 @@ void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const
 
 			XMVECTOR pos{ XMLoadFloat3(&v.Position) };
 			pos += XMVECTOR{ static_cast<float>(x),static_cast<float>(y),static_cast<float>(z) }
-			+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
+				+ XMVECTOR{ static_cast<float>(chunk.position.x * m_ChunkSize), 0.0f, static_cast<float>(chunk.position.y * m_ChunkSize) };
 			XMStoreFloat3(&v.Position, pos);
 
 			v.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, static_cast<FaceDirection>(i)), v.TexCoord);
@@ -421,28 +429,27 @@ void WorldGenerator::CreateVerticesCube(Chunk& chunk, int x, int y, int z, const
 	}
 }
 
-void WorldGenerator::CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices)
+void WorldGenerator::CreateVerticesCross(Chunk& chunk, int x, int y, int z, Block* pBlock, std::vector<VertexPosNormTexTransparency>& vertices, const std::vector<VertexPosNormTexTransparency>& crossVertices)
 {
-	const auto& crossVertices{ BlockManager::Get()->GetVertices("cross") };
-
 	const XMINT3 position{ chunk.position.x * m_ChunkSize + x, y, chunk.position.y * m_ChunkSize + z };
 
 	for (int faceIdx{}; faceIdx < static_cast<int>(crossVertices.size()) / 4; ++faceIdx)
 	{
 		constexpr int faceIndices[6]{ 0,1,2,3,2,1 };
+		VertexPosNormTexTransparency v{};
 		for (int vIdx : faceIndices)
 		{
-			VertexPosNormTexTransparency vertexCopy{ crossVertices[faceIdx * 4 + vIdx] };
+			v = crossVertices[faceIdx * 4 + vIdx];
 
-			XMVECTOR pos{ XMLoadFloat3(&vertexCopy.Position) };
+			XMVECTOR pos{ XMLoadFloat3(&v.Position) };
 			pos += XMVECTOR{ static_cast<float>(position.x),static_cast<float>(position.y),static_cast<float>(position.z) };
-			XMStoreFloat3(&vertexCopy.Position, pos);
+			XMStoreFloat3(&v.Position, pos);
 
-			vertexCopy.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, FaceDirection::FORWARD), vertexCopy.TexCoord);
+			v.TexCoord = m_TileMap.GetUV(m_TileMap.GetFaceType(pBlock->type, FaceDirection::FORWARD), v.TexCoord);
 
-			vertexCopy.Transparent = pBlock->transparent;
+			v.Transparent = pBlock->transparent;
 
-			vertices.emplace_back(vertexCopy);
+			vertices.emplace_back(v);
 		}
 	}
 }
