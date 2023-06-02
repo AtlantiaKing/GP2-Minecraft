@@ -505,11 +505,11 @@ bool WorldGenerator::LoadChunk(const XMINT2& chunkCenter, const SceneContext& sc
 
 					loadedChunk = true;
 
+					m_StructuresToSpawn[i] = m_StructuresToSpawn[m_StructuresToSpawn.size() - 1];
+					m_StructuresToSpawn.pop_back();
+
 					if (!m_LoadAll)
 					{
-						m_StructuresToSpawn[i] = m_StructuresToSpawn[m_StructuresToSpawn.size() - 1];
-						m_StructuresToSpawn.pop_back();
-
 						spawnedStructure = true;
 					}
 				}
