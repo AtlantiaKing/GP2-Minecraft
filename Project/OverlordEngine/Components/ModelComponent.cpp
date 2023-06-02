@@ -161,3 +161,8 @@ void ModelComponent::SetMaterial(UINT materialId, UINT8 submeshId)
 	const auto pMaterial = MaterialManager::Get()->GetMaterial(materialId);
 	SetMaterial(pMaterial, submeshId);
 }
+
+BaseMaterial* ModelComponent::GetMaterial(UINT materialId)
+{
+	return m_Materials[materialId];
+}

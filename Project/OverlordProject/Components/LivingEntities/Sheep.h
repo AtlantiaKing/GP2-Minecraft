@@ -16,6 +16,7 @@ public:
 	virtual void OnHit(int health) override;
 
 protected:
+	virtual void InitMaterials() override;
 	virtual void UpdateState() override;
 	virtual void UpdateMovement(float elapsedSec);
 

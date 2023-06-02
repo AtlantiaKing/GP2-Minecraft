@@ -17,6 +17,7 @@ public:
 
 	void SetMaterial(BaseMaterial* pMaterial, UINT8 submeshId = 0);
 	void SetMaterial(UINT materialId, UINT8 submeshId = 0);
+	BaseMaterial* GetMaterial(UINT materialId = 0);
 
 	ModelAnimator* GetAnimator() const { return m_pAnimator; }
 	bool HasAnimator() const { return m_pAnimator != nullptr; }

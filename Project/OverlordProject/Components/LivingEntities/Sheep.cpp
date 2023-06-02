@@ -4,6 +4,8 @@
 #include "Scenegraph/GameScene.h"
 #include "Prefabs/ItemEntity.h"
 
+#include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
+
 Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 	: LivingEntity{ hitboxDimensions }
 {
@@ -17,6 +19,14 @@ void Sheep::OnHit(int health)
 	XMStoreFloat3(&blockPos, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + XMVECTOR{ 0.0f, m_HitboxHalfDimensions.y, 0.0f});
 
 	GetScene()->AddChild(new ItemEntity{ BlockType::WOOL, blockPos });
+}
+
+void Sheep::InitMaterials()
+{
+	DiffuseMaterial_Shadow_Skinned* pHitMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>() };
+	pHitMaterial->SetDiffuseTexture(L"Textures/Sheep/SheepHit.dds");
+
+	SetHitMaterial(pHitMaterial);
 }
 
 void Sheep::UpdateState()
@@ -60,7 +70,9 @@ void Sheep::UpdateMovement(float)
 
 	if (sheepState == SheepState::Walking)
 	{
-		const XMFLOAT3 direction{ -forward.x * m_RunSpeed, rb->GetVelocity().y, -forward.z * m_RunSpeed };
+		const float moveSpeed{ m_RunSpeed + m_AttackedSpeedBoost * m_IsAttacked };
+
+		const XMFLOAT3 direction{ -forward.x * moveSpeed, rb->GetVelocity().y, -forward.z * moveSpeed };
 
 		rb->SetVelocity(direction);
 	}

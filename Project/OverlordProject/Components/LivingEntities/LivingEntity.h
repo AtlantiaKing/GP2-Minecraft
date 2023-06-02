@@ -22,11 +22,15 @@ protected:
 
 	virtual void UpdateState() = 0;
 	virtual void UpdateMovement(float elapsedSec) = 0;
+	virtual void InitMaterials() = 0;
+
+	void SetHitMaterial(BaseMaterial* pHitMaterial);
 
 	unsigned int m_State{ 0 };
 	bool m_IsAttacked{};
 
 	float m_RunSpeed{ 2.0f };
+	float m_AttackedSpeedBoost{ 1.0f };
 
 	XMFLOAT3 m_HitboxHalfDimensions{};
 
@@ -41,6 +45,8 @@ private:
 	void SetNewRotationTimer();
 	void SetNewStateTimer();
 
+	void RootInitMaterials();
+
 	void Rotate(float elapsedSec);
 
 	float m_StateTime{};
@@ -48,6 +54,7 @@ private:
 	float m_AttackTime{};
 
 	float m_TimeUntilRest{ 5.0f };
+	float m_TimeUntilDefaultColor{ 0.5f };
 
 	float m_MinTimeBetweenStates{ 1.0f};
 	float m_MaxTimeBetweenStates{ 7.0f };
@@ -62,5 +69,7 @@ private:
 	const float m_RayTestDistance{ 0.1f };
 	const float m_JumpForce{ 2.0f };
 
+	BaseMaterial* m_pDefaultMaterial{};
+	BaseMaterial* m_pHitMaterial{};
 };
 
