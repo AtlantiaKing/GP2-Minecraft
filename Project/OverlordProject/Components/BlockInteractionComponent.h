@@ -26,6 +26,7 @@ protected:
 
 private:
 	bool HasChangedPosition(const XMFLOAT3& position);
+	bool IsBlockInPlayer(XMINT3 hitBlock, const PxVec3& hitNormal) const;
 
 	WorldComponent* m_pWorld{};
 	WireframeRenderer* m_pSelection{};

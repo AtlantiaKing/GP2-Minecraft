@@ -84,31 +84,39 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	m_pSelection->GetTransform()->Translate(blockPos);
 
 	// Get current block
-	Block* pBlock{ m_pWorld->GetBlockAt(static_cast<int>(blockPos.x), static_cast<int>(blockPos.y), static_cast<int>(blockPos.z)) };
+	const XMINT3 blockPosInt{ static_cast<int>(blockPos.x), static_cast<int>(blockPos.y), static_cast<int>(blockPos.z) };
+	Block* pBlock{ m_pWorld->GetBlockAt(blockPosInt.x, blockPosInt.y, blockPosInt.z) };
 
 	// If we changed the block we were looking at, reset block breaking
 	if (HasChangedPosition(blockPos)) m_IsBreakingBlock = false;
 
 	// RIGHT MOUSE CLICK
-	if (InputManager::IsMouseButton(InputState::pressed, 2))
+	if (InputManager::IsMouseButton(InputState::down, 2))
 	{
+		// Get inventory
 		Inventory* pInventory{ GetGameObject()->GetComponent<Inventory>() };
 
+		// If the inventory has an item equiped in the current slot
 		if (pInventory->HasEquipedItem())
 		{
 			// Get equiped block
 			BlockType selectedBlock{ pInventory->GetEquipedItem() };
 
-			// Place a block
-			if (m_pWorld->PlaceBlock(XMFLOAT3{ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }, blockPos, selectedBlock))
+			// If the block is not inside the player
+			if (!IsBlockInPlayer(blockPosInt, hit.block.normal))
 			{
-				// Reset block breaking
-				m_IsBreakingBlock = false;
+				// Try placing a block
+				if (m_pWorld->PlaceBlock(XMFLOAT3{ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }, blockPos, selectedBlock))
+				{
+					// Reset block breaking
+					m_IsBreakingBlock = false;
 
-				pInventory->Remove(selectedBlock);
+					// Remove the current block from the inventory
+					pInventory->Remove(selectedBlock);
 
-				// Play the arm animation
-				m_ShouldPlayAnimation = true;
+					// Play the arm animation
+					m_ShouldPlayAnimation = true;
+				}
 			}
 		}
 	}
@@ -177,6 +185,26 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		constexpr int nrBreakStages{ 10 };
 		m_pBreakRenderer->SetBreakingStage(std::min(static_cast<int>(m_BlockBreakProgress / pBlock->breakTime * nrBreakStages), nrBreakStages - 1));
 	}
+}
+
+bool BlockInteractionComponent::IsBlockInPlayer(XMINT3 hitBlock, const PxVec3& hitNormal) const
+{
+	// Get the player position
+	const auto& curPlayerPos{ GetTransform()->GetWorldPosition() };
+	const XMFLOAT3 playerPosFloored
+	{
+		(curPlayerPos.x + 0.5f) > 0.0f ? floor(curPlayerPos.x + 0.5f) : -(floor(abs(curPlayerPos.x + 0.5f)) + 1),
+		curPlayerPos.y,
+		(curPlayerPos.z + 0.5f) > 0.0f ? floor(curPlayerPos.z + 0.5f) : -(floor(abs(curPlayerPos.z + 0.5f)) + 1)
+	};
+	const XMINT3 playerPosInt{ static_cast<int>(playerPosFloored.x), static_cast<int>(playerPosFloored.y), static_cast<int>(playerPosFloored.z) };
+
+	hitBlock.x = static_cast<int>(hitBlock.x + hitNormal.x);
+	hitBlock.y = static_cast<int>(hitBlock.y + hitNormal.y);
+	hitBlock.z = static_cast<int>(hitBlock.z + hitNormal.z);
+
+	// Check whether or not the block to be placed is inside 
+	return playerPosInt.x == hitBlock.x && playerPosInt.z == hitBlock.z && (playerPosInt.y == hitBlock.y || playerPosInt.y + 1 == hitBlock.y);
 }
 
 bool BlockInteractionComponent::HasChangedPosition(const XMFLOAT3& position)
