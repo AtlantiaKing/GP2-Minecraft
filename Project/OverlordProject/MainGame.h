@@ -3,7 +3,7 @@ class MainGame final : public OverlordGame
 {
 public:
 	MainGame() = default;
-	~MainGame() override;
+	~MainGame() override = default;
 	MainGame(const MainGame& other) = delete;
 	MainGame(MainGame&& other) noexcept = delete;
 	MainGame& operator=(const MainGame& other) = delete;
@@ -12,6 +12,7 @@ public:
 protected:
 	void OnGamePreparing(GameContext& gameContext) override;
 	void Initialize() override;
+	void Cleanup() override;
 	LRESULT WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override;
 	bool m_Fullscreen{};
 	GameContext* m_pGameContext{};

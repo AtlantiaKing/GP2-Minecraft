@@ -26,6 +26,7 @@ protected:
 	virtual void OnGamePreparing(GameContext& /*gameContext*/){}
 	virtual LRESULT WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void Initialize() = 0;
+	virtual void Cleanup() = 0;
 
 	bool m_IsActive{};
 

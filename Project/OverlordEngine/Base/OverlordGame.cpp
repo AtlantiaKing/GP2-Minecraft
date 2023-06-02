@@ -19,7 +19,6 @@ OverlordGame::~OverlordGame()
 	ContentManager::Release(); //TODO > Singleton
 	DebugRenderer::Release(); //TODO > Singleton
 	InputManager::Release(); //Todo > Rename to Destroy
-	SceneManager::Destroy();
 	PhysXManager::Destroy();
 	SoundManager::Destroy();
 	SpriteRenderer::Destroy();
@@ -45,7 +44,6 @@ OverlordGame::~OverlordGame()
 	}
 
 	SafeRelease(m_GameContext.d3dContext.pDevice);
-	
 }
 
 void OverlordGame::ValidateGameContext()
@@ -81,11 +79,16 @@ HRESULT OverlordGame::Run(HINSTANCE hInstance)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 			if (msg.message == WM_QUIT)
+			{
 				break;
+			}
 		}
 
 		GameLoop();
 	}
+
+	SceneManager::Destroy();
+	Cleanup();
 
 	//TODO: should return 'msg.wParam'
 	return S_OK;

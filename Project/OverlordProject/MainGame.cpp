@@ -8,11 +8,6 @@
 // Managers
 #include "Managers/BlockManager.h"
 
-MainGame::~MainGame()
-{
-	BlockManager::Destroy();
-}
-
 //Game is preparing
 void MainGame::OnGamePreparing(GameContext& gameContext)
 {
@@ -38,6 +33,11 @@ void MainGame::Initialize()
 
 	SceneManager::Get()->AddGameScene(new MainMenuScene());
 	SceneManager::Get()->AddGameScene(new WorldScene());
+}
+
+void MainGame::Cleanup()
+{
+	BlockManager::Destroy();
 }
 
 LRESULT MainGame::WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

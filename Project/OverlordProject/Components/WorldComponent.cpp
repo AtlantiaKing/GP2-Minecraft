@@ -20,14 +20,14 @@ WorldComponent::WorldComponent(const SceneContext& sceneContext)
 
 WorldComponent::~WorldComponent()
 {
-    // Release the collider cooking
-    m_pColliderCooking->release();
-
     // Stop the other threads
     m_IsMultithreaded = false;
 
     // Wait for the other threads to finish
     m_WorldThread.join();
+
+    // Release the collider cooking
+    m_pColliderCooking->release();
 
     for (Chunk& chunk : m_Chunks) chunk.DeleteChunk();
     for (Chunk& chunk : m_WaterChunks) chunk.DeleteChunk();
