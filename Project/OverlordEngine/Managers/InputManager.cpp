@@ -261,7 +261,11 @@ void InputManager::UpdateInputStates(bool overrideEnable)
 	m_MouseMovement.x = m_CurrMousePosition.x - m_OldMousePosition.x;
 	m_MouseMovement.y = m_CurrMousePosition.y - m_OldMousePosition.y;
 
-	if(m_ForceToCenter) SetCursorPos(m_OldMousePosition.x, m_OldMousePosition.y);
+	if (m_ForceToCenter)
+	{
+		SetCursorPos(m_OldMousePosition.x, m_OldMousePosition.y);
+		ShowCursor(!m_ForceToCenter);
+	}
 
 	//Normalized
 	m_MouseMovementNormalized.x = m_MouseMovement.x > 0 ? 1.f : (m_MouseMovement.x < 0 ? -1.f : 0.f);
