@@ -9,8 +9,10 @@ SamplerState samPoint
 };
 
 Texture2D gTexture;
+Texture2D gDepthTexture;
 
 float gNonBlueDarkener = 0.5f;
+float gDepthPower = 500.0f;
 
 // Create Depth Stencil State (ENABLE DEPTH WRITING)
 DepthStencilState EnableDepth
@@ -59,8 +61,12 @@ float4 PS(PS_INPUT input) : SV_Target
 {
     // Sample the texture
     float4 sample = gTexture.Sample(samPoint, input.TexCoord);
+    // Sample the texture
+    float4 depth = gDepthTexture.Sample(samPoint, input.TexCoord);
+    // Calculate fog value
+    float fogValue = 1.0f - pow(depth.x, gDepthPower);
 	// Return the color but more blue
-    return float4(sample.r * gNonBlueDarkener, sample.g * gNonBlueDarkener, sample.b, 1.0f);
+    return float4(sample.r * fogValue * gNonBlueDarkener, sample.g * fogValue * gNonBlueDarkener, sample.b * fogValue, 1.0f);
 }
 
 
