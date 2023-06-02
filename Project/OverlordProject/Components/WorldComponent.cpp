@@ -36,34 +36,69 @@ WorldComponent::~WorldComponent()
 
 void WorldComponent::StartWorldThread(const SceneContext& sceneContext)
 {
+    const int environmentTick{ 250 }; // in milliseconds
+    const int worldTick{ 5 }; // in milliseconds
+
+    // Current time until a environment change
+    int curEnvironmentTick{};
+
     // While the thread is alive
     while (m_IsMultithreaded)
     {
-        if (m_DestroyBlock)
+        // Get the current time
+        const auto frameStart{ std::chrono::high_resolution_clock::now() };
+
+        if (!m_NeedsWorldReload) // don't change the world while the main thread is updating
         {
-            // Remove the block from the right chunk
-            m_Generator.RemoveBlock(m_EditBlock, sceneContext, &m_Renderer);
+            if (m_DestroyBlock)
+            {
+                // Remove the block from the right chunk
+                m_Generator.RemoveBlock(m_EditBlock, sceneContext, &m_Renderer);
 
-            m_NeedsWorldReload = true;
+                // Let the main thread now to get the latest worlddata
+                m_NeedsWorldReload = true;
 
-            m_DestroyBlock = false;
+                // Disable destroy block flag
+                m_DestroyBlock = false;
+            }
+            else if (m_PlaceBlock)
+            {
+                // Place the block in the right chunk
+                m_Generator.PlaceBlock(m_EditBlock, m_EditBlockType, sceneContext, &m_Renderer);
+
+                // Let the main thread now to get the latest worlddata
+                m_NeedsWorldReload = true;
+
+                // Disable place block flag
+                m_PlaceBlock = false;
+            }
+            else
+            {
+                bool needsReload{};
+
+                // Try loading a chunk
+                needsReload = m_Generator.LoadChunk(m_ChunkCenter, sceneContext, &m_Renderer);
+
+                // If the world isn't updated yet, try updating the world
+                if (!needsReload && curEnvironmentTick >= environmentTick)
+                {
+                    curEnvironmentTick = 0;
+                    needsReload = m_Generator.ChangeEnvironment(m_ChunkCenter, sceneContext, &m_Renderer);
+                }
+
+                // Let the main thread now whether or not to get the latest worlddata
+                m_NeedsWorldReload = needsReload;
+            }
         }
-        else if (m_PlaceBlock)
-        {
-            // Remove the block from the right chunk
-            m_Generator.PlaceBlock(m_EditBlock, m_EditBlockType, sceneContext, &m_Renderer);
 
-            // Let the main thread know that it should reload vertex buffers and colliders
-            m_NeedsWorldReload = true;
+        // Sleep so that the total frame time becomes the desired frame time
+        const auto frameTime{ std::chrono::high_resolution_clock::now() - frameStart };
+        const auto sleepTime{ std::chrono::milliseconds(worldTick) - frameTime };
+        std::this_thread::sleep_for(sleepTime);
 
-            m_PlaceBlock = false;
-        }
-        else if (!m_NeedsWorldReload)
-        {
-            m_NeedsWorldReload = m_Generator.LoadChunk(m_ChunkCenter, sceneContext, &m_Renderer);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds{ 1 });
+        // Increment environment timer
+        const auto endOfFrameTime{ std::chrono::high_resolution_clock::now() - frameStart };
+        curEnvironmentTick += static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(endOfFrameTime).count());
     }
 }
 

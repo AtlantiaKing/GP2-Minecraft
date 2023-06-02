@@ -25,7 +25,7 @@ public:
 	void RemoveBlock(const XMFLOAT3& position, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 	void PlaceBlock(const XMFLOAT3& position, BlockType block, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 	Block* GetBlockAt(int x, int y, int z) const;
-	bool ChangeEnvironment(const XMINT2& chunkCenter);
+	bool ChangeEnvironment(const XMINT2& chunkCenter, const SceneContext& sceneContext, WorldRenderer* pRenderer);
 
 	void SetRenderDistance(int renderDistance) { m_RenderDistance = renderDistance; }
 	void SetWorldHeight(int worldHeight) { m_WorldHeight = worldHeight; }
@@ -69,7 +69,7 @@ private:
 #ifdef _DEBUG
 	int m_RenderDistance{ 2 };
 #else
-	int m_RenderDistance{ 8 };
+	int m_RenderDistance{ 6 };
 #endif
 	int m_PhysicsDistance{ 2 };
 	int m_WorldHeight{ 256 };

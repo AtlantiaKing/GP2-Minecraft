@@ -211,7 +211,7 @@ void WorldGenerator::ReloadChunks(int chunkX, int chunkY)
 	}
 }
 
-bool WorldGenerator::ChangeEnvironment(const XMINT2& chunkCenter)
+bool WorldGenerator::ChangeEnvironment(const XMINT2& chunkCenter, const SceneContext& sceneContext, WorldRenderer* pRenderer)
 {
 	bool changedEnvironment{};
 
@@ -317,6 +317,11 @@ bool WorldGenerator::ChangeEnvironment(const XMINT2& chunkCenter)
 		for (Chunk* pChunk : chunksThatNeedUpdate)
 		{
 			CreateVertices(*pChunk, predicateChunks);
+		}
+
+		for (Chunk* pChunk : chunksThatNeedUpdate)
+		{
+			pRenderer->SetBuffer(*pChunk, sceneContext);
 		}
 	}
 
