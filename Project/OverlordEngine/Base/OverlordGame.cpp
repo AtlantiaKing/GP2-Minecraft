@@ -234,6 +234,8 @@ HRESULT OverlordGame::InitializeDirectX()
 
 	RENDERTARGET_DESC rtDesc;
 	rtDesc.pColor = pBackbuffer;
+	rtDesc.enableDepthBuffer = true;
+	rtDesc.enableDepthSRV = true;
 	HANDLE_ERROR(m_pDefaultRenderTarget->Create(rtDesc))
 
 	//Set Default Rendertarget 

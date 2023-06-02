@@ -91,8 +91,8 @@ void PostProcessingMaterial::Draw(const SceneContext& sceneContext, RenderTarget
 	DrawPass(sceneContext, m_pBaseTechnique, m_pOutputTarget); //Draw with Base Technique to Output RT
 
 	//Release Source SRV from pipeline
-	constexpr ID3D11ShaderResourceView* const pSRV[] = { nullptr };
-	sceneContext.d3dContext.pDeviceContext->PSSetShaderResources(0, 1, pSRV);
+	constexpr ID3D11ShaderResourceView* const pSRV[] = { nullptr,nullptr };
+	sceneContext.d3dContext.pDeviceContext->PSSetShaderResources(0, 2, pSRV);
 }
 
 //Default Implementation of Update Effect Variables (assuming there is a gTexture variable)
