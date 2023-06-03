@@ -54,6 +54,8 @@ public:
 	void SetOnCollisionEnterCallBack(PhysicsCollisionEnterCallback callback);
 	void SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callback);
 
+	void SetActive(bool active) { m_IsActive = active; }
+
 #pragma region
 	template <class T>
 	bool HasComponent(bool searchChildren = false)
