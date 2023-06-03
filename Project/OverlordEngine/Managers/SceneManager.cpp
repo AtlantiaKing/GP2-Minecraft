@@ -37,6 +37,20 @@ void SceneManager::AddGameScene(GameScene* pScene)
 	}
 }
 
+GameScene* SceneManager::GetScene(const std::wstring& sceneName)
+{
+	auto it = std::ranges::find_if(m_pScenes, [sceneName](const GameScene* pScene)
+		{
+			return wcscmp(pScene->m_SceneName.c_str(), sceneName.c_str()) == 0;
+		});
+
+	if (it != m_pScenes.end())
+	{
+		return *it;
+	}
+	return nullptr;
+}
+
 void SceneManager::RemoveGameScene(GameScene* pScene, bool deleteObject)
 {
 	const auto it = std::ranges::find(m_pScenes, pScene);
@@ -90,6 +104,11 @@ void SceneManager::SetActiveGameScene(const std::wstring& sceneName)
 	{
 		m_NewActiveScene = *it;
 	}
+}
+
+void SceneManager::SetActiveGameScene(GameScene* pScene)
+{
+	m_NewActiveScene = pScene;
 }
 
 void SceneManager::WindowStateChanged(int state, bool active) const

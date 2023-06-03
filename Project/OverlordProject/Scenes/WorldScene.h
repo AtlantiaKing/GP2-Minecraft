@@ -15,6 +15,8 @@ public:
 	WorldScene& operator=(const WorldScene& other) = delete;
 	WorldScene& operator=(WorldScene&& other) noexcept = delete;
 
+	void Pause(bool isPaused);
+
 protected:
 	void Initialize() override;
 	void Update() override;
@@ -30,6 +32,10 @@ private:
 	WorldComponent* m_pWorld{};
 
 	PostUnderWater* m_pUnderwater{};
+
+	bool m_IsPaused{};
+	std::vector<GameObject*> m_pGameObjectToPause{};
+	std::vector<GameObject*> m_pGameObjectToHideOnPause{};
 };
 
 

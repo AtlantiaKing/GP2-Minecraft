@@ -13,18 +13,43 @@
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
 #include "Prefabs/Player.h"
+#include "Prefabs/UI/PauseMenu.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Materials/SkyBoxMaterial.h"
 #include "Materials/Post/PostUnderWater.h"
+#include "Materials/Post/PostDark.h"
+
+void WorldScene::Pause(bool isPaused)
+{
+	if (m_IsPaused == isPaused) return;
+
+	m_IsPaused = isPaused;
+
+	for (GameObject* pGO : m_pGameObjectToPause)
+	{
+		pGO->SetActive(!isPaused);
+	}
+	for (GameObject* pGO : m_pGameObjectToHideOnPause)
+	{
+		pGO->SetActive(!isPaused, true);
+	}
+
+	m_SceneContext.pInput->ForceMouseToCenter(!m_IsPaused);
+}
 
 void WorldScene::Initialize()
 {
 	m_SceneContext.settings.drawPhysXDebug = false;
+	m_SceneContext.settings.showInfoOverlay = false;
+	m_SceneContext.settings.drawGrid = false;
 
 	// Post Processing Stack
 	m_pUnderwater = MaterialManager::Get()->CreateMaterial<PostUnderWater>();
 	AddPostProcessingEffect(m_pUnderwater);
+	PostDark* pDark{ MaterialManager::Get()->CreateMaterial<PostDark>() };
+	pDark->SetIsEnabled(false);
+	AddPostProcessingEffect(pDark);
 }
 
 void WorldScene::CreateWorld()
@@ -50,6 +75,9 @@ void WorldScene::Update()
 	m_SceneContext.pLights->SetDirectionalLight(position, direction);
 
 	m_pUnderwater->SetIsEnabled(m_pPlayer->IsUnderWater());
+
+	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE))
+		GetChild<PauseMenu>()->SetActive(!GetChild<PauseMenu>()->IsEnabled(), true);
 }
 
 void WorldScene::Draw()
@@ -63,11 +91,20 @@ void WorldScene::OnGUI()
 
 void WorldScene::OnSceneActivated()
 {
+	GameScene* pOtherWorld{ SceneManager::Get()->GetScene(L"World Scene") };
+	if (pOtherWorld != this)
+	{
+		SceneManager::Get()->RemoveGameScene(pOtherWorld, true);
+	}
+
 	srand(static_cast<unsigned int>(time(nullptr)));
 
 	m_SceneContext.pInput->ForceMouseToCenter(true);
 
 	CreateWorld();
+	m_pGameObjectToPause.push_back(m_pWorld->GetGameObject());
+
+	AddChild(new PauseMenu{ this })->SetActive(false);
 
 	// INTERACTION
 	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };
@@ -79,10 +116,12 @@ void WorldScene::OnSceneActivated()
 	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 
 	m_pPlayer = AddChild(new Player{ m_pWorld, m_pSelection, pBlockBreakParticle });
+	m_pGameObjectToPause.push_back(m_pPlayer);
 
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
 	pCursor->GetTransform()->Translate(m_SceneContext.windowWidth / 2.0f, m_SceneContext.windowHeight / 2.0f, 0.0f);
+	m_pGameObjectToHideOnPause.push_back(pCursor);
 
 	m_SceneContext.pLights->SetDirectionalLight({ 0.0f,0.0f,0.0f }, { 0.09901f, -0.99015f, 0.09901f });
 
@@ -154,6 +193,7 @@ void WorldScene::OnSceneActivated()
 		pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
+		m_pGameObjectToPause.push_back(pSheep);
 	}
 
 

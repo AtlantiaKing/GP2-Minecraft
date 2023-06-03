@@ -45,6 +45,8 @@
     <ClCompile Include="Materials\Post\PostUnderWater.cpp" />
     <ClCompile Include="Prefabs\UI\ButtonPrefab.cpp" />
     <ClCompile Include="Prefabs\Particles\EntityDeathParticle.cpp" />
+    <ClCompile Include="Prefabs\UI\PauseMenu.cpp" />
+    <ClCompile Include="Materials\Post\PostDark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -92,5 +94,7 @@
     <ClInclude Include="Materials\Post\PostUnderWater.h" />
     <ClInclude Include="Prefabs\UI\ButtonPrefab.h" />
     <ClInclude Include="Prefabs\Particles\EntityDeathParticle.h" />
+    <ClInclude Include="Prefabs\UI\PauseMenu.h" />
+    <ClInclude Include="Materials\Post\PostDark.h" />
   </ItemGroup>
 </Project>

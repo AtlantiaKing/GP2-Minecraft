@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "MainMenuScene.h"
 
+#include "Scenes/WorldScene.h"
+
 #include "Components/WorldComponent.h"
 
 #include "Prefabs/UI/ButtonPrefab.h"
@@ -15,6 +17,8 @@ void MainMenuScene::Initialize()
 
 	m_SceneContext.pInput->ForceMouseToCenter(false);
 	m_SceneContext.settings.drawPhysXDebug = false;
+	m_SceneContext.settings.showInfoOverlay = false;
+	m_SceneContext.settings.drawGrid = false;
 
 	m_pWorld = new WorldComponent{ m_SceneContext };
 #ifndef _DEBUG
@@ -52,6 +56,7 @@ void MainMenuScene::Initialize()
 
 	const auto onStartLambda{ [&](const ButtonPrefab&) 
 		{
+			SceneManager::Get()->AddGameScene(new WorldScene{});
 			SceneManager::Get()->SetActiveGameScene(L"World Scene");
 		}};
 	ButtonPrefab* startButton{ AddChild(new ButtonPrefab{ L"Textures/StartButton.dds" }) };
@@ -89,6 +94,17 @@ void MainMenuScene::Initialize()
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
 
 	AddPostProcessingEffect(m_pPostBlur);
+}
+
+void MainMenuScene::OnSceneActivated()
+{
+	SceneManager* pSceneManager{ SceneManager::Get() };
+	if (GameScene * pWorldScene{ pSceneManager->GetScene(L"World Scene") })
+	{
+		pSceneManager->RemoveGameScene(pWorldScene, true);
+	}
+
+	InputManager::ForceMouseToCenter(false);
 }
 
 void MainMenuScene::Update()

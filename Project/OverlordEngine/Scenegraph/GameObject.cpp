@@ -86,7 +86,7 @@ void GameObject::RootUpdate(const SceneContext& sceneContext)
 }
 void GameObject::RootDraw(const SceneContext& sceneContext)
 {
-	if (!m_IsActive) return;
+	if (!m_CanDraw) return;
 
 	//User-Object Draw
 	Draw(sceneContext);
@@ -105,7 +105,7 @@ void GameObject::RootDraw(const SceneContext& sceneContext)
 }
 void GameObject::RootPostDraw(const SceneContext& sceneContext)
 {
-	if (!m_IsActive) return;
+	if (!m_CanDraw) return;
 
 	//Post-Draw
 	PostDraw(sceneContext);
@@ -126,7 +126,7 @@ void GameObject::RootPostDraw(const SceneContext& sceneContext)
 
 void GameObject::RootShadowMapDraw(const SceneContext& sceneContext) const
 {
-	if (!m_IsActive) return;
+	if (!m_CanDraw) return;
 
 	//Component Shadow-Draw
 	for (BaseComponent* pComp : m_pComponents)
@@ -359,11 +359,12 @@ void GameObject::SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callbac
 	m_OnCollisionExitCallback = callback;
 }
 
-void GameObject::SetActive(bool active)
-{ 
+void GameObject::SetActive(bool active, bool affectDrawing)
+{
 	if (m_IsActive == active) return;
-	
+
 	m_IsActive = active;
+	if (affectDrawing) m_CanDraw = m_IsActive;
 
 	if (m_IsActive)
 		OnEnable();

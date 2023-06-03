@@ -8,8 +8,10 @@ public:
 	SceneManager& operator=(SceneManager&& other) noexcept = delete;
 
 	void AddGameScene(GameScene* pScene);
+	GameScene* GetScene(const std::wstring& sceneName);
 	void RemoveGameScene(GameScene* pScene, bool deleteObject = false);
 	void SetActiveGameScene(const std::wstring& sceneName);
+	void SetActiveGameScene(GameScene* pScene);
 	void NextScene();
 	void PreviousScene();
 	GameScene* GetActiveScene() const { return m_ActiveScene; }

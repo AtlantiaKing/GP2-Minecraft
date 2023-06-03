@@ -25,6 +25,19 @@ public:
 	}
 	void AddChild_(GameObject* pObject);
 	void RemoveChild(GameObject* pObject, bool deleteObject = false);
+	template <class T>
+	T* GetChild()
+	{
+		const type_info& ti = typeid(T);
+		for (auto* child : m_pChildren)
+		{
+			if (child && typeid(*child) == ti)
+				return static_cast<T*>(child);
+		}
+		return nullptr;
+	}
+	const std::vector<GameObject*> GetChildren() const { return m_pChildren; }
+	void RemoveChildren(GameObject* pIgnore = nullptr);
 
 	const SceneContext& GetSceneContext() const { return m_SceneContext; }
 	SceneSettings& GetSceneSettings() { return m_SceneContext.settings; }
@@ -34,6 +47,18 @@ public:
 	void AddPostProcessingEffect(UINT materialId);
 	void RemovePostProcessingEffect(PostProcessingMaterial* pMaterial);
 	void RemovePostProcessingEffect(UINT materialId);
+	template<typename T>
+	std::enable_if_t<std::is_base_of_v<PostProcessingMaterial, T>, T*>
+		GetPostProcessingEffect()
+	{
+		for (auto ppMaterial : m_PostProcessingMaterials)
+		{
+			T* pDerived{ dynamic_cast<T*>(ppMaterial) };
+			if (pDerived) return pDerived;
+		
+		}
+		return nullptr;
+	}
 
 	PhysxProxy* GetPhysxProxy() const { return m_pPhysxProxy; }
 	void SetActiveCamera(CameraComponent* pCameraComponent);

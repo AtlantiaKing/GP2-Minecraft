@@ -15,8 +15,9 @@ public:
 	MainMenuScene& operator=(MainMenuScene&& other) noexcept = delete;
 
 protected:
-	void Initialize() override;
-	void Update() override;
+	virtual void Initialize() override;
+	virtual void OnSceneActivated() override;
+	virtual void Update() override;
 
 private:
 	float m_CameraPitch{ 40.0f };

@@ -78,9 +78,11 @@ bool InputManager::IsActionTriggered(int actionID) const
 
 void InputManager::ForceMouseToCenter(bool force)
 {
+	if (m_ForceToCenter == force) return;
+
 	m_ForceToCenter = force;
 
-	ShowCursor(!force);
+	ShowCursor(!m_ForceToCenter);
 
 	if (force)
 	{
@@ -264,7 +266,6 @@ void InputManager::UpdateInputStates(bool overrideEnable)
 	if (m_ForceToCenter)
 	{
 		SetCursorPos(m_OldMousePosition.x, m_OldMousePosition.y);
-		ShowCursor(!m_ForceToCenter);
 	}
 
 	//Normalized

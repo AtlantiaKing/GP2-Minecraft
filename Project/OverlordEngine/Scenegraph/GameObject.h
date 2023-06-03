@@ -54,7 +54,8 @@ public:
 	void SetOnCollisionEnterCallBack(PhysicsCollisionEnterCallback callback);
 	void SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callback);
 
-	void SetActive(bool active);
+	void SetActive(bool active, bool affectDrawing = false);
+	bool IsEnabled() const { return m_IsActive; }
 
 #pragma region
 	template <class T>
@@ -169,7 +170,7 @@ private:
 	std::vector<GameObject*> m_pChildren{};
 	std::vector<BaseComponent*> m_pComponents{};
 
-	bool m_IsInitialized{}, m_IsActive{};
+	bool m_IsInitialized{}, m_IsActive{ true }, m_CanDraw{ true };
 	GameScene* m_pParentScene{};
 	GameObject* m_pParentObject{};
 	TransformComponent* m_pTransform{};

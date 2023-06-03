@@ -67,6 +67,17 @@ void GameScene::RemoveChild(GameObject* pObject, bool deleteObject)
 	}		
 }
 
+void GameScene::RemoveChildren(GameObject* pIgnore)
+{
+	for (GameObject* pChild : m_pChildren)
+	{
+		if (pChild == pIgnore) continue;
+
+		SafeDelete(pChild);
+	}
+	m_pChildren.clear();
+}
+
 void GameScene::RootInitialize(const GameContext& gameContext)
 {
 	if (m_IsInitialized)

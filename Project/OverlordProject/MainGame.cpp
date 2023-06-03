@@ -2,7 +2,6 @@
 #include "MainGame.h"
 
 // Scenes
-#include "Scenes/WorldScene.h"
 #include "Scenes/MainMenuScene.h"
 
 // Managers
@@ -32,7 +31,6 @@ void MainGame::Initialize()
 	srand(8);
 
 	SceneManager::Get()->AddGameScene(new MainMenuScene());
-	SceneManager::Get()->AddGameScene(new WorldScene());
 }
 
 void MainGame::Cleanup()
