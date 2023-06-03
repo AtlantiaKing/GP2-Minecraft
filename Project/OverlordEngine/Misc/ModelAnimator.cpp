@@ -54,6 +54,11 @@ void ModelAnimator::Update(const SceneContext& sceneContext)
 			}
 		}
 
+
+		// If the keys don't have bones, stop
+		if (keyA.boneTransforms.empty() || keyB.boneTransforms.empty()) return;
+
+
 		//4.
 		//Interpolate between keys
 		//Figure out the BlendFactor (See lab document)
