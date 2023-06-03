@@ -147,9 +147,16 @@ Block* WorldComponent::GetBlockAt(int x, int y, int z) const
 bool WorldComponent::IsPositionWater(float worldX, float worldY, float worldZ) const
 {
     const int x{ worldX > 0.0f ? static_cast<int>(worldX + 0.5f) : static_cast<int>(worldX + 0.5f) - 1 };
-    const int y{ worldY > 0.0f ? static_cast<int>(worldY + 0.5f) : static_cast<int>(worldY + 0.5f) - 1 };
+    const int y{ static_cast<int>(worldY + 0.5f) };
     const int z{ worldZ > 0.0f ? static_cast<int>(worldZ + 0.5f) : static_cast<int>(worldZ + 0.5f) - 1 };
-    return GetBlockAt(x,y,z, m_WaterChunks) == BlockType::WATER;
+
+    const bool isInWaterBlock{ GetBlockAt(x, y, z, m_WaterChunks) == BlockType::WATER };
+
+    const BlockType blockAbove{ GetBlockAt(x,y+1,z, m_WaterChunks) };
+    if(blockAbove == BlockType::WATER) return isInWaterBlock;
+
+    constexpr float waterBlockHeight{ 14.0f / 16.0f };
+    return isInWaterBlock && worldY + 0.5f <= y + waterBlockHeight;
 }   
 
 void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
