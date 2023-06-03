@@ -54,7 +54,7 @@ public:
 	void SetOnCollisionEnterCallBack(PhysicsCollisionEnterCallback callback);
 	void SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callback);
 
-	void SetActive(bool active) { m_IsActive = active; }
+	void SetActive(bool active);
 
 #pragma region
 	template <class T>
@@ -148,6 +148,8 @@ protected:
 	virtual void OnParentDetach(GameObject* /*pPreviousParent*/) {}
 	virtual void OnSceneAttach(GameScene* /*pScene*/){}
 	virtual void OnSceneDetach(GameScene* /*pScene*/){}
+	virtual void OnEnable() {};
+	virtual void OnDisable() {};
 
 private:
 	friend class GameScene; //Handles private interface

@@ -358,3 +358,15 @@ void GameObject::SetOnCollisionExitCallBack(PhysicsCollisionExitCallback callbac
 {
 	m_OnCollisionExitCallback = callback;
 }
+
+void GameObject::SetActive(bool active)
+{ 
+	if (m_IsActive == active) return;
+	
+	m_IsActive = active;
+
+	if (m_IsActive)
+		OnEnable();
+	else
+		OnDisable();
+}
