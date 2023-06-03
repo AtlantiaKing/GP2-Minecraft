@@ -44,6 +44,7 @@
     <ClCompile Include="Materials\SkyBoxMaterial.cpp" />
     <ClCompile Include="Materials\Post\PostUnderWater.cpp" />
     <ClCompile Include="Prefabs\UI\ButtonPrefab.cpp" />
+    <ClCompile Include="Prefabs\Particles\EntityDeathParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -90,5 +91,6 @@
     <ClInclude Include="Materials\SkyBoxMaterial.h" />
     <ClInclude Include="Materials\Post\PostUnderWater.h" />
     <ClInclude Include="Prefabs\UI\ButtonPrefab.h" />
+    <ClInclude Include="Prefabs\Particles\EntityDeathParticle.h" />
   </ItemGroup>
 </Project>
