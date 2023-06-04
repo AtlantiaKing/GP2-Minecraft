@@ -6,7 +6,7 @@ class Sheep : public LivingEntity
 {
 public:
 	Sheep(const XMFLOAT3& hitboxDimensions);
-	virtual ~Sheep() = default;
+	virtual ~Sheep();
 
 	Sheep(const Sheep& other) = delete;
 	Sheep(Sheep&& other) noexcept = delete;
@@ -36,9 +36,11 @@ private:
 	const XMFLOAT2 m_TimeBetweenBaasRange{ 2.0f, 7.0f };
 
 	FMOD::Channel* m_pAudioChannel{ nullptr };
+	FMOD::Channel* m_pWalkAudioChannel{ nullptr };
 
 	std::vector<FMOD::Sound*> m_pSounds{};
 	const int m_NrSounds{ 3 };
+	FMOD::Sound* m_pWalkSound{};
 
 	const float m_AudioDistance{ 16.0f };
 };

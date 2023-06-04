@@ -12,6 +12,8 @@ Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 	: LivingEntity{ hitboxDimensions }
 {
 	const auto pFmod{ SoundManager::Get()->GetSystem() };
+
+	// Load baa sounds
 	for (int i{}; i < m_NrSounds; ++i)
 	{
 		FMOD::Sound* pSound{ nullptr };
@@ -24,6 +26,24 @@ Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 
 		m_pSounds.push_back(pSound);
 	}
+
+	// Load the walking sound
+	FMOD_RESULT result = pFmod->createStream("Resources/Sounds/Sheep/Walk.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF | FMOD_LOOP_NORMAL, nullptr, &m_pWalkSound);
+	SoundManager::Get()->ErrorCheck(result);
+
+	// Start playing the walking sound (paused)
+	result = pFmod->playSound(m_pWalkSound, nullptr, true, &m_pWalkAudioChannel);
+	SoundManager::Get()->ErrorCheck(result);
+
+	//Set the bounds where the sound can be heard
+	m_pWalkAudioChannel->set3DMinMaxDistance(0.f, m_AudioDistance);
+
+	m_pWalkAudioChannel->setVolume(0.3f);
+}
+
+Sheep::~Sheep()
+{
+	m_pWalkAudioChannel->stop();
 }
 
 void Sheep::OnHit(int health)
@@ -55,6 +75,7 @@ void Sheep::UpdateState()
 	if (m_IsAttacked)
 	{
 		m_State = static_cast<unsigned int>(SheepState::Walking);
+		m_pWalkAudioChannel->setPaused(false);
 		m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
 		m_pAnimator->Play();
 		return;
@@ -64,6 +85,16 @@ void Sheep::UpdateState()
 
 	m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
 	m_pAnimator->Play();
+
+	switch (static_cast<SheepState>(m_State))
+	{
+	case SheepState::Idle:
+		m_pWalkAudioChannel->setPaused(true);
+		break;
+	case SheepState::Walking:
+		m_pWalkAudioChannel->setPaused(false);
+		break;
+	}
 }
 
 void Sheep::UpdateMovement(float)
@@ -135,12 +166,12 @@ void Sheep::EntityUpdate(const SceneContext& sceneContext)
 		if(!m_IsAttacked) PlayBaaSound();
 	}
 
-	////Get the attributes for the source
-	//auto spherePos = FmodHelper::ToFmod(GetTransform()->GetWorldPosition());
-	//auto sphereVel = FmodHelper::ToFmod(m_pRb->GetVelocity());
+	//Get the attributes for the source
+	auto spherePos = FmodHelper::ToFmod(GetTransform()->GetWorldPosition());
+	auto sphereVel = FmodHelper::ToFmod(m_pRb->GetVelocity());
 
-	////Set the attributes for the source
-	//m_pAudioChannel->set3DAttributes(&spherePos, &sphereVel);
+	//Set the attributes for the source
+	m_pWalkAudioChannel->set3DAttributes(&spherePos, &sphereVel);
 }
 
 void Sheep::PlayBaaSound()
