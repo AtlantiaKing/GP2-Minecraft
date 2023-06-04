@@ -11,6 +11,17 @@
 
 void MainMenuScene::Initialize()
 {
+	srand(static_cast<unsigned int>(time(nullptr)));
+	// Load all possibilities for the yellow text
+	std::wifstream file("Resources/Data/sentences.txt");
+	std::vector<std::wstring> yellowTexts{};
+	std::wstring line;
+	while (std::getline(file, line)) {
+		yellowTexts.push_back(line);
+	}
+	// Choose a random text
+	m_YellowText = yellowTexts[rand() % yellowTexts.size()];
+
 	// 8708
 	// 33333
 	srand(33333);
@@ -88,7 +99,6 @@ void MainMenuScene::Initialize()
 	// Yellow text
 	m_pFont = ContentManager::Load<SpriteFont>(L"Fonts/Minecraft_32.fnt");
 	m_TextSize = m_pFont->GetTextSize(m_YellowText);
-
 	constexpr XMFLOAT2 yellowTextOffset{ -45.0f, -20.0f };
 	m_pYellowTextPosition.x = m_SceneContext.windowWidth / 2.0f + pTitleSprite->GetSize().x / 2.0f * screenScale - m_TextSize / 2.0f + yellowTextOffset.x;
 	m_pYellowTextPosition.y = titleHeight + pTitleSprite->GetSize().y / 2.0f * screenScale + yellowTextOffset.y;
