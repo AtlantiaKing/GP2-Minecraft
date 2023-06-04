@@ -13,6 +13,7 @@
 #include "Components/PlayerMovement.h"
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
+#include "Prefabs/UI/DeathScreen.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 
@@ -70,7 +71,9 @@ void Player::Initialize(const SceneContext&)
 		});
 	AddComponent(new EntityInteractionComponent{ pxScene });
 
-	AddComponent(new Health{});
+	Health* pHealth{ AddComponent(new Health{}) };
+	pHealth->OnDeath.AddListener([this](const GameObject&) { GetScene()->GetChild<DeathScreen>()->SetActive(true); });
+	pHealth->SetDestroyOnDeath(false);
 
 
 	// Create camera
@@ -99,6 +102,47 @@ void Player::Initialize(const SceneContext&)
 	pArm->GetTransform()->Scale(0.005f, 0.006f, 0.003f);
 	pArm->GetTransform()->Rotate(20.0f, 190.0f, 0.0f);
 	pArm->GetTransform()->Translate(0.2f, -0.17f, 0.09f);
+
+
+
+
+	m_pFeet = GetScene()->AddChild(new GameObject{});
+	RigidBodyComponent* pFeetRb{ m_pFeet->AddComponent(new RigidBodyComponent{}) };
+	pFeetRb->AddCollider(PxBoxGeometry{ 0.4f, 0.05f, 0.4f }, *pPhysMat, true);
+	pFeetRb->SetCollisionIgnoreGroups(~CollisionGroup::World);
+	m_pFeet->SetOnTriggerCallBack([this](GameObject*, GameObject*, PxTriggerAction action)
+		{
+			static float startDistance{};
+			static bool isGrounded{ true };
+
+			const float curHeight{ GetTransform()->GetWorldPosition().y };
+
+			PxRaycastBuffer hit;
+			PxQueryFilterData filter{};
+			filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+			const XMFLOAT3& position{ GetTransform()->GetWorldPosition() };
+			const bool grounded{ GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{0.0f,-1.0f,0.0f}, 1.0f, hit, PxHitFlag::eDEFAULT, filter)};
+
+			if (isGrounded == grounded) return;
+
+			if (action == PxTriggerAction::LEAVE)
+			{
+				if(!grounded) startDistance = curHeight;
+			}
+			else
+			{
+				const float fallingDistance{ startDistance - curHeight };
+				constexpr float startFallDamageHeight{ 3.0f };
+
+				if (fallingDistance - startFallDamageHeight > 0.0f)
+				{
+					GetComponent<Health>()->Damage(static_cast<int>(fallingDistance - startFallDamageHeight));
+				}
+			}
+
+			isGrounded = grounded;
+		}
+	);
 }
 
 void Player::Update(const SceneContext& sceneContext)
@@ -129,4 +173,8 @@ void Player::Update(const SceneContext& sceneContext)
 	}
 	
 	m_pMovement->SetUnderWater(isUnderWater);
+
+	XMFLOAT3 feetPos{ GetTransform()->GetWorldPosition() };
+	feetPos.y -= 1.0f;
+	m_pFeet->GetTransform()->Translate(feetPos);
 }

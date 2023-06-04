@@ -62,7 +62,7 @@ void WorldScene::OnPlayerDeath()
 
 void WorldScene::Initialize()
 {
-	//m_SceneContext.settings.drawPhysXDebug = false;
+	m_SceneContext.settings.drawPhysXDebug = false;
 	m_SceneContext.settings.showInfoOverlay = false;
 	m_SceneContext.settings.drawGrid = false;
 

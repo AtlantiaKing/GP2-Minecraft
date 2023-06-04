@@ -30,5 +30,7 @@ private:
 	ModelAnimator* m_pArmAnimation{};
 	PlayerMovement* m_pMovement{};
 
+	GameObject* m_pFeet{};
+
 	bool m_IsCamUnderWater{};
 };

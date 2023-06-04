@@ -5,6 +5,11 @@ Health::Health(int health) : m_MaxHealth{ health }
 {
 }
 
+void Health::SetDestroyOnDeath(bool destroyOnDeath)
+{
+	m_DestroyOnDeath = destroyOnDeath;
+}
+
 void Health::Heal(int amount)
 {
 	m_Health = (m_Health + amount) % m_MaxHealth;
@@ -21,6 +26,6 @@ void Health::Damage(int amount)
 	if (m_Health <= 0)
 	{
 		OnDeath.Notify(*GetGameObject());
-		GetScene()->RemoveChild(GetGameObject(), true);
+		if(m_DestroyOnDeath) GetScene()->RemoveChild(GetGameObject(), true);
 	}
 }

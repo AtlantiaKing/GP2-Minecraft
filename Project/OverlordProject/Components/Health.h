@@ -18,6 +18,8 @@ public:
 	Subject<int> OnHealthChange{};
 	Subject<GameObject> OnDeath{};
 
+	void SetDestroyOnDeath(bool destroyOnDeath);
+
 	void Heal(int amount);
 	void Damage(int amount);
 
@@ -29,5 +31,7 @@ protected:
 private:
 	const int m_MaxHealth{ 20 };
 	int m_Health{ m_MaxHealth };
+
+	bool m_DestroyOnDeath{ true };
 };
 
