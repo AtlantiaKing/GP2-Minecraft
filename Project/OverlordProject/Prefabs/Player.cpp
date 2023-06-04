@@ -125,24 +125,29 @@ void Player::Initialize(const SceneContext&)
 	RigidBodyComponent* pFeetRb{ m_pFeet->AddComponent(new RigidBodyComponent{}) };
 	pFeetRb->AddCollider(PxBoxGeometry{ 0.4f, 0.05f, 0.4f }, *pPhysMat, true);
 	pFeetRb->SetCollisionIgnoreGroups(~CollisionGroup::World);
-	m_pFeet->SetOnTriggerCallBack([this](GameObject*, GameObject*, PxTriggerAction action)
+	m_pFeet->SetOnTriggerCallBack([this](GameObject* pObject, GameObject*, PxTriggerAction action)
 		{
 			static float startDistance{};
 			static bool isGrounded{ true };
 
-			const float curHeight{ GetTransform()->GetWorldPosition().y };
+			const float curHeight{ pObject->GetTransform()->GetWorldPosition().y };
 
 			PxRaycastBuffer hit;
 			PxQueryFilterData filter{};
 			filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
-			const XMFLOAT3& position{ GetTransform()->GetWorldPosition() };
-			const bool grounded{ GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{0.0f,-1.0f,0.0f}, 1.0f, hit, PxHitFlag::eDEFAULT, filter)};
+			XMFLOAT3 position{ pObject->GetTransform()->GetWorldPosition() };
+			position.y += 0.05f;
+
+			const bool grounded{ GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{0.0f,-1.0f,0.0f}, 0.2f, hit, PxHitFlag::eDEFAULT, filter)};
 
 			if (isGrounded == grounded) return;
 
 			if (action == PxTriggerAction::LEAVE)
 			{
-				if(!grounded) startDistance = curHeight;
+				if (!grounded)
+				{
+					startDistance = curHeight;
+				}
 			}
 			else
 			{
