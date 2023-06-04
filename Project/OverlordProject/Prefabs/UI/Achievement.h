@@ -23,7 +23,7 @@ private:
 	const float m_GoToPos{ 1350.0f };
 	const float m_MoveSpeed{ 1000.0f };
 
-	const float m_ShowTime{ 2.0f };
+	const float m_ShowTime{ 5.0f };
 
 	bool m_IsShowing{};
 	float m_CurPos{ m_StartPos };
