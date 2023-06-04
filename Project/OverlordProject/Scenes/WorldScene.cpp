@@ -15,6 +15,7 @@
 #include "Prefabs/Player.h"
 #include "Prefabs/UI/PauseMenu.h"
 #include "Prefabs/UI/DeathScreen.h"
+#include "Prefabs/UI/Achievement.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Materials/SkyBoxMaterial.h"
@@ -134,6 +135,8 @@ void WorldScene::OnSceneActivated()
 
 	AddChild(new PauseMenu{ this })->SetActive(false);
 	AddChild(new DeathScreen{})->SetActive(false);
+
+	AddChild(new Achievement{ L"Textures/AchievementHint.dds" })->Show();
 
 	// INTERACTION
 	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };

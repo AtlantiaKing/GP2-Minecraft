@@ -14,6 +14,7 @@
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
 #include "Prefabs/UI/DeathScreen.h"
+#include "Prefabs/UI/Achievement.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 
@@ -42,10 +43,24 @@ void Player::Initialize(const SceneContext&)
 	ControllerComponent* pController{ AddComponent(new ControllerComponent(controller)) };
 	pController->SetStepHeight(0.0f);
 
-	//// MOVEMENT
+	// MOVEMENT
 	m_pMovement = AddComponent(new PlayerMovement{});
 
-	AddComponent(new Inventory{});
+	AddComponent(new Inventory{})->OnInventoryChange().AddListener([this](const std::unordered_map<BlockType, int> inventory)
+		{
+			static bool hasAchievement{};
+			if (hasAchievement) return;
+
+			if (!inventory.contains(BlockType::WOOL)) return;
+
+			const int amountWool{ inventory.at(BlockType::WOOL) };
+			if (amountWool < 10) return;
+
+			hasAchievement = true;
+			Achievement* pAchievement{ GetScene()->GetChild<Achievement>() };
+			pAchievement->SetTexture(L"Textures/AchievementMade.dds");
+			pAchievement->Show();
+		});
 
 	// POSITION
 	PxQueryFilterData filter{};

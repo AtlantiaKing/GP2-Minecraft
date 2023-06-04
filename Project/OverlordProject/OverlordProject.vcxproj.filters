@@ -49,6 +49,7 @@
     <ClCompile Include="Materials\Post\PostDark.cpp" />
     <ClCompile Include="Materials\Post\PostDeath.cpp" />
     <ClCompile Include="Prefabs\UI\DeathScreen.cpp" />
+    <ClCompile Include="Prefabs\UI\Achievement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -100,5 +101,6 @@
     <ClInclude Include="Materials\Post\PostDark.h" />
     <ClInclude Include="Materials\Post\PostDeath.h" />
     <ClInclude Include="Prefabs\UI\DeathScreen.h" />
+    <ClInclude Include="Prefabs\UI\Achievement.h" />
   </ItemGroup>
 </Project>
