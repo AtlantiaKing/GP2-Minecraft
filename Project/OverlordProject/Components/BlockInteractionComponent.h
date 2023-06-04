@@ -6,6 +6,7 @@ class WorldComponent;
 class WireframeRenderer;
 class BlockBreakRenderer;
 class BlockBreakParticle;
+struct Block;
 
 class BlockInteractionComponent : public BaseComponent
 {
@@ -29,6 +30,8 @@ private:
 	bool HasChangedPosition(const XMFLOAT3& position);
 	bool IsBlockInPlayer(XMINT3 hitBlock, const PxVec3& hitNormal) const;
 
+	void StopBlockBreak();
+
 	WorldComponent* m_pWorld{};
 	WireframeRenderer* m_pSelection{};
 	BlockBreakRenderer* m_pBreakRenderer{};
@@ -40,7 +43,10 @@ private:
 
 	bool m_IsBreakingBlock{};
 	float m_BlockBreakProgress{};
+	Block* m_pBlock{};
 
 	bool m_ShouldPlayAnimation{};
+
+	FMOD::Channel* m_pBlockHittingChannel{};
 };
 

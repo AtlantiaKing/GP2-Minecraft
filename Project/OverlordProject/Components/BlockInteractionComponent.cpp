@@ -54,7 +54,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		m_pBlockBreakParticle->SetActive(false);
 
 		// Reset block breaking
-		m_IsBreakingBlock = false;
+		StopBlockBreak();
 
 		return;
 	}
@@ -68,6 +68,10 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 
 		// Disable the block break particle
 		m_pBlockBreakParticle->SetActive(false);
+
+		// Reset block breaking
+		StopBlockBreak();
+
 		return;
 	}
 
@@ -111,7 +115,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 				if (m_pWorld->PlaceBlock(XMFLOAT3{ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z }, blockPos, selectedBlock))
 				{
 					// Reset block breaking
-					m_IsBreakingBlock = false;
+					StopBlockBreak();
 
 					// Remove the current block from the inventory
 					pInventory->Remove(selectedBlock);
@@ -166,13 +170,22 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 				// Reset breaking block progress
 				m_IsBreakingBlock = true;
 				m_BlockBreakProgress = 0.0f;
+				
+				if (pBlock && pBlock != m_pBlock)
+				{
+					m_pBlockHittingChannel->stop();
+					const auto pFmod{ SoundManager::Get()->GetSystem() };
+					const FMOD_RESULT result{ pFmod->playSound(pBlock->pHitSound, nullptr, false, &m_pBlockHittingChannel) };
+					SoundManager::Get()->ErrorCheck(result);
+					m_pBlockHittingChannel->setVolume(0.25f);
+				}
 			}
 		}
 	}
 	else
 	{
 		// Disable block breaking
-		m_IsBreakingBlock = false;
+		StopBlockBreak();
 
 		// Disable the block break particle
 		m_pBlockBreakParticle->SetActive(false);
@@ -186,7 +199,19 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 		// Set the right stage to the breaking renderer
 		constexpr int nrBreakStages{ 10 };
 		m_pBreakRenderer->SetBreakingStage(std::min(static_cast<int>(m_BlockBreakProgress / pBlock->breakTime * nrBreakStages), nrBreakStages - 1));
+
+		m_pBlock = pBlock;	
 	}
+}
+
+void BlockInteractionComponent::StopBlockBreak()
+{
+	// Reset block breaking
+	m_IsBreakingBlock = false;
+
+	m_pBlockHittingChannel->stop();
+
+	m_pBlock = nullptr;
 }
 
 bool BlockInteractionComponent::IsBlockInPlayer(XMINT3 hitBlock, const PxVec3& hitNormal) const

@@ -486,7 +486,6 @@ void WorldComponent::PlayBlockSound(FMOD::Sound* pSound)
     const auto pFmod{ SoundManager::Get()->GetSystem() };
     const FMOD_RESULT result{ pFmod->playSound(pSound, nullptr, false, &m_pBlockChannel) };
     SoundManager::Get()->ErrorCheck(result);
-    //m_pBlockChannel->setVolume(0.5f);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)

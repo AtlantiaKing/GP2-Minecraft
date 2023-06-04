@@ -72,7 +72,7 @@ void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std
 	baseSoundPath << "Resources/Sounds/Blocks/" << blockName << "/";
 	FMOD_RESULT result{ pFmod->createStream((baseSoundPath.str() + "event.ogg").c_str(), FMOD_DEFAULT, nullptr, &pBlock->pEventSound) };
 	SoundManager::Get()->ErrorCheck(result);
-	result = pFmod->createStream((baseSoundPath.str() + "hit.ogg").c_str(), FMOD_DEFAULT, nullptr, &pBlock->pHitSound);
+	result = pFmod->createStream((baseSoundPath.str() + "hit.ogg").c_str(), FMOD_DEFAULT | FMOD_LOOP_NORMAL, nullptr, &pBlock->pHitSound);
 	SoundManager::Get()->ErrorCheck(result);
 
 	blocks[blockName] = pBlock;
