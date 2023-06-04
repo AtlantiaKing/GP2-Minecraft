@@ -36,7 +36,7 @@ public:
 		}
 		return nullptr;
 	}
-	const std::vector<GameObject*> GetChildren() const { return m_pChildren; }
+	const std::vector<GameObject*>& GetChildren() const { return m_pChildren; }
 	void RemoveChildren(GameObject* pIgnore = nullptr);
 
 	const SceneContext& GetSceneContext() const { return m_SceneContext; }

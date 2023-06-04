@@ -26,13 +26,17 @@ void WorldScene::Pause(bool isPaused)
 
 	m_IsPaused = isPaused;
 
-	for (GameObject* pGO : m_pGameObjectToPause)
+	const auto& children{ GetChildren() };
+	for (GameObject* pChild : children)
 	{
-		pGO->SetActive(!isPaused);
-	}
-	for (GameObject* pGO : m_pGameObjectToHideOnPause)
-	{
-		pGO->SetActive(!isPaused, true);
+		if (dynamic_cast<PauseMenu*>(pChild) != nullptr) continue;
+		
+		bool disableDraw{};
+
+		if (std::find(begin(m_pGameObjectToHideOnPause), end(m_pGameObjectToHideOnPause), pChild) != end(m_pGameObjectToHideOnPause))
+			disableDraw = true;
+
+		pChild->SetActive(!isPaused, disableDraw);
 	}
 
 	m_SceneContext.pInput->ForceMouseToCenter(!m_IsPaused);
@@ -102,7 +106,7 @@ void WorldScene::OnSceneActivated()
 	m_SceneContext.pInput->ForceMouseToCenter(true);
 
 	CreateWorld();
-	m_pGameObjectToPause.push_back(m_pWorld->GetGameObject());
+	m_pWorld->GetGameObject();
 
 	AddChild(new PauseMenu{ this })->SetActive(false);
 
@@ -116,7 +120,6 @@ void WorldScene::OnSceneActivated()
 	m_pSelection->GetTransform()->Translate(0.0f, 70.0f, 0.0f);
 
 	m_pPlayer = AddChild(new Player{ m_pWorld, m_pSelection, pBlockBreakParticle });
-	m_pGameObjectToPause.push_back(m_pPlayer);
 
 	GameObject* pCursor{ AddChild(new GameObject{}) };
 	pCursor->AddComponent(new SpriteComponent{ L"Textures\\Crosshair.png", { 0.5f, 0.5f } });
@@ -192,7 +195,6 @@ void WorldScene::OnSceneActivated()
 		pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
-		m_pGameObjectToPause.push_back(pSheep);
 
 		pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
 	}

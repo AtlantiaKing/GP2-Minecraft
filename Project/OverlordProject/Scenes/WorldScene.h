@@ -34,7 +34,6 @@ private:
 	PostUnderWater* m_pUnderwater{};
 
 	bool m_IsPaused{};
-	std::vector<GameObject*> m_pGameObjectToPause{};
 	std::vector<GameObject*> m_pGameObjectToHideOnPause{};
 };
 
