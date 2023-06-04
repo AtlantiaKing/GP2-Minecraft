@@ -129,6 +129,11 @@ void RigidBodyComponent::SetCollisionIgnoreGroups(CollisionGroup ignoreGroups)
 	}
 }
 
+CollisionGroup RigidBodyComponent::GetCollisionGroup() const
+{
+	return static_cast<CollisionGroup>(m_CollisionGroups.word0);
+}
+
 void RigidBodyComponent::SetCollisionGroup(CollisionGroup group)
 {
 	m_CollisionGroups.word0 = static_cast<UINT32>(group);

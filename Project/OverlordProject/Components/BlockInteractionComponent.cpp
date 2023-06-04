@@ -39,10 +39,12 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	const PxVec3 raycastDirection{ cameraForward.x, cameraForward.y, cameraForward.z };
 
 	PxQueryFilterData filter{};
-	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
+	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World | CollisionGroup::LivingEntity);
 
 	PxRaycastBuffer hit;
-	if (!m_PxScene->raycast(raycastOrigin, raycastDirection, playerBlockRadius, hit, PxHitFlag::eDEFAULT, filter))
+	const bool hitWorldOrEntity{ m_PxScene->raycast(raycastOrigin, raycastDirection, playerBlockRadius, hit, PxHitFlag::eDEFAULT, filter) };
+
+	if (!hitWorldOrEntity || (static_cast<RigidBodyComponent*>(hit.block.actor->userData)->GetCollisionGroup() & CollisionGroup::LivingEntity) != CollisionGroup::None)
 	{
 		// If we are not looking at a block, disable both the break renderer and the selection renderer
 		m_pSelection->SetVisibility(false);

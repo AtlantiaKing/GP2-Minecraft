@@ -72,6 +72,7 @@ public:
 	void SetConstraint(RigidBodyConstraint flag, bool enable);
 	void SetCollisionGroup(CollisionGroup group);
 	void SetCollisionIgnoreGroups(CollisionGroup ignoreGroups);
+	CollisionGroup GetCollisionGroup() const;
 	void SetDensity(float density) const;
 
 	//Internal Use (use Transform Component for Transformations)
