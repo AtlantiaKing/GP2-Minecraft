@@ -30,6 +30,11 @@ private:
 	ModelAnimator* m_pArmAnimation{};
 	PlayerMovement* m_pMovement{};
 
+	FMOD::Sound* m_pFallSound{};
+	FMOD::Channel* m_pFallSoundChannel{};
+	FMOD::Sound* m_pDamageSound{};
+	FMOD::Channel* m_pDamageChannel{};
+
 	GameObject* m_pFeet{};
 
 	bool m_IsCamUnderWater{};

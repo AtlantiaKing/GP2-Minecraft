@@ -86,9 +86,17 @@ void Player::Initialize(const SceneContext&)
 		});
 	AddComponent(new EntityInteractionComponent{ pxScene });
 
+
+
+
 	Health* pHealth{ AddComponent(new Health{}) };
 	pHealth->OnDeath.AddListener([this](const GameObject&) { GetScene()->GetChild<DeathScreen>()->SetActive(true); });
 	pHealth->SetDestroyOnDeath(false);
+	pHealth->OnHealthChange.AddListener([this](int) 
+		{
+			SoundManager::Get()->GetSystem()->playSound(m_pDamageSound, nullptr, false, &m_pDamageChannel);
+		});
+
 
 
 	// Create camera
@@ -103,6 +111,9 @@ void Player::Initialize(const SceneContext&)
 
 	// POSITION
 	pCameraGO->GetTransform()->Translate(0.0f, 0.5f, 0.0f);
+
+
+
 
 	GameObject* pArm{ pCameraGO->AddChild(new GameObject{}) };
 
@@ -125,6 +136,9 @@ void Player::Initialize(const SceneContext&)
 	RigidBodyComponent* pFeetRb{ m_pFeet->AddComponent(new RigidBodyComponent{}) };
 	pFeetRb->AddCollider(PxBoxGeometry{ 0.3f, 0.05f, 0.3f }, *pPhysMat, true);
 	pFeetRb->SetCollisionIgnoreGroups(~CollisionGroup::World);
+
+
+
 	m_pFeet->SetOnTriggerCallBack([this](GameObject* pObject, GameObject* pOther, PxTriggerAction action)
 		{
 			if (pOther->GetComponent<WorldComponent>() == nullptr) return;
@@ -145,10 +159,6 @@ void Player::Initialize(const SceneContext&)
 				{
 					startDistance = curHeight;
 				}
-				else
-				{
-					OutputDebugStringW(std::to_wstring(hit.block.distance).c_str());
-				}
 			}
 			else
 			{
@@ -162,10 +172,19 @@ void Player::Initialize(const SceneContext&)
 				if (fallingDistance - startFallDamageHeight > 0.0f)
 				{
 					GetComponent<Health>()->Damage(static_cast<int>(fallingDistance - startFallDamageHeight));
+					SoundManager::Get()->GetSystem()->playSound(m_pFallSound, nullptr, false, &m_pFallSoundChannel);
 				}
 			}
 		}
 	);
+
+
+
+	FMOD_RESULT result{ SoundManager::Get()->GetSystem()->createStream("Resources/Sounds/Damage/fall.ogg", FMOD_DEFAULT, nullptr, &m_pFallSound) };
+	SoundManager::Get()->ErrorCheck(result);
+
+	result = SoundManager::Get()->GetSystem()->createStream("Resources/Sounds/Damage/damage.ogg", FMOD_DEFAULT, nullptr, &m_pDamageSound);
+	SoundManager::Get()->ErrorCheck(result);
 }
 
 void Player::Update(const SceneContext& sceneContext)
