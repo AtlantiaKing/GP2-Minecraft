@@ -35,6 +35,8 @@ void Player::Initialize(const SceneContext&)
 	auto& physX{ PxGetPhysics() };
 	auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
+
+	// CONTROLLER
 	PxCapsuleControllerDesc controller{};
 	controller.radius = 0.4f;
 	controller.height = 1.0f;
@@ -42,6 +44,8 @@ void Player::Initialize(const SceneContext&)
 
 	ControllerComponent* pController{ AddComponent(new ControllerComponent(controller)) };
 	pController->SetStepHeight(0.0f);
+
+
 
 	// MOVEMENT
 	m_pMovement = AddComponent(new PlayerMovement{});
@@ -61,6 +65,8 @@ void Player::Initialize(const SceneContext&)
 			pAchievement->SetTexture(L"Textures/AchievementMade.dds");
 			pAchievement->Show();
 		});
+
+
 
 	// POSITION
 	PxQueryFilterData filter{};
@@ -88,7 +94,7 @@ void Player::Initialize(const SceneContext&)
 
 
 
-
+	// HEALTH
 	Health* pHealth{ AddComponent(new Health{}) };
 	pHealth->OnDeath.AddListener([this](const GameObject&) { GetScene()->GetChild<DeathScreen>()->SetActive(true); });
 	pHealth->SetDestroyOnDeath(false);
@@ -99,22 +105,20 @@ void Player::Initialize(const SceneContext&)
 
 
 
-	// Create camera
+	// CAMERA
 	GameObject* pCameraGO{ AddChild(new GameObject{}) };
 
-	// CAMERA
 	CameraComponent* pCamera{ pCameraGO->AddComponent(new CameraComponent{}) };
 	pCamera->SetFieldOfView(XMConvertToRadians(80.0f));
 	pCamera->SetFarClippingPlane(150.0f);
 	pCamera->SetNearClippingPlane(0.01f);
 	GetScene()->SetActiveCamera(pCamera); //Also sets pCamera in SceneContext
 
-	// POSITION
 	pCameraGO->GetTransform()->Translate(0.0f, 0.5f, 0.0f);
 
 
 
-
+	// ARM
 	GameObject* pArm{ pCameraGO->AddChild(new GameObject{}) };
 
 	DiffuseMaterial_Shadow_Skinned* pArmMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>() };
@@ -131,13 +135,11 @@ void Player::Initialize(const SceneContext&)
 
 
 
-
+	// FEET COLLIDER
 	m_pFeet = GetScene()->AddChild(new GameObject{});
 	RigidBodyComponent* pFeetRb{ m_pFeet->AddComponent(new RigidBodyComponent{}) };
 	pFeetRb->AddCollider(PxBoxGeometry{ 0.3f, 0.05f, 0.3f }, *pPhysMat, true);
 	pFeetRb->SetCollisionIgnoreGroups(~CollisionGroup::World);
-
-
 
 	m_pFeet->SetOnTriggerCallBack([this](GameObject* pObject, GameObject* pOther, PxTriggerAction action)
 		{
@@ -179,7 +181,7 @@ void Player::Initialize(const SceneContext&)
 	);
 
 
-
+	// SOUNDS
 	FMOD_RESULT result{ SoundManager::Get()->GetSystem()->createStream("Resources/Sounds/Damage/fall.ogg", FMOD_DEFAULT, nullptr, &m_pFallSound) };
 	SoundManager::Get()->ErrorCheck(result);
 
@@ -189,15 +191,22 @@ void Player::Initialize(const SceneContext&)
 
 void Player::Update(const SceneContext& sceneContext)
 {
+	// Update the world colliders depending on player position
 	m_pWorld->UpdateColliders(GetTransform()->GetWorldPosition());
 
+
+	// Disable the arm animation if done playing
 	if (m_pArmAnimation->DonePlaying())
 	{
 		m_pArmAnimation->Pause();
 	}
 
-	if (m_pInteraction->ShouldPlayAnimation() || sceneContext.pInput->IsMouseButton(InputState::pressed, 1)) m_pArmAnimation->Play();
 
+	// If the arm should play an animtion, start an animation
+	if (m_pInteraction->ShouldPlayAnimation() || sceneContext.pInput->IsMouseButton(InputState::pressed, 1)) m_pArmAnimation->Play();
+	
+
+	// Check if the player is underwater or not
 	bool prevUnderwater{ m_pMovement->IsSwimming() };
 	bool isUnderWater{};
 
@@ -216,6 +225,8 @@ void Player::Update(const SceneContext& sceneContext)
 	
 	m_pMovement->SetUnderWater(isUnderWater);
 
+
+	// Translate the feet collider
 	XMFLOAT3 feetPos{ GetTransform()->GetWorldPosition() };
 	feetPos.y -= 1.0f;
 	m_pFeet->GetTransform()->Translate(feetPos);

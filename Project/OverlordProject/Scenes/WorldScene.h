@@ -1,8 +1,9 @@
 #pragma once
 
 class WorldComponent;
-class PostUnderWater;
+class BlockBreakParticle;
 class Player;
+class PostUnderWater;
 
 class WorldScene final : public GameScene
 {
@@ -28,9 +29,15 @@ protected:
 
 private:
 	void CreateWorld();
+	void CreateUI();
+	void CreatePlayerFeedback();
+	void CreateHUD();
+	void CreateSkyBox();
+
 	void PlaySong();
 
 	Player* m_pPlayer{};
+	BlockBreakParticle* m_pBlockBreakParticle{};
 	GameObject* m_pSelection{};
 	WorldComponent* m_pWorld{};
 

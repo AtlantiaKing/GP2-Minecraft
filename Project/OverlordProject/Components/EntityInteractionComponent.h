@@ -29,5 +29,7 @@ private:
 	std::vector<FMOD::Sound*> m_pSounds{};
 	const int m_NrSounds{ 3 };
 	const float m_HitSoundVolume{ 0.3f };
+
+	const float m_PlayerHitRadius{ 5.0f };
 };
 

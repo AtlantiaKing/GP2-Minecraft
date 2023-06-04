@@ -124,9 +124,10 @@ bool WorldComponent::PlaceBlock(const XMFLOAT3& hitNormal, XMFLOAT3 hitBlockPosi
 
 bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
 {
+    // If the world is already update, cancel the destroy block event
     if (m_NeedsWorldReload || m_DestroyBlock) return false;
 
-    // Drop an item on the position of the destroyed block
+    // Drop an item, particle and play a sound on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
     Block* pBlockToDestroy{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z) };
     Block* pDropBlock{ pBlockToDestroy->dropBlock };
@@ -137,6 +138,7 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
         PlayBlockSound(pBlockToDestroy->pEventSound);
     }
 
+    // If the block above the to-be-destroyed-block is a cross block, play a particle and sound for this block as well
     Block* pBlockUp{ GetBlockAt(blockPos.x,blockPos.y+1,blockPos.z) };
     if (pBlockUp && pBlockUp->mesh == BlockMesh::CROSS)
     {
@@ -144,9 +146,11 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
         PlayBlockSound(pBlockUp->pEventSound);
     }
 
+    // Set the event data
     m_EditBlock = position;
     m_DestroyBlock = true;
 
+    // Return success
     return true;
 }
 
@@ -157,15 +161,21 @@ Block* WorldComponent::GetBlockAt(int x, int y, int z) const
 
 bool WorldComponent::IsPositionWater(float worldX, float worldY, float worldZ) const
 {
+    // Get the block position of the position
     const int x{ worldX > 0.0f ? static_cast<int>(worldX + 0.5f) : static_cast<int>(worldX + 0.5f) - 1 };
     const int y{ static_cast<int>(worldY + 0.5f) };
     const int z{ worldZ > 0.0f ? static_cast<int>(worldZ + 0.5f) : static_cast<int>(worldZ + 0.5f) - 1 };
 
+    // If there is a water block in the water chunks at this position, the position is in water
     const bool isInWaterBlock{ GetBlockAt(x, y, z, m_WaterChunks) == BlockType::WATER };
 
+    // The top water block has a small offset downwards so we also need to check that
+    
+    // If there is a block on top of the current block, there is no need to check this offset
     const BlockType blockAbove{ GetBlockAt(x,y+1,z, m_WaterChunks) };
     if(blockAbove == BlockType::WATER) return isInWaterBlock;
 
+    // Also check if the position is under the small offset
     constexpr float waterBlockHeight{ 14.0f / 16.0f };
     return isInWaterBlock && worldY + 0.5f <= y + waterBlockHeight;
 }   
@@ -180,6 +190,9 @@ void WorldComponent::UpdateColliders(const XMFLOAT3& playerPosition)
         playerPosition.z < 0 ? static_cast<int>(playerPosition.z + 1) / chunkSize - 1 : static_cast<int>(playerPosition.z) / chunkSize
     };
 
+    // If the chunk position has changed,
+    //  Cache the current chunk center
+    //  Update all colliders
     if (chunkPos.x != m_ChunkCenter.x || chunkPos.y != m_ChunkCenter.y)
     {
         m_ChunkCenter = chunkPos;
@@ -195,9 +208,13 @@ void WorldComponent::SetRenderDistance(int renderDistance)
 
 void WorldComponent::LoadStartChunk(const SceneContext& sceneContext)
 {
+    // Make sure that the world gets reload in the first update
     m_NeedsWorldReload = true;
+
+    // Load the first chunks on the main thread
     m_Generator.LoadChunkMainThread(0, 0, sceneContext, &m_Renderer);
 
+    // If we are not in debug, load 3x3 chunks on the main thread
 #ifndef _DEBUG
     for (int x{ -1 }; x <= 1; ++x)
     {
@@ -226,156 +243,194 @@ void WorldComponent::Initialize(const SceneContext& sceneContext)
 
 void WorldComponent::Update(const SceneContext&)
 {
-    if (m_NeedsWorldReload)
+    // If the world doesn't need a reload, stop here
+    if (!m_NeedsWorldReload) return;
+
+    // Get the current chunks in the generator
+    auto& genChunks{ m_Generator.GetChunks() };
+    auto& genWaterChunks{ m_Generator.GetWater() };
+
+    // Delete any chunks that are not in the generator anymore
+    for (int i{ static_cast<int>(m_Chunks.size() - 1) }; i >= 0; --i)
     {
-        auto& genChunks{ m_Generator.GetChunks() };
-        auto& genWaterChunks{ m_Generator.GetWater() };
+        auto& curChunk{ m_Chunks[i] };
+        auto chunkIt{ std::find_if(begin(genChunks), end(genChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
+        if (chunkIt != genChunks.end()) continue;
 
-        for (int i{ static_cast<int>(m_Chunks.size() - 1) }; i >= 0; --i)
+        curChunk.DeleteChunk();
+        m_Chunks[i] = m_Chunks[m_Chunks.size() - 1];
+        m_Chunks.pop_back();
+    }
+    for (int i{ static_cast<int>(m_WaterChunks.size() - 1) }; i >= 0; --i)
+    {
+        auto& curChunk{ m_WaterChunks[i] };
+        auto chunkIt{ std::find_if(begin(genWaterChunks), end(genWaterChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
+        if (chunkIt != genWaterChunks.end()) continue;
+
+        curChunk.DeleteChunk();
+        m_WaterChunks[i] = m_WaterChunks[m_WaterChunks.size() - 1];
+        m_WaterChunks.pop_back();
+    }
+
+    // For each chunk in the generator
+    for (auto& genChunk : genChunks)
+    {
+        // Try finding the chunk in the current world
+        const auto chunkIt{ std::find_if(begin(m_Chunks), end(m_Chunks),
+            [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
+
+        // If the chunk already exists in the world
+        if (chunkIt != end(m_Chunks))
         {
-            auto& curChunk{ m_Chunks[i] };
-            auto chunkIt{ std::find_if(begin(genChunks), end(genChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
-            if (chunkIt != genChunks.end()) continue;
-            
-            curChunk.DeleteChunk();
-            m_Chunks[i] = m_Chunks[m_Chunks.size() - 1];
-            m_Chunks.pop_back();
-        }
-        for (int i{ static_cast<int>(m_WaterChunks.size() - 1) }; i >= 0; --i)
-        {
-            auto& curChunk{ m_WaterChunks[i] };
-            auto chunkIt{ std::find_if(begin(genWaterChunks), end(genWaterChunks), [&](const Chunk& chunk) { return chunk.position.x == curChunk.position.x && chunk.position.y == curChunk.position.y; }) };
-            if (chunkIt != genWaterChunks.end()) continue;
+            auto& chunk{ *chunkIt };
 
-            curChunk.DeleteChunk();
-            m_WaterChunks[i] = m_WaterChunks[m_WaterChunks.size() - 1];
-            m_WaterChunks.pop_back();
-        }
-
-        for (auto& genChunk : genChunks)
-        {
-            const auto chunkIt{ std::find_if(begin(m_Chunks), end(m_Chunks), 
-                [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
-
-            if(chunkIt != end(m_Chunks))
+            // If there is a new vertex buffer
+            if (genChunk.pVertexBuffer)
             {
-                auto& chunk{ *chunkIt };
+                // Release the previous vertex buffer
+                SafeRelease(chunk.pVertexBuffer);
 
-                chunk.position = genChunk.position;
-
-                if (genChunk.pVertexBuffer)
-                {
-                    SafeRelease(chunk.pVertexBuffer);
-
-                    chunk.vertices = genChunk.vertices;
-                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
-                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
-
-                    genChunk.pVertexBuffer = nullptr;
-
-                    chunk.needColliderChange = true;
-                }
-                if (genChunk.pVertexTransparentBuffer)
-                {
-                    SafeRelease(chunk.pVertexTransparentBuffer);
-
-                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
-                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
-
-                    genChunk.pVertexTransparentBuffer = nullptr;
-                }
-            }
-            else
-            {
-                Chunk chunk{};
-
-                chunk.position = genChunk.position;
-
+                // Copy the vertices and buffer
                 chunk.vertices = genChunk.vertices;
                 chunk.pVertexBuffer = genChunk.pVertexBuffer;
                 chunk.vertexBufferSize = genChunk.vertexBufferSize;
-                chunk.needColliderChange = true;
 
+                // Reset the generator vertex buffer
+                genChunk.pVertexBuffer = nullptr;
+
+                // Notify collider update
+                chunk.needColliderChange = true;
+            }
+            // If there is a new transparent vertex buffer
+            if (genChunk.pVertexTransparentBuffer)
+            {
+                // Release the previous vertex buffer
+                SafeRelease(chunk.pVertexTransparentBuffer);
+
+                // Copy the buffer
                 chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                 chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
 
-                genChunk.pVertexBuffer = nullptr;
+                // Reset the generator buffer
                 genChunk.pVertexTransparentBuffer = nullptr;
+            }
+        }
+        else
+        {
+            // Create a new chunk
+            Chunk chunk{};
 
-                m_Chunks.push_back(chunk);
+            // Copy the chunk position
+            chunk.position = genChunk.position;
 
-                if (m_Generator.IsSheepChunk(genChunk.position))
+            // Copy the vertices and buffer
+            chunk.vertices = genChunk.vertices;
+            chunk.pVertexBuffer = genChunk.pVertexBuffer;
+            chunk.vertexBufferSize = genChunk.vertexBufferSize;
+
+            // Notify a collider change
+            chunk.needColliderChange = true;
+
+            // Copy the transparent vertex buffer
+            chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+            chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
+            // Reset all the generator buffers
+            genChunk.pVertexBuffer = nullptr;
+            genChunk.pVertexTransparentBuffer = nullptr;
+
+            // Add the chunk to the world
+            m_Chunks.push_back(chunk);
+
+            // If this chunk is a sheep chunk, spawn sheep
+            if (m_Generator.IsSheepChunk(genChunk.position))
+            {
+                constexpr int sheepSpawnsPerChunk{ 3 };
+                for (int i{}; i < sheepSpawnsPerChunk; ++i)
                 {
-                    constexpr int sheepSpawnsPerChunk{ 3 };
-                    for (int i{}; i < sheepSpawnsPerChunk; ++i)
-                    {
-                        constexpr float distanceBetweenSheep{ 2.0f };
+                    constexpr float distanceBetweenSheep{ 2.0f };
 
-                        const int chunkSize{ m_Generator.GetChunkSize() };
-                        GetScene()->AddChild(new SheepPrefab{})->GetTransform()->Translate((genChunk.position.x + 0.5f) * chunkSize + distanceBetweenSheep * i,
-                                                                                            1000.0f, 
-                                                                                            (genChunk.position.y + 0.5f) * chunkSize + distanceBetweenSheep * i);
-                    }
+                    // Sheep have to spawn in the air because this chunk isn't in the collider radius yet,
+                    // The moment a chunk gets a collider under the sheep, it will teleport to the right location
+                    const int chunkSize{ m_Generator.GetChunkSize() };
+                    GetScene()->AddChild(new SheepPrefab{})->GetTransform()->Translate((genChunk.position.x + 0.5f) * chunkSize + distanceBetweenSheep * i,
+                        1000.0f,
+                        (genChunk.position.y + 0.5f) * chunkSize + distanceBetweenSheep * i);
                 }
             }
         }
+    }
 
-        for (auto& genChunk : genWaterChunks)
+    // For each water chunk in the generator
+    for (auto& genChunk : genWaterChunks)
+    {
+        // Try finding the chunk in the current world
+        const auto chunkIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks),
+            [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
+
+        // If the chunk already exists in the world
+        if (chunkIt != end(m_WaterChunks))
         {
-            const auto chunkIt{ std::find_if(begin(m_WaterChunks), end(m_WaterChunks), 
-                [&](const Chunk& chunk) { return chunk.position.x == genChunk.position.x && chunk.position.y == genChunk.position.y; }) };
+            auto& chunk{ *chunkIt };
 
-            if (chunkIt != end(m_WaterChunks))
+            // If there is a new vertex buffer
+            if (genChunk.pVertexBuffer)
             {
-                auto& chunk{ *chunkIt };
+                // Release the previous buffer
+                SafeRelease(chunk.pVertexBuffer);
 
-                chunk.position = genChunk.position;
-
-                if (genChunk.pVertexBuffer)
-                {
-                    SafeRelease(chunk.pVertexBuffer);
-
-                    chunk.pVertexBuffer = genChunk.pVertexBuffer;
-                    chunk.vertexBufferSize = genChunk.vertexBufferSize;
-
-                    genChunk.pVertexBuffer = nullptr;
-                }
-
-                if (genChunk.pVertexTransparentBuffer)
-                {
-                    SafeRelease(chunk.pVertexTransparentBuffer);
-
-                    chunk.blocks = genChunk.blocks;
-                    chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
-                    chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
-
-                    genChunk.pVertexTransparentBuffer = nullptr;
-                }
-            }
-            else
-            {
-                Chunk chunk{};
-
-                chunk.position = genChunk.position;
-                chunk.blocks = genChunk.blocks;
-
+                // Copy the vertex buffer
                 chunk.pVertexBuffer = genChunk.pVertexBuffer;
                 chunk.vertexBufferSize = genChunk.vertexBufferSize;
 
+                // Reset the buffer in the generator
+                genChunk.pVertexBuffer = nullptr;
+            }
+
+            // If there is a new transparent vertex buffer
+            if (genChunk.pVertexTransparentBuffer)
+            {
+                // Release the previous buffer
+                SafeRelease(chunk.pVertexTransparentBuffer);
+
+                // Copy the blocks and the buffer
+                chunk.blocks = genChunk.blocks;
                 chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
                 chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
 
-                genChunk.pVertexBuffer = nullptr;
+                // Reset the buffer in the generator
                 genChunk.pVertexTransparentBuffer = nullptr;
-
-                m_WaterChunks.push_back(chunk);
             }
         }
+        else
+        {
+            // Create a new chunk
+            Chunk chunk{};
 
-        LoadColliders();
+            // Copy the position
+            chunk.position = genChunk.position;
 
-        m_NeedsWorldReload = false;
+            // Copy the blocks and the buffers
+            chunk.blocks = genChunk.blocks;
+
+            chunk.pVertexBuffer = genChunk.pVertexBuffer;
+            chunk.vertexBufferSize = genChunk.vertexBufferSize;
+
+            chunk.pVertexTransparentBuffer = genChunk.pVertexTransparentBuffer;
+            chunk.vertexTransparentBufferSize = genChunk.vertexTransparentBufferSize;
+
+            // Reset the buffers in the generator
+            genChunk.pVertexBuffer = nullptr;
+            genChunk.pVertexTransparentBuffer = nullptr;
+
+            // Add the chunk to the world
+            m_WaterChunks.push_back(chunk);
+        }
     }
+
+    LoadColliders();
+
+    m_NeedsWorldReload = false;
 }
 
 void WorldComponent::LoadColliders(bool reloadAll)
@@ -383,10 +438,13 @@ void WorldComponent::LoadColliders(bool reloadAll)
     auto& physX{ PxGetPhysics() };
     auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
 
+    // For each chunks
     for (Chunk& chunk : m_Chunks)
     {
+        // If all chunks need to be reloaded or this chunk has been asked to recalculate
         if (!reloadAll && !chunk.needColliderChange) continue;
 
+        // Reset the need collider change flag
         chunk.needColliderChange = false;
 
         // Remove any chunks that are outside the range
@@ -412,6 +470,7 @@ void WorldComponent::LoadColliders(bool reloadAll)
             continue;
         }
 
+        // Load a new collider for this chunk
         LoadChunkCollider(chunk, m_pColliderCooking, physX, pPhysMat);
     }
 }
@@ -472,28 +531,34 @@ BlockType WorldComponent::GetBlockAt(int x, int y, int z, const std::vector<Chun
 {
     const int chunkSize{ m_Generator.GetChunkSize() };
 
+    // Calculate the chunk position of this block
     const XMINT2 chunkPos
     {
         x < 0 ? (static_cast<int>(x) + 1) / chunkSize - 1 : static_cast<int>(x) / chunkSize,
         z < 0 ? (static_cast<int>(z) + 1) / chunkSize - 1 : static_cast<int>(z) / chunkSize
     };
 
+    // Find the chunk that the player is in
     auto it{ std::find_if(begin(chunks), end(chunks), [&](const Chunk& chunk)
         {
             return chunk.position.x == chunkPos.x && chunk.position.y == chunkPos.y;
         }) };
-    if (it == chunks.end()) return BlockType::AIR;
+    if (it == chunks.end()) return BlockType::AIR; // If this chunk does not exist, return air
 
-    if (it->blocks.empty()) return BlockType::AIR;
+    if (it->blocks.empty()) return BlockType::AIR; // If this chunk does not have any blocks, return air
 
+    // Find the relative position of this block inside this chunk
     const XMINT3 lookUpPos{ static_cast<int>(x) - chunkPos.x * chunkSize, static_cast<int>(y), static_cast<int>(z) - chunkPos.y * chunkSize };
 
+    // If the look up position is outside the chunk, return air
     if (lookUpPos.x < 0 || lookUpPos.x >= chunkSize
         || lookUpPos.z < 0 || lookUpPos.z >= chunkSize
         || lookUpPos.y < 0 || lookUpPos.y >= m_Generator.GetWorldHeight()) return BlockType::AIR;
 
+    // Calculate the block id
     const int blockIdx{ lookUpPos.x + lookUpPos.z * chunkSize + lookUpPos.y * chunkSize * chunkSize };
 
+    // Return the block
     return *(it->blocks.data() + blockIdx);
 }
 

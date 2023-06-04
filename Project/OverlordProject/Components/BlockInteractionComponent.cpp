@@ -29,10 +29,8 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	// Disable the arm animation
 	m_ShouldPlayAnimation = false;
 
-	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
-	constexpr float playerBlockRadius{ 5.0f };
-
 	// Get camera/ray information
+	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
 	const XMFLOAT3 cameraPosition{ pCamera->GetWorldPosition() };
 	const PxVec3 raycastOrigin{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
 	const XMFLOAT3 cameraForward{ pCamera->GetForward() };
@@ -41,9 +39,11 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World | CollisionGroup::LivingEntity);
 
+	// Try hitting something
 	PxRaycastBuffer hit;
-	const bool hitWorldOrEntity{ m_PxScene->raycast(raycastOrigin, raycastDirection, playerBlockRadius, hit, PxHitFlag::eDEFAULT, filter) };
+	const bool hitWorldOrEntity{ m_PxScene->raycast(raycastOrigin, raycastDirection, m_PlayerBlockRadius, hit, PxHitFlag::eDEFAULT, filter) };
 
+	// If nothing is hit or an entity is hit
 	if (!hitWorldOrEntity || (static_cast<RigidBodyComponent*>(hit.block.actor->userData)->GetCollisionGroup() & CollisionGroup::LivingEntity) != CollisionGroup::None)
 	{
 		// If we are not looking at a block, disable both the break renderer and the selection renderer
@@ -210,8 +210,10 @@ void BlockInteractionComponent::StopBlockBreak()
 	// Reset block breaking
 	m_IsBreakingBlock = false;
 
+	// Cancel any breaking sound
 	m_pBlockHittingChannel->stop();
 
+	// Reset the current block
 	m_pBlock = nullptr;
 }
 

@@ -28,5 +28,4 @@ struct Chunk
 	int colliderIdx{ -1 };
 	bool verticesChanged{ true };
 	bool needColliderChange{ true };
-	bool loadedWater{};
 };

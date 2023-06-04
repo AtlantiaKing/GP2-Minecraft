@@ -107,12 +107,16 @@ void Sheep::UpdateState()
 
 void Sheep::UpdateMovement(float)
 {
+	// Get transform info
 	TransformComponent* pTransform{ GetTransform() };
 	const auto& forward{ pTransform->GetForward() };
 	const auto& worldPos{ pTransform->GetWorldPosition() };
 
+	// Get the rigidbody
 	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
 
+	// If there is no collider underneath the sheep, 
+	//		Make the rigidbody kinematic and cancel any movement
 	PxRaycastBuffer hit;
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
@@ -123,30 +127,47 @@ void Sheep::UpdateMovement(float)
 		return;
 	}
 
-	if (!m_Spawned && hit.block.distance > 20.0f)
+	// If a collider has spawned under a sheep, translate the sheep to the ground
+	constexpr float flyingEpsilon{ 20.0f };
+	if (!m_Spawned && hit.block.distance > flyingEpsilon)
 	{
 		GetTransform()->Translate(hit.block.position.x, hit.block.position.y + 0.5f, hit.block.position.z);
 		rb->SetVelocity({});
 		m_Spawned = true;
 	}
 
+	// At this point the sheep is spawned and is on the world
+
+	// Set the sheep on non-kinematic
 	rb->SetKinematic(false);
 
+	// Get the current state
 	SheepState sheepState{ static_cast<SheepState>(m_State) };
 
-	if (sheepState == SheepState::Walking)
+	// Do actions depending on the state
+	switch (sheepState)
 	{
+	case SheepState::Idle:
+	{
+		// Disable all movement except gravity
+		rb->SetVelocity({ 0.0f, rb->GetVelocity().y, 0.0f });
+		break;
+	}
+	case SheepState::Walking:
+	{
+		// Calculate the current move speed
 		const float moveSpeed{ m_RunSpeed + m_AttackedSpeedBoost * m_IsAttacked };
 
-		const XMFLOAT3 direction{ -forward.x * moveSpeed, rb->GetVelocity().y, -forward.z * moveSpeed };
+		// Calculate the current velocity
+		const XMFLOAT3 velocity{ -forward.x * moveSpeed, rb->GetVelocity().y, -forward.z * moveSpeed };
 
-		rb->SetVelocity(direction);
+		// Apply the velocity
+		rb->SetVelocity(velocity);
+		break;
 	}
-	else
-	{
-		rb->SetVelocity({0.0f, rb->GetVelocity().y, 0.0f});
 	}
-
+	
+	// Check if the sheep is grounded
 	const PxVec3 raycastOriginBottom{ worldPos.x, worldPos.y, worldPos.z };
 	if (GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginBottom, PxVec3{ 0.0f,-1.0f,0.0f }, GetRayDistance(), hit, PxHitFlag::eDEFAULT, filter))
 	{
@@ -159,6 +180,7 @@ void Sheep::UpdateMovement(float)
 			worldPos.z - forward.z * m_HitboxHalfDimensions.z
 		};
 
+		// If there is a block in front of the sheep, jump
 		if (GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginForward, PxVec3{ -forward.x, -forward.y, -forward.z }, GetRayDistance(), hit, PxHitFlag::eDEFAULT, filter))
 		{
 			if (!hit.hasBlock) return;
@@ -170,8 +192,10 @@ void Sheep::UpdateMovement(float)
 
 void Sheep::EntityUpdate(const SceneContext& sceneContext)
 {
+	// Increment sound timer
 	m_CurBaaTime += sceneContext.pGameTime->GetElapsed();
 
+	// Play a new sound if the sound timer has passed a certain threshold
 	if (m_CurBaaTime > m_CurTimeBetweenBaas)
 	{
 		m_CurBaaTime -= m_CurTimeBetweenBaas;
@@ -190,6 +214,7 @@ void Sheep::EntityUpdate(const SceneContext& sceneContext)
 
 void Sheep::PlayBaaSound()
 {
+	// Play a random sound
 	const auto pFmod{ SoundManager::Get()->GetSystem() };
 	const FMOD_RESULT result{ pFmod->playSound(m_pSounds[rand() % m_pSounds.size()], nullptr, false, &m_pAudioChannel) };
 	SoundManager::Get()->ErrorCheck(result);
@@ -200,7 +225,5 @@ void Sheep::PlayBaaSound()
 	//Get the attributes for the source
 	auto spherePos = FmodHelper::ToFmod(GetTransform()->GetWorldPosition());
 	auto sphereVel = FmodHelper::ToFmod(m_pRb->GetVelocity());
-
-	//Set the attributes for the source
 	m_pAudioChannel->set3DAttributes(&spherePos, &sphereVel);
 }

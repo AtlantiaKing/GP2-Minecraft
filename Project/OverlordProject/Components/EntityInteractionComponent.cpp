@@ -31,17 +31,17 @@ void EntityInteractionComponent::Initialize(const SceneContext&)
 
 void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 {
-	// LEFT MOUSE CLICK
+	// Do nothing if the input requirement is not met
 	if (!InputManager::IsMouseButton(InputState::pressed, 1) && !InputManager::IsGamepadButton(InputState::pressed, XINPUT_GAMEPAD_RIGHT_SHOULDER)) return;
 
+	// If we are breaking a block, don't activate the entity interaction
 	if (m_pBlockInteraction->IsBreakingBlock()) return;
 
+	//Play the hit sound
 	PlayHitSound();	
 
-	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
-	constexpr float playerBlockRadius{ 5.0f };
-
 	// Get camera/ray information
+	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
 	const XMFLOAT3 cameraPosition{ pCamera->GetWorldPosition() };
 	const PxVec3 raycastOrigin{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
 	const XMFLOAT3 cameraForward{ pCamera->GetForward() };
@@ -50,8 +50,9 @@ void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::LivingEntity);
 
+	// If the player hits no entity, stop here
 	PxRaycastBuffer hit;
-	if (!m_PxScene->raycast(raycastOrigin, raycastDirection, playerBlockRadius, hit, PxHitFlag::eDEFAULT, filter)) return;
+	if (!m_PxScene->raycast(raycastOrigin, raycastDirection, m_PlayerHitRadius, hit, PxHitFlag::eDEFAULT, filter)) return;
 
 	// If the raycast has no information
 	if (!hit.hasBlock) return;
@@ -68,15 +69,16 @@ void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 	RigidBodyComponent* pRb{ reinterpret_cast<RigidBodyComponent*>(pComponent) };
 	pRb->AddForce({ 0.0f, 5.0f, 0.0f }, PxForceMode::eIMPULSE);
 
+	// Calculate the knockback force
 	XMFLOAT3 knockbackDir{};
 	XMStoreFloat3(&knockbackDir, XMLoadFloat3(&pRb->GetTransform()->GetWorldPosition()) - XMLoadFloat3(&GetTransform()->GetWorldPosition()));
-
 	knockbackDir.y = 0.0f;
-
 	XMStoreFloat3(&knockbackDir, XMVector3Normalize(XMLoadFloat3(&knockbackDir)));
 
+	// Apply knockback force
 	pRb->AddForce({ knockbackDir.x * 2.0f, 0.0f, knockbackDir.z * 2.0f }, PxForceMode::eIMPULSE);
 
+	// Damage the hit entity
 	pEntity->Damage(1);
 }
 

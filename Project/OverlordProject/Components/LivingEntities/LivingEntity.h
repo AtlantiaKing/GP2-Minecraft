@@ -56,21 +56,24 @@ private:
 	float m_RotationTime{};
 	float m_AttackTime{};
 
-	float m_TimeUntilRest{ 5.0f };
-	float m_TimeUntilDefaultColor{ 0.5f };
+	const float m_TimeUntilRest{ 5.0f };
+	const float m_TimeUntilDefaultColor{ 0.5f };
 
-	float m_MinTimeBetweenStates{ 1.0f};
-	float m_MaxTimeBetweenStates{ 7.0f };
+	const float m_MinTimeBetweenStates{ 1.0f};
+	const float m_MaxTimeBetweenStates{ 7.0f };
 	float m_TimeUntilStateChange{};
 
-	float m_MinTimeBetweenRotation{ 1.0f };
-	float m_MaxTimeBetweenRotation{ 15.0f };
+	const float m_MinTimeBetweenRotation{ 1.0f };
+	const float m_MaxTimeBetweenRotation{ 15.0f };
 	float m_TimeUntilRotation{};
 	float m_GoToRotation{};
 	float m_CurRotation{};
 
+	const float m_AttackedTimeMultiplier{ 5.0f };
+
 	const float m_RayTestDistance{ 0.1f };
 	const float m_JumpForce{ 2.5f };
+	const float m_RotationSpeed{ 90.0f };
 
 	BaseMaterial* m_pDefaultMaterial{};
 	BaseMaterial* m_pHitMaterial{};

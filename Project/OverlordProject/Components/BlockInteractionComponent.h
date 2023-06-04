@@ -47,6 +47,8 @@ private:
 
 	bool m_ShouldPlayAnimation{};
 
+	const float m_PlayerBlockRadius{ 5.0f };
+
 	FMOD::Channel* m_pBlockHittingChannel{};
 };
 

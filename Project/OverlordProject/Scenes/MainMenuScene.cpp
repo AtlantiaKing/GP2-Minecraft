@@ -37,11 +37,12 @@ void MainMenuScene::Initialize()
 	pCamera->SetFarClippingPlane(150.0f);
 	SetActiveCamera(pCamera); //Also sets pCamera in SceneContext
 
-	// POSITION
 	TransformComponent* pCamTransform{ pCameraGO->GetTransform() };
 	pCamTransform->Translate(0.0f, 80.0f, 0.0f);
 	pCamTransform->Rotate(m_CameraPitch, 0.0f, 0.0f);
 
+
+	// UI
 	constexpr float referenceWidth{ 1920.0f };
 	const float screenScale{ m_SceneContext.windowWidth / referenceWidth };
 
@@ -83,12 +84,16 @@ void MainMenuScene::Initialize()
 	m_pLoadingBackground->GetTransform()->Scale(screenScale);
 
 
+
+	// Yellow text
 	m_pFont = ContentManager::Load<SpriteFont>(L"Fonts/Minecraft_32.fnt");
 	m_TextSize = m_pFont->GetTextSize(m_YellowText);
 
 	constexpr XMFLOAT2 yellowTextOffset{ -45.0f, -20.0f };
 	m_pYellowTextPosition.x = m_SceneContext.windowWidth / 2.0f + pTitleSprite->GetSize().x / 2.0f * screenScale - m_TextSize / 2.0f + yellowTextOffset.x;
 	m_pYellowTextPosition.y = titleHeight + pTitleSprite->GetSize().y / 2.0f * screenScale + yellowTextOffset.y;
+
+
 
 	// Post Processing Stack
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
@@ -97,6 +102,7 @@ void MainMenuScene::Initialize()
 
 
 
+	// SOUNDS
 	SoundManager::Get()->ErrorCheck(SoundManager::Get()->GetSystem()->createStream("Resources/Music/mainmenu.mp3", FMOD_DEFAULT, nullptr, &m_pMainMenuMusic));
 }
 
