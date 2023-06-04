@@ -53,7 +53,7 @@ void PlayerMovement::UpdateRotation(const SceneContext& sceneContext) const
 	const auto& mouseInput{ sceneContext.pInput->GetMouseMovement() };
 	const auto& joyStickInput{ sceneContext.pInput->GetThumbstickPosition(false) };
 
-	constexpr float joystickMultiplier{ 20.0f };
+	constexpr float joystickMultiplier{ 10.0f };
 	constexpr float mouseInputMultiplier{ 0.1f };
 	const float horizontalInput{ mouseInput.x * mouseInputMultiplier + joyStickInput.x * joystickMultiplier };
 	const float verticalInput{ mouseInput.y * mouseInputMultiplier - joyStickInput.y * joystickMultiplier };
@@ -183,7 +183,7 @@ void PlayerMovement::UpdateVelocity(const SceneContext& sceneContext)
 		m_Velocity.y = std::max(m_Velocity.y, m_MinUnderWaterVelocity);
 	}
 
-	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_SHOULDER)) };
+	bool isSprinting{ (verticalInput > 0.0f) && (sceneContext.pInput->IsKeyboardKey(InputState::down, VK_CONTROL) || sceneContext.pInput->IsGamepadButton(InputState::down, XINPUT_GAMEPAD_LEFT_THUMB)) };
 
 	XMVECTOR velocityVec{ XMLoadFloat3(&m_Velocity) };
 	const float verticalSpeed{ m_IsUnderWater ? m_SwimSpeed : ((verticalInput > 0.0f) ? (isSprinting ? m_SprintSpeed : m_MoveSpeed) : m_MoveSpeed) };

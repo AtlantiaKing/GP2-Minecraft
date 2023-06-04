@@ -32,7 +32,7 @@ void EntityInteractionComponent::Initialize(const SceneContext&)
 void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 {
 	// LEFT MOUSE CLICK
-	if (!InputManager::IsMouseButton(InputState::pressed, 1)) return;
+	if (!InputManager::IsMouseButton(InputState::pressed, 1) && !InputManager::IsGamepadButton(InputState::pressed, XINPUT_GAMEPAD_RIGHT_SHOULDER)) return;
 
 	if (m_pBlockInteraction->IsBreakingBlock()) return;
 
