@@ -24,9 +24,11 @@ protected:
 	void Draw() override;
 	void OnGUI() override;
 	virtual void OnSceneActivated() override;
+	virtual void OnSceneDeactivated() override;
 
 private:
 	void CreateWorld();
+	void PlaySong();
 
 	Player* m_pPlayer{};
 	GameObject* m_pSelection{};
@@ -36,6 +38,13 @@ private:
 
 	bool m_IsPaused{};
 	std::vector<GameObject*> m_pGameObjectToHideOnPause{};
+
+	const float m_TimeUntilSong{ 5.0f * 60.0f };
+	float m_CurSongTimer{};
+
+	const int m_NrSounds{ 3 };
+	std::vector<FMOD::Sound*> m_pSounds{};
+	FMOD::Channel* m_pChannel{};
 };
 
 

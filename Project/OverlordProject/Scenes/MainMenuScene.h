@@ -17,6 +17,7 @@ public:
 protected:
 	virtual void Initialize() override;
 	virtual void OnSceneActivated() override;
+	virtual void OnSceneDeactivated() override;
 	virtual void Update() override;
 
 private:
@@ -34,5 +35,8 @@ private:
 	WorldComponent* m_pWorld{};
 
 	PostBlur* m_pPostBlur{};
+
+	FMOD::Sound* m_pMainMenuMusic{};
+	FMOD::Channel* m_pChannel{};
 };
 

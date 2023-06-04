@@ -75,6 +75,18 @@ void WorldScene::Initialize()
 	PostDeath* pDeath{ MaterialManager::Get()->CreateMaterial<PostDeath>() };
 	pDeath->SetIsEnabled(false);
 	AddPostProcessingEffect(pDeath);
+
+	SoundManager* pSoundManager{ SoundManager::Get() };
+	for (int i{}; i < m_NrSounds; ++i)
+	{
+		FMOD::Sound* pSound{};
+		std::stringstream filePath{};
+		filePath << "Resources/Music/music" << i << ".mp3";
+		pSoundManager->ErrorCheck(pSoundManager->GetSystem()->createStream(filePath.str().c_str(), FMOD_DEFAULT, nullptr, &pSound));
+		m_pSounds.push_back(pSound);
+	}
+
+	PlaySong();
 }
 
 void WorldScene::CreateWorld()
@@ -84,8 +96,20 @@ void WorldScene::CreateWorld()
 	m_pWorld->LoadStartChunk(m_SceneContext);
 }
 
+void WorldScene::PlaySong()
+{
+	SoundManager::Get()->GetSystem()->playSound(m_pSounds[rand() % m_pSounds.size()], nullptr, false, &m_pChannel);
+;}
+
 void WorldScene::Update()
 {
+	m_CurSongTimer += m_SceneContext.pGameTime->GetElapsed();
+	if (m_CurSongTimer > m_TimeUntilSong)
+	{
+		m_CurSongTimer = 0.0f;
+		PlaySong();
+	}
+
 	const auto& lightDir{m_SceneContext.pLights->GetDirectionalLight().direction};
 	const XMFLOAT3 direction{ lightDir.x, lightDir.y, lightDir.z };
 
@@ -212,4 +236,9 @@ void WorldScene::OnSceneActivated()
 
 	PxScene* pPxScene{ GetPhysxProxy()->GetPhysxScene() };
 	pPxScene->setGravity(pPxScene->getGravity() * 2.0f);
+}
+
+void WorldScene::OnSceneDeactivated()
+{
+	m_pChannel->stop();
 }

@@ -94,6 +94,10 @@ void MainMenuScene::Initialize()
 	m_pPostBlur = MaterialManager::Get()->CreateMaterial<PostBlur>();
 
 	AddPostProcessingEffect(m_pPostBlur);
+
+
+
+	SoundManager::Get()->ErrorCheck(SoundManager::Get()->GetSystem()->createStream("Resources/Music/mainmenu.mp3", FMOD_DEFAULT, nullptr, &m_pMainMenuMusic));
 }
 
 void MainMenuScene::OnSceneActivated()
@@ -105,6 +109,14 @@ void MainMenuScene::OnSceneActivated()
 	}
 
 	InputManager::ForceMouseToCenter(false);
+
+	SoundManager::Get()->GetSystem()->playSound(m_pMainMenuMusic, nullptr, false, &m_pChannel);
+	m_pChannel->setVolume(0.5f);
+}
+
+void MainMenuScene::OnSceneDeactivated()
+{
+	m_pChannel->stop();
 }
 
 void MainMenuScene::Update()
