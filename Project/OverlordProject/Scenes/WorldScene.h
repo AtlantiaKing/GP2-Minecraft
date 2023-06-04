@@ -16,6 +16,7 @@ public:
 	WorldScene& operator=(WorldScene&& other) noexcept = delete;
 
 	void Pause(bool isPaused);
+	void OnPlayerDeath();
 
 protected:
 	void Initialize() override;

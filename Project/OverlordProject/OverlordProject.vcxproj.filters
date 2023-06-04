@@ -47,6 +47,8 @@
     <ClCompile Include="Prefabs\Particles\EntityDeathParticle.cpp" />
     <ClCompile Include="Prefabs\UI\PauseMenu.cpp" />
     <ClCompile Include="Materials\Post\PostDark.cpp" />
+    <ClCompile Include="Materials\Post\PostDeath.cpp" />
+    <ClCompile Include="Prefabs\UI\DeathScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -96,5 +98,7 @@
     <ClInclude Include="Prefabs\Particles\EntityDeathParticle.h" />
     <ClInclude Include="Prefabs\UI\PauseMenu.h" />
     <ClInclude Include="Materials\Post\PostDark.h" />
+    <ClInclude Include="Materials\Post\PostDeath.h" />
+    <ClInclude Include="Prefabs\UI\DeathScreen.h" />
   </ItemGroup>
 </Project>

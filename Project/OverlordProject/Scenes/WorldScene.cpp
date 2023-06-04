@@ -14,11 +14,13 @@
 #include "Prefabs/Particles/BlockBreakParticle.h"
 #include "Prefabs/Player.h"
 #include "Prefabs/UI/PauseMenu.h"
+#include "Prefabs/UI/DeathScreen.h"
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Materials/SkyBoxMaterial.h"
 #include "Materials/Post/PostUnderWater.h"
 #include "Materials/Post/PostDark.h"
+#include "Materials/Post/PostDeath.h"
 
 void WorldScene::Pause(bool isPaused)
 {
@@ -30,6 +32,7 @@ void WorldScene::Pause(bool isPaused)
 	for (GameObject* pChild : children)
 	{
 		if (dynamic_cast<PauseMenu*>(pChild) != nullptr) continue;
+		if (dynamic_cast<DeathScreen*>(pChild) != nullptr) continue;
 		
 		bool disableDraw{};
 
@@ -42,9 +45,24 @@ void WorldScene::Pause(bool isPaused)
 	m_SceneContext.pInput->ForceMouseToCenter(!m_IsPaused);
 }
 
+void WorldScene::OnPlayerDeath()
+{
+	const auto& children{ GetChildren() };
+	for (GameObject* pChild : children)
+	{
+		if (dynamic_cast<DeathScreen*>(pChild) != nullptr) continue;
+
+		if (std::find(begin(m_pGameObjectToHideOnPause), end(m_pGameObjectToHideOnPause), pChild) == end(m_pGameObjectToHideOnPause)) continue;
+
+		pChild->SetActive(false, true);
+	}
+
+	m_SceneContext.pInput->ForceMouseToCenter(false);
+}
+
 void WorldScene::Initialize()
 {
-	m_SceneContext.settings.drawPhysXDebug = false;
+	//m_SceneContext.settings.drawPhysXDebug = false;
 	m_SceneContext.settings.showInfoOverlay = false;
 	m_SceneContext.settings.drawGrid = false;
 
@@ -54,6 +72,9 @@ void WorldScene::Initialize()
 	PostDark* pDark{ MaterialManager::Get()->CreateMaterial<PostDark>() };
 	pDark->SetIsEnabled(false);
 	AddPostProcessingEffect(pDark);
+	PostDeath* pDeath{ MaterialManager::Get()->CreateMaterial<PostDeath>() };
+	pDeath->SetIsEnabled(false);
+	AddPostProcessingEffect(pDeath);
 }
 
 void WorldScene::CreateWorld()
@@ -81,7 +102,10 @@ void WorldScene::Update()
 	m_pUnderwater->SetIsEnabled(m_pPlayer->IsUnderWater());
 
 	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE))
-		GetChild<PauseMenu>()->SetActive(!GetChild<PauseMenu>()->IsEnabled(), true);
+	{
+		PauseMenu* pPauseMenu{ GetChild<PauseMenu>() };
+		pPauseMenu->SetActive(!pPauseMenu->IsEnabled(), true);
+	}
 }
 
 void WorldScene::Draw()
@@ -109,6 +133,7 @@ void WorldScene::OnSceneActivated()
 	m_pWorld->GetGameObject();
 
 	AddChild(new PauseMenu{ this })->SetActive(false);
+	AddChild(new DeathScreen{})->SetActive(false);
 
 	// INTERACTION
 	BlockBreakParticle* pBlockBreakParticle{ AddChild(new BlockBreakParticle{}) };
