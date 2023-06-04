@@ -70,7 +70,7 @@ private:
 	float m_CurRotation{};
 
 	const float m_RayTestDistance{ 0.1f };
-	const float m_JumpForce{ 2.0f };
+	const float m_JumpForce{ 2.5f };
 
 	BaseMaterial* m_pDefaultMaterial{};
 	BaseMaterial* m_pHitMaterial{};

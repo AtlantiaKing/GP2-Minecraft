@@ -10,6 +10,7 @@ WorldGenerator::WorldGenerator()
 	, m_UnderSeaPerlin{ 5, 25 }
 	, m_BeachPerlin{ 2, 1 }
 	, m_VegitationPerlin{ 5, 0.1f }
+	, m_SheepPerlin{ 5, 0.1f }
 {
 	m_IsBlockPredicate = [&](const std::vector<Chunk>& chunks, const XMINT3& position) -> bool
 	{
@@ -679,7 +680,7 @@ void WorldGenerator::LoadChunk(int chunkX, int chunkY)
 				chunk.blocks[x + z * m_ChunkSize + y * m_ChunkSizeSqr] = pBlock->type;
 			}
 
-			float vegitationNoise{ m_VegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
+			const float vegitationNoise{ m_VegitationPerlin.GetNoise(static_cast<float>(worldPosX) / m_ChunkSize, static_cast<float>(worldPosZ) / m_ChunkSize) };
 
 			constexpr float bigVegitationSpawnChance{ 0.7f };	
 			constexpr float smallVegitationSpawnChance{ 0.5f };
@@ -759,6 +760,14 @@ void WorldGenerator::SpawnStructure(const Structure* structure, const XMINT3& po
 			if (pChunk->blocks[blockUnderIdx] == BlockType::GRASS_BLOCK) pChunk->blocks[blockUnderIdx] = BlockType::DIRT;
 		}
 	}
+}
+
+bool WorldGenerator::IsSheepChunk(const XMINT2& chunkPos)
+{
+	const float sheepNoise{ m_VegitationPerlin.GetNoise(static_cast<float>(chunkPos.x) / m_ChunkSize, static_cast<float>(chunkPos.y) / m_ChunkSize) };
+
+	constexpr float sheepSpawnChance{ 0.4f };
+	return sheepNoise < sheepSpawnChance;
 }
 
 BlockType* WorldGenerator::GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const

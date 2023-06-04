@@ -38,6 +38,7 @@ Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 	//Set the bounds where the sound can be heard
 	m_pWalkAudioChannel->set3DMinMaxDistance(0.f, m_AudioDistance);
 
+	// Set the volume of the sheep walking sound
 	m_pWalkAudioChannel->setVolume(0.3f);
 }
 
@@ -51,19 +52,23 @@ void Sheep::OnHit(int health)
 	// Play sound
 	PlayBaaSound();
 
+	// If the sheep is still alive, stop here
 	if (health > 0)
 	{
 		return;
 	}
 
+	// Calculate the position to spawn a block item
 	XMFLOAT3 blockPos{};
 	XMStoreFloat3(&blockPos, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + XMVECTOR{ 0.0f, m_HitboxHalfDimensions.y, 0.0f});
 
+	// Spawn a wool block
 	GetScene()->AddChild(new ItemEntity{ BlockType::WOOL, blockPos });
 }
 
 void Sheep::InitMaterials()
 {
+	// Load the hit material
 	DiffuseMaterial_Shadow_Skinned* pHitMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>() };
 	pHitMaterial->SetDiffuseTexture(L"Textures/Sheep/SheepHit.dds");
 
@@ -72,20 +77,23 @@ void Sheep::InitMaterials()
 
 void Sheep::UpdateState()
 {
+	// Set the right state
 	if (m_IsAttacked)
 	{
+		// If the sheep is attacked, always choose walking state
 		m_State = static_cast<unsigned int>(SheepState::Walking);
-		m_pWalkAudioChannel->setPaused(false);
-		m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
-		m_pAnimator->Play();
-		return;
+	}
+	else
+	{
+		// If the sheep is not attacked, choose a random new state
+		m_State = rand() % (static_cast<unsigned int>(SheepState::Walking) + 1);
 	}
 
-	m_State = rand() % (static_cast<unsigned int>(SheepState::Walking) + 1);
-
+	// Update the animator
 	m_pAnimator->SetAnimation(1 - static_cast<UINT>(m_State));
 	m_pAnimator->Play();
 
+	// Pause or unpause the walking sound
 	switch (static_cast<SheepState>(m_State))
 	{
 	case SheepState::Idle:
@@ -103,17 +111,23 @@ void Sheep::UpdateMovement(float)
 	const auto& forward{ pTransform->GetForward() };
 	const auto& worldPos{ pTransform->GetWorldPosition() };
 
+	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
+
 	PxRaycastBuffer hit;
 	PxQueryFilterData filter{};
 	filter.data.word0 = static_cast<PxU32>(CollisionGroup::World);
 	const PxVec3 raycastOriginCenter{ worldPos.x, worldPos.y + m_HitboxHalfDimensions.y, worldPos.z };
-
-	RigidBodyComponent* rb{ GetGameObject()->GetComponent<RigidBodyComponent>() };
-
 	if (!GetGameObject()->GetScene()->GetPhysxProxy()->Raycast(raycastOriginCenter, PxVec3{ 0.0f,-1.0f,0.0f }, FLT_MAX, hit, PxHitFlag::eDEFAULT, filter))
 	{
 		rb->SetKinematic(true);
 		return;
+	}
+
+	if (!m_Spawned && hit.block.distance > 20.0f)
+	{
+		GetTransform()->Translate(hit.block.position.x, hit.block.position.y + 0.5f, hit.block.position.z);
+		rb->SetVelocity({});
+		m_Spawned = true;
 	}
 
 	rb->SetKinematic(false);

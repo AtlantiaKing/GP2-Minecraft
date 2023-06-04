@@ -129,6 +129,7 @@
     <ClCompile Include="Components\LivingEntities\LivingEntity.cpp" />
     <ClCompile Include="Components\LivingEntities\Sheep.cpp" />
     <ClCompile Include="Materials\SkyBoxMaterial.cpp" />
+    <ClCompile Include="Prefabs\SheepPrefab.cpp" />
     <ClCompile Include="Utils\Perlin.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="Components\LivingEntities\LivingEntity.h" />
     <ClInclude Include="Components\LivingEntities\Sheep.h" />
     <ClInclude Include="Materials\SkyBoxMaterial.h" />
+    <ClInclude Include="Prefabs\SheepPrefab.h" />
     <ClInclude Include="Utils\Perlin.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />

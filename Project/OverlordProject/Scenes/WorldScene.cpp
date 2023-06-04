@@ -9,7 +9,6 @@
 #include "Components/ItemCounter.h"
 #include "Components/Health.h"
 #include "Components/HealthHUD.h"
-#include "Components/LivingEntities/Sheep.h"
 
 #include "Prefabs/Particles/BlockBreakParticle.h"
 #include "Prefabs/Player.h"
@@ -201,30 +200,6 @@ void WorldScene::OnSceneActivated()
 		pHalfHeart->GetTransform()->Translate(curHealthPosOffset, 0.0f, 0.0f);
 		curHealthPosOffset += pHeartSprite->GetSize().x;
 		if (i % 2 == 1) curHealthPosOffset -= pixelSize;
-	}
-
-	for (int i{}; i < 1; ++i)
-	{
-		GameObject* pSheep{ AddChild(new GameObject{}) };
-		pSheep->GetTransform()->Translate(static_cast<float>(rand() % 16), 120.0f, static_cast<float>(rand() % 16));
-		pSheep->GetTransform()->Scale(0.02f);
-
-		DiffuseMaterial_Shadow_Skinned* pSheepMaterial{ MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>() };
-		pSheepMaterial->SetDiffuseTexture(L"Textures/Sheep/Sheep.dds");
-		pSheep->AddComponent(new ModelComponent{ L"Meshes/Sheep.ovm", true })->SetMaterial(pSheepMaterial);
-
-		pSheep->AddComponent(new Health{ 4 });
-
-		const XMFLOAT3 hitboxHalfDimensions{ 0.25f,0.5f,0.25f };
-
-		auto& physX{ PxGetPhysics() };
-		auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
-		RigidBodyComponent* pSheepRb{ pSheep->AddComponent(new RigidBodyComponent{}) };
-		pSheepRb->AddCollider(PxBoxGeometry{ hitboxHalfDimensions.x,hitboxHalfDimensions.y, hitboxHalfDimensions.z }, *pPhysMat, false, PxTransform{ 0.0f, hitboxHalfDimensions.y, 0.0f });
-		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
-		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
-
-		pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
 	}
 
 

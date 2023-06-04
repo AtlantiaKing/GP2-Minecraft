@@ -43,5 +43,7 @@ private:
 	FMOD::Sound* m_pWalkSound{};
 
 	const float m_AudioDistance{ 16.0f };
+
+	bool m_Spawned{};
 };
 

@@ -41,6 +41,8 @@ public:
 
 	void ShouldLoadAllAtOnce(bool loadAll) { m_LoadAll = loadAll; }
 
+	bool IsSheepChunk(const XMINT2& chunk);
+
 private:
 	BlockType* GetBlockInChunk(int x, int y, int z, std::vector<Chunk>& chunks) const;
 	BlockType const* GetBlockInChunk(int x, int y, int z, const std::vector<Chunk>& chunks) const;
@@ -65,6 +67,7 @@ private:
 	Perlin m_HeightPerlin{};
 	Perlin m_BeachPerlin{};
 	Perlin m_VegitationPerlin{};
+	Perlin m_SheepPerlin{};
 	TileAtlas m_TileMap{};
 
 	std::vector<Chunk> m_Chunks{};

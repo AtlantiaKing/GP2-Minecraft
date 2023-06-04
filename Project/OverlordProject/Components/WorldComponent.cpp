@@ -5,6 +5,8 @@
 #include "Prefabs/CubePrefab.h"
 #include "Prefabs/Particles/BlockDestroyParticle.h"
 
+#include "Prefabs/SheepPrefab.h"
+
 #include "Managers/BlockManager.h"
 
 #include <chrono>
@@ -301,6 +303,20 @@ void WorldComponent::Update(const SceneContext&)
                 genChunk.pVertexTransparentBuffer = nullptr;
 
                 m_Chunks.push_back(chunk);
+
+                if (m_Generator.IsSheepChunk(genChunk.position))
+                {
+                    constexpr int sheepSpawnsPerChunk{ 3 };
+                    for (int i{}; i < sheepSpawnsPerChunk; ++i)
+                    {
+                        constexpr float distanceBetweenSheep{ 2.0f };
+
+                        const int chunkSize{ m_Generator.GetChunkSize() };
+                        GetScene()->AddChild(new SheepPrefab{})->GetTransform()->Translate((genChunk.position.x + 0.5f) * chunkSize + distanceBetweenSheep * i,
+                                                                                            1000.0f, 
+                                                                                            (genChunk.position.y + 0.5f) * chunkSize + distanceBetweenSheep * i);
+                    }
+                }
             }
         }
 
