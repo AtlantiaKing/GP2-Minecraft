@@ -52,6 +52,8 @@ private:
 
 	BlockType GetBlockAt(int x, int y, int z, const std::vector<Chunk>& chunks) const;
 
+	void PlayBlockSound(FMOD::Sound* pSound);
+
 	std::thread m_WorldThread{};
 	bool m_IsMultithreaded{ true };
 
@@ -74,5 +76,8 @@ private:
 	XMINT2 m_ChunkCenter{};
 
 	bool m_CanChangeEnvironment{};
+
+	// AUDIO
+	FMOD::Channel* m_pBlockChannel{};
 };
 

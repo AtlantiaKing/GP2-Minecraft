@@ -5,6 +5,8 @@
 #include "Prefabs/CubePrefab.h"
 #include "Prefabs/Particles/BlockDestroyParticle.h"
 
+#include "Managers/BlockManager.h"
+
 #include <chrono>
 
 WorldComponent::WorldComponent(const SceneContext& sceneContext)
@@ -113,6 +115,8 @@ bool WorldComponent::PlaceBlock(const XMFLOAT3& hitNormal, XMFLOAT3 hitBlockPosi
     m_EditBlockType = block;
     m_PlaceBlock = true;
 
+    PlayBlockSound(BlockManager::Get()->GetBlock(block)->pEventSound);
+
     return true;
 }
 
@@ -122,16 +126,21 @@ bool WorldComponent::DestroyBlock(const XMFLOAT3& position)
 
     // Drop an item on the position of the destroyed block
     const XMINT3 blockPos{ static_cast<int>(position.x), static_cast<int>(position.y), static_cast<int>(position.z) };
-    Block* pDropBlock{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z)->dropBlock };
+    Block* pBlockToDestroy{ GetBlockAt(blockPos.x,blockPos.y,blockPos.z) };
+    Block* pDropBlock{ pBlockToDestroy->dropBlock };
     if (pDropBlock)
     {
         GetScene()->AddChild(new ItemEntity{ pDropBlock->type, position });
         GetScene()->AddChild(new BlockDestroyParticle{ pDropBlock->type })->GetTransform()->Translate(position);
+        PlayBlockSound(pBlockToDestroy->pEventSound);
     }
 
     Block* pBlockUp{ GetBlockAt(blockPos.x,blockPos.y+1,blockPos.z) };
     if (pBlockUp && pBlockUp->mesh == BlockMesh::CROSS)
+    {
         GetScene()->AddChild(new BlockDestroyParticle{ pBlockUp->type })->GetTransform()->Translate(position.x, position.y + 1.0f, position.z);
+        PlayBlockSound(pBlockUp->pEventSound);
+    }
 
     m_EditBlock = position;
     m_DestroyBlock = true;
@@ -470,6 +479,14 @@ BlockType WorldComponent::GetBlockAt(int x, int y, int z, const std::vector<Chun
     const int blockIdx{ lookUpPos.x + lookUpPos.z * chunkSize + lookUpPos.y * chunkSize * chunkSize };
 
     return *(it->blocks.data() + blockIdx);
+}
+
+void WorldComponent::PlayBlockSound(FMOD::Sound* pSound)
+{
+    const auto pFmod{ SoundManager::Get()->GetSystem() };
+    const FMOD_RESULT result{ pFmod->playSound(pSound, nullptr, false, &m_pBlockChannel) };
+    SoundManager::Get()->ErrorCheck(result);
+    //m_pBlockChannel->setVolume(0.5f);
 }
 
 void WorldComponent::Draw(const SceneContext& sceneContext)
