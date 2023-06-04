@@ -1,17 +1,42 @@
 #include "stdafx.h"
 #include "EntityInteractionComponent.h"
 
+#include "BlockInteractionComponent.h"
+
 #include "Health.h"
 
 EntityInteractionComponent::EntityInteractionComponent(PxScene* pxScene)
 	: m_PxScene{ pxScene }
 {
+	// Load sounds
+	const auto pFmod{ SoundManager::Get()->GetSystem() };
+	for (int i{}; i < m_NrSounds; ++i)
+	{
+		FMOD::Sound* pSound{ nullptr };
+
+		std::stringstream filePath{};
+		filePath << "Resources/Sounds/Hit/Hit" << i << ".mp3";
+
+		FMOD_RESULT result = pFmod->createStream(filePath.str().c_str(), FMOD_DEFAULT, nullptr, &pSound);
+		SoundManager::Get()->ErrorCheck(result);
+
+		m_pSounds.push_back(pSound);
+	}
+}
+
+void EntityInteractionComponent::Initialize(const SceneContext&)
+{
+	m_pBlockInteraction = GetGameObject()->GetComponent<BlockInteractionComponent>();
 }
 
 void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 {
 	// LEFT MOUSE CLICK
 	if (!InputManager::IsMouseButton(InputState::pressed, 1)) return;
+
+	if (m_pBlockInteraction->IsBreakingBlock()) return;
+
+	PlayHitSound();	
 
 	TransformComponent* pCamera{ sceneContext.pCamera->GetTransform() };
 	constexpr float playerBlockRadius{ 5.0f };
@@ -53,4 +78,12 @@ void EntityInteractionComponent::Update(const SceneContext& sceneContext)
 	pRb->AddForce({ knockbackDir.x * 2.0f, 0.0f, knockbackDir.z * 2.0f }, PxForceMode::eIMPULSE);
 
 	pEntity->Damage(1);
+}
+
+void EntityInteractionComponent::PlayHitSound()
+{
+	const auto pFmod{ SoundManager::Get()->GetSystem() };
+	const FMOD_RESULT result{ pFmod->playSound(m_pSounds[rand() % m_pSounds.size()], nullptr, false, &m_pAudioChannel) };
+	SoundManager::Get()->ErrorCheck(result);
+	m_pAudioChannel->setVolume(m_HitSoundVolume);
 }

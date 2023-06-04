@@ -19,7 +19,7 @@ BlockInteractionComponent::BlockInteractionComponent(PxScene* pxScene, WorldComp
 {
 }
 
-bool BlockInteractionComponent::ShouldPlayAnimation()
+bool BlockInteractionComponent::ShouldPlayAnimation() const
 {
 	return m_ShouldPlayAnimation;
 }
@@ -122,7 +122,7 @@ void BlockInteractionComponent::Update(const SceneContext& sceneContext)
 	}
 
 	// LEFT MOUSE CLICK
-	if (InputManager::IsMouseButton(InputState::down, 1))
+	if (InputManager::IsMouseButton(InputState::pressed, 1) || InputManager::IsMouseButton(InputState::down, 1))
 	{
 		// If we are breaking a block
 		if (m_IsBreakingBlock && pBlock)
