@@ -20,11 +20,26 @@ protected:
 	virtual void UpdateState() override;
 	virtual void UpdateMovement(float elapsedSec);
 
+	virtual void EntityUpdate(const SceneContext& sceneContext) override;
+
 private:
+	void PlayBaaSound();
+
 	enum class SheepState
 	{
 		Idle,
 		Walking
 	};
+
+	float m_CurBaaTime{};
+	float m_CurTimeBetweenBaas{};
+	const XMFLOAT2 m_TimeBetweenBaasRange{ 2.0f, 7.0f };
+
+	FMOD::Channel* m_pAudioChannel{ nullptr };
+
+	std::vector<FMOD::Sound*> m_pSounds{};
+	const int m_NrSounds{ 3 };
+
+	const float m_AudioDistance{ 16.0f };
 };
 

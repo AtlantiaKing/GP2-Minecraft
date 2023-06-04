@@ -24,6 +24,8 @@ protected:
 	virtual void UpdateMovement(float elapsedSec) = 0;
 	virtual void InitMaterials() = 0;
 
+	virtual void EntityUpdate(const SceneContext&) {};
+
 	void SetHitMaterial(BaseMaterial* pHitMaterial);
 
 	unsigned int m_State{ 0 };
@@ -35,6 +37,7 @@ protected:
 	XMFLOAT3 m_HitboxHalfDimensions{};
 
 	ModelAnimator* m_pAnimator{};
+	RigidBodyComponent* m_pRb{};
 
 	inline float GetRayDistance() const { return m_RayTestDistance; }
 	inline float GetJumpForce() const { return m_JumpForce; }

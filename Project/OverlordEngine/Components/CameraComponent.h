@@ -37,6 +37,10 @@ protected:
 	void Update(const SceneContext& sceneContext) override;
 
 private:
+	void Set3DSoundAttributes(const SceneContext& sceneContext);
+
+	FMOD_VECTOR m_PrevCamPos{};
+
 	XMFLOAT4X4 m_View{};
 	XMFLOAT4X4 m_Projection{};
 	XMFLOAT4X4 m_ViewInverse{};

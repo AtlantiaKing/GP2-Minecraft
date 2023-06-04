@@ -46,6 +46,28 @@ void CameraComponent::Update(const SceneContext& sceneContext)
 	XMStoreFloat4x4(&m_ViewInverse, viewInv);
 	XMStoreFloat4x4(&m_ViewProjection, view * projection);
 	XMStoreFloat4x4(&m_ViewProjectionInverse, viewProjectionInv);
+
+	Set3DSoundAttributes(sceneContext);
+}
+
+void CameraComponent::Set3DSoundAttributes(const SceneContext& sceneContext)
+{	
+	//3D Sound Attributes
+	auto pCamTransform{ GetTransform() };
+	auto pos = FmodHelper::ToFmod(pCamTransform->GetWorldPosition());
+	auto forward = FmodHelper::ToFmod(pCamTransform->GetForward());
+	auto up = FmodHelper::ToFmod(pCamTransform->GetUp());
+
+	//calculate the velocity of the camera
+	FMOD_VECTOR vel{};
+	const float deltaT = sceneContext.pGameTime->GetElapsed();
+	vel.x = (pos.x - m_PrevCamPos.x) / deltaT;
+	vel.y = (pos.y - m_PrevCamPos.y) / deltaT;
+	vel.z = (pos.z - m_PrevCamPos.z) / deltaT;
+	m_PrevCamPos = pos;
+
+	//Set the attributes for the listener
+	SoundManager::Get()->GetSystem()->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
 }
 
 void CameraComponent::SetActive(bool active)

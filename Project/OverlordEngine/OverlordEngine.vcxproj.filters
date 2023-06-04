@@ -121,5 +121,6 @@
     <ClInclude Include="Lab_Todos.h" />
     <ClInclude Include="Observer\Observer.h" />
     <ClInclude Include="Observer\Subject.h" />
+    <ClInclude Include="FmodHelper.h" />
   </ItemGroup>
 </Project>

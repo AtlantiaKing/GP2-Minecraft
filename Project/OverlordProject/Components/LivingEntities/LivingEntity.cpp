@@ -33,6 +33,7 @@ void LivingEntity::Notify(const int& health)
 void LivingEntity::Initialize(const SceneContext&)
 {
 	m_pAnimator = GetGameObject()->GetComponent<ModelComponent>()->GetAnimator();
+	m_pRb = GetGameObject()->GetComponent<RigidBodyComponent>();
 
 	SetNewRotationTimer();
 	SetNewStateTimer();
@@ -72,6 +73,8 @@ void LivingEntity::Update(const SceneContext& sceneContext)
 	Rotate(elapsedSec);
 
 	UpdateMovement(elapsedSec);
+
+	EntityUpdate(sceneContext);
 }
 
 void LivingEntity::SetHitMaterial(BaseMaterial* pHitMaterial)

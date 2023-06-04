@@ -8,6 +8,7 @@ public:
 	SoundManager& operator=(SoundManager&& other) noexcept = delete;
 
 	FMOD::System* GetSystem() const { return m_pFmodSystem; }
+	bool ErrorCheck(FMOD_RESULT res);
 
 protected:
 	void Initialize() override;
@@ -16,6 +17,9 @@ private:
 	friend class Singleton<SoundManager>;
 	SoundManager();
 	~SoundManager();
+
+	FMOD::Channel* m_pNoObjChannel{};
+	FMOD::Sound* m_pCurrentSound{};
 
 	FMOD::System* m_pFmodSystem = nullptr;
 };

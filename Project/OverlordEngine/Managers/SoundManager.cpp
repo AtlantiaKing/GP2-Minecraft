@@ -17,6 +17,19 @@ SoundManager::~SoundManager()
 	}
 }
 
+bool SoundManager::ErrorCheck(FMOD_RESULT res)
+{
+	if (res != FMOD_OK)
+	{
+		std::wstringstream strstr;
+		strstr << L"FMOD error! \n[" << res << L"] " << FMOD_ErrorString(res) << std::endl;
+		Logger::LogError(strstr.str());
+		return false;
+	}
+
+	return true;
+}
+
 void SoundManager::Initialize()
 {
 	FMOD::Debug_Initialize(FMOD_DEBUG_LEVEL_ERROR);

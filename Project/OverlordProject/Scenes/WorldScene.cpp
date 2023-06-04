@@ -172,7 +172,7 @@ void WorldScene::OnSceneActivated()
 		if (i % 2 == 1) curHealthPosOffset -= pixelSize;
 	}
 
-	for (int i{}; i < 10; ++i)
+	for (int i{}; i < 1; ++i)
 	{
 		GameObject* pSheep{ AddChild(new GameObject{}) };
 		pSheep->GetTransform()->Translate(static_cast<float>(rand() % 16), 120.0f, static_cast<float>(rand() % 16));
@@ -185,7 +185,6 @@ void WorldScene::OnSceneActivated()
 		pSheep->AddComponent(new Health{ 4 });
 
 		const XMFLOAT3 hitboxHalfDimensions{ 0.25f,0.5f,0.25f };
-		pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
 
 		auto& physX{ PxGetPhysics() };
 		auto pPhysMat{ physX.createMaterial(0.0f, 0.0f, 0.0f) };
@@ -194,6 +193,8 @@ void WorldScene::OnSceneActivated()
 		pSheepRb->SetConstraint(RigidBodyConstraint::AllRot, false);
 		pSheepRb->SetCollisionGroup(CollisionGroup::DefaultCollision | CollisionGroup::LivingEntity);
 		m_pGameObjectToPause.push_back(pSheep);
+
+		pSheep->AddComponent(new Sheep{ hitboxHalfDimensions });
 	}
 
 

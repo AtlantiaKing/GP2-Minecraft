@@ -4,16 +4,37 @@
 #include "Scenegraph/GameScene.h"
 #include "Prefabs/ItemEntity.h"
 
+#include "FmodHelper.h"
+
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 
 Sheep::Sheep(const XMFLOAT3& hitboxDimensions)
 	: LivingEntity{ hitboxDimensions }
 {
+	const auto pFmod{ SoundManager::Get()->GetSystem() };
+	for (int i{}; i < m_NrSounds; ++i)
+	{
+		FMOD::Sound* pSound{ nullptr };
+
+		std::stringstream filePath{};
+		filePath << "Resources/Sounds/Sheep/Baa" << i << ".mp3";
+
+		FMOD_RESULT result = pFmod->createStream(filePath.str().c_str(), FMOD_3D | FMOD_3D_LINEARROLLOFF, nullptr, &pSound);
+		SoundManager::Get()->ErrorCheck(result);
+
+		m_pSounds.push_back(pSound);
+	}
 }
 
 void Sheep::OnHit(int health)
 {
-	if (health > 0) return;
+	// Play sound
+	PlayBaaSound();
+
+	if (health > 0)
+	{
+		return;
+	}
 
 	XMFLOAT3 blockPos{};
 	XMStoreFloat3(&blockPos, XMLoadFloat3(&GetTransform()->GetWorldPosition()) + XMVECTOR{ 0.0f, m_HitboxHalfDimensions.y, 0.0f});
@@ -100,4 +121,41 @@ void Sheep::UpdateMovement(float)
 			rb->AddForce({ 0.0f, GetJumpForce(), 0.0f}, PxForceMode::eIMPULSE);
 		}
 	}
+}
+
+void Sheep::EntityUpdate(const SceneContext& sceneContext)
+{
+	m_CurBaaTime += sceneContext.pGameTime->GetElapsed();
+
+	if (m_CurBaaTime > m_CurTimeBetweenBaas)
+	{
+		m_CurBaaTime -= m_CurTimeBetweenBaas;
+		m_CurTimeBetweenBaas = MathHelper::randF(m_TimeBetweenBaasRange.x, m_TimeBetweenBaasRange.y);
+
+		if(!m_IsAttacked) PlayBaaSound();
+	}
+
+	////Get the attributes for the source
+	//auto spherePos = FmodHelper::ToFmod(GetTransform()->GetWorldPosition());
+	//auto sphereVel = FmodHelper::ToFmod(m_pRb->GetVelocity());
+
+	////Set the attributes for the source
+	//m_pAudioChannel->set3DAttributes(&spherePos, &sphereVel);
+}
+
+void Sheep::PlayBaaSound()
+{
+	const auto pFmod{ SoundManager::Get()->GetSystem() };
+	const FMOD_RESULT result{ pFmod->playSound(m_pSounds[rand() % m_pSounds.size()], nullptr, false, &m_pAudioChannel) };
+	SoundManager::Get()->ErrorCheck(result);
+
+	//Set the bounds where the sound can be heard
+	m_pAudioChannel->set3DMinMaxDistance(0.f, m_AudioDistance);
+
+	//Get the attributes for the source
+	auto spherePos = FmodHelper::ToFmod(GetTransform()->GetWorldPosition());
+	auto sphereVel = FmodHelper::ToFmod(m_pRb->GetVelocity());
+
+	//Set the attributes for the source
+	m_pAudioChannel->set3DAttributes(&spherePos, &sphereVel);
 }
