@@ -39,6 +39,8 @@ std::vector<std::string> JsonReader::ReadBlockTypes()
 
 void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std::string, Block*>& blocks)
 {
+	const std::string blockName{block["name"].GetString() };
+
 	Block* pBlock{ new Block{} };
 
 	pBlock->type = static_cast<BlockType>(block["id"].GetInt());
@@ -64,7 +66,16 @@ void JsonReader::ReadBlock(const rapidjson::Value& block, std::unordered_map<std
 
 	pBlock->mesh = static_cast<BlockMesh>(block["mesh"].GetInt());
 
-	blocks[block["name"].GetString()] = pBlock;
+	const auto pFmod{ SoundManager::Get()->GetSystem() };
+
+	std::stringstream baseSoundPath{};
+	baseSoundPath << "Resources/Sounds/Blocks/" << blockName << "/";
+	FMOD_RESULT result{ pFmod->createStream((baseSoundPath.str() + "event.ogg").c_str(), FMOD_DEFAULT, nullptr, &pBlock->pEventSound) };
+	SoundManager::Get()->ErrorCheck(result);
+	result = pFmod->createStream((baseSoundPath.str() + "hit.ogg").c_str(), FMOD_DEFAULT, nullptr, &pBlock->pHitSound);
+	SoundManager::Get()->ErrorCheck(result);
+
+	blocks[blockName] = pBlock;
 }
 
 std::unordered_map<std::string, Biome> JsonReader::ReadBiomes(const std::unordered_map<std::string, Block*>& blocks, const std::unordered_map<std::string, Structure>& structures)

@@ -17,12 +17,12 @@ void MainGame::OnGamePreparing(GameContext& gameContext)
 	gameContext.windowTitle = L"GP2 - Exam Project (2023) | (2DAE15) De Keukelaere Sander";
 
 	m_pGameContext = &gameContext;
-
-	BlockManager::Create(gameContext);
 }
 
 void MainGame::Initialize()
 {
+	BlockManager::Create(*m_pGameContext);
+
 	// Nice looking seeds:
 	//  3 beach line with entrance to a valley
 	//  8 spawn on land (best seed to play on)

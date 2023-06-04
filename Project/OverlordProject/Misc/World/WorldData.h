@@ -61,6 +61,8 @@ struct Block
 	Block* dropBlock{};
 	float breakTime{};
 	bool transparent{};
+	FMOD::Sound* pHitSound{};
+	FMOD::Sound* pEventSound{};
 };
 
 struct BlockLayer
