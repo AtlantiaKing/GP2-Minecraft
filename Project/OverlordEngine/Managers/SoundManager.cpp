@@ -53,7 +53,7 @@ void SoundManager::Initialize()
 	}
 	else
 	{
-		HANDLE_ERROR(m_pFmodSystem->init(32, FMOD_INIT_NORMAL, nullptr));
+		HANDLE_ERROR(m_pFmodSystem->init(128, FMOD_INIT_NORMAL, nullptr));
 	}
 
 }
