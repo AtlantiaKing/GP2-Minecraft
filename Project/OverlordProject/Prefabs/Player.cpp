@@ -123,12 +123,13 @@ void Player::Initialize(const SceneContext&)
 
 	m_pFeet = GetScene()->AddChild(new GameObject{});
 	RigidBodyComponent* pFeetRb{ m_pFeet->AddComponent(new RigidBodyComponent{}) };
-	pFeetRb->AddCollider(PxBoxGeometry{ 0.4f, 0.05f, 0.4f }, *pPhysMat, true);
+	pFeetRb->AddCollider(PxBoxGeometry{ 0.3f, 0.05f, 0.3f }, *pPhysMat, true);
 	pFeetRb->SetCollisionIgnoreGroups(~CollisionGroup::World);
-	m_pFeet->SetOnTriggerCallBack([this](GameObject* pObject, GameObject*, PxTriggerAction action)
+	m_pFeet->SetOnTriggerCallBack([this](GameObject* pObject, GameObject* pOther, PxTriggerAction action)
 		{
+			if (pOther->GetComponent<WorldComponent>() == nullptr) return;
+
 			static float startDistance{};
-			static bool isGrounded{ true };
 
 			const float curHeight{ pObject->GetTransform()->GetWorldPosition().y };
 
@@ -138,19 +139,23 @@ void Player::Initialize(const SceneContext&)
 			XMFLOAT3 position{ pObject->GetTransform()->GetWorldPosition() };
 			position.y += 0.05f;
 
-			const bool grounded{ GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{0.0f,-1.0f,0.0f}, 0.2f, hit, PxHitFlag::eDEFAULT, filter)};
-
-			if (isGrounded == grounded) return;
-
 			if (action == PxTriggerAction::LEAVE)
 			{
-				if (!grounded)
+				if (!GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{ 0.0f,-1.0f,0.0f }, 0.1f, hit, PxHitFlag::eDEFAULT, filter))
 				{
 					startDistance = curHeight;
+				}
+				else
+				{
+					OutputDebugStringW(std::to_wstring(hit.block.distance).c_str());
 				}
 			}
 			else
 			{
+				GetScene()->GetPhysxProxy()->Raycast(PhysxHelper::ToPxVec3(position), PxVec3{ 0.0f,-1.0f,0.0f }, FLT_MAX, hit, PxHitFlag::eDEFAULT, filter);
+
+				if (hit.block.normal.y < 0.5f) return;
+
 				const float fallingDistance{ startDistance - curHeight };
 				constexpr float startFallDamageHeight{ 3.0f };
 
@@ -159,8 +164,6 @@ void Player::Initialize(const SceneContext&)
 					GetComponent<Health>()->Damage(static_cast<int>(fallingDistance - startFallDamageHeight));
 				}
 			}
-
-			isGrounded = grounded;
 		}
 	);
 }
