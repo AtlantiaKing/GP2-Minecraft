@@ -91,7 +91,8 @@ void WorldScene::Update()
 
 
 	// Enable/Disable the main menu if the pause button is pressed
-	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE))
+	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE)
+		|| InputManager::IsGamepadButton(InputState::pressed, XINPUT_GAMEPAD_START))
 	{
 		PauseMenu* pPauseMenu{ GetChild<PauseMenu>() };
 		pPauseMenu->SetActive(!pPauseMenu->IsEnabled(), true);

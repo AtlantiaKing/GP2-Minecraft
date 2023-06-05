@@ -3,13 +3,15 @@
 
 void Inventory::Update(const SceneContext& sceneContext)
 {
-	if (sceneContext.pInput->IsKeyboardKey(InputState::pressed, VK_RIGHT))
+	if (sceneContext.pInput->IsKeyboardKey(InputState::pressed, VK_RIGHT)
+		|| sceneContext.pInput->IsGamepadButton(InputState::pressed, XINPUT_GAMEPAD_DPAD_RIGHT))
 	{
 		++m_CurSlot %= m_MaxItems;
 		OnInventoryChange().Notify(m_Hotbar);
 		return;
 	}
-	else if (sceneContext.pInput->IsKeyboardKey(InputState::pressed, VK_LEFT))
+	else if (sceneContext.pInput->IsKeyboardKey(InputState::pressed, VK_LEFT)
+		|| sceneContext.pInput->IsGamepadButton(InputState::pressed, XINPUT_GAMEPAD_DPAD_LEFT))
 	{
 		--m_CurSlot;
 		if (m_CurSlot < 0) m_CurSlot = m_MaxItems - 1;
