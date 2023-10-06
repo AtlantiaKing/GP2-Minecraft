@@ -28,3 +28,22 @@ start moving in a random direction. When there is a block in front of the sheep 
 When a player looks at a sheep in range, the player can hit the sheep. A sheep has a certain amount
 of health. When the health reaches zero, the sheep dies and it drops a wool block.  
 When the sheep is hit, it will run in a random direction with a higher speed then normal walking.
+
+## Game design patterns used
+Component  
+State  
+Observer  
+
+## Shaders written in HLSL
+World shader using tilemap as texture (with techniques for opaque and transparent)  
+Outline renderer  
+Skybox  
+
+## Gameplay features
+Infinite voxel world  
+Breaking and placing blocks  
+Hotbar inventory and health  
+Sheep (friendly mob)  
+Animations (sheep and hand)  
+Flowing water and swimming  
+Post processing effects such as depth fog underwater and game over screen  
